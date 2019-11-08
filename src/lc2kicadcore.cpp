@@ -26,8 +26,18 @@ const char softwareVersion[] = "0.1-beta";
 
 namespace lc2kicad
 {
+  int parseDocumentList(int fileCount, char *args[])
+  {
+    return 0;
+  }
 
-  
+  void errorAndQuit(std::runtime_error *e)
+  {
+    cout << "Runtime error: " << e->what() << endl << endl
+         << "The intended operation cannot be done. The application will quit.\n";
+    abort();
+  }
+
   void displayUsage()
   {
     cout  << "Usage: lc2kicad FILENAME...\n"
