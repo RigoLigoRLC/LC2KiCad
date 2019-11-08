@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/rigoligo/C++ Projects/0001 LC2KiCad/build",
+  "command": "/usr/bin/g++   -I\"/home/rigoligo/C++ Projects/0001 LC2KiCad/inc\"  -g   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o -c \"/home/rigoligo/C++ Projects/0001 LC2KiCad/src/lc2kicadcore.cpp\"",
+  "file": "/home/rigoligo/C++ Projects/0001 LC2KiCad/src/lc2kicadcore.cpp"
+},
+{
+  "directory": "/home/rigoligo/C++ Projects/0001 LC2KiCad/build",
+  "command": "/usr/bin/g++   -I\"/home/rigoligo/C++ Projects/0001 LC2KiCad/inc\"  -g   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/main.o -c \"/home/rigoligo/C++ Projects/0001 LC2KiCad/src/main.cpp\"",
+  "file": "/home/rigoligo/C++ Projects/0001 LC2KiCad/src/main.cpp"
+}
+]

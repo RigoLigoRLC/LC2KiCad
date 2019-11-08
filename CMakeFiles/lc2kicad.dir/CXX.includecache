@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/rigoligo/C++ Projects/0001 LC2KiCad/src/lc2kicadcore.cpp
+include.h
+-
+
+/home/rigoligo/C++ Projects/0001 LC2KiCad/src/main.cpp
+../inc/include.h
+-
+../inc/lc2kicad.h
+-
+
+inc/include.h
+iostream
+-
+fstream
+-
+vector
+-
+string
+-
+cstring
+-
+
+inc/lc2kicad.h
+include.h
+-
+

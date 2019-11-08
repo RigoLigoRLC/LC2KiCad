@@ -26,6 +26,8 @@ const char softwareVersion[] = "0.1-beta";
 
 namespace lc2kicad
 {
+
+  
   void displayUsage()
   {
     cout  << "Usage: lc2kicad FILENAME...\n"

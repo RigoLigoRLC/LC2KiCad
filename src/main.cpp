@@ -23,7 +23,6 @@
 using namespace std;
 using namespace lc2kicad;
 
-
 int main(int argc, const char** argv) {
   switch(argc)
   {
