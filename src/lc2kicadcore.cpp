@@ -17,21 +17,24 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <include.h>
+#include <include.hpp>
 
 using std::cout;
 using std::endl;
-
-const char softwareVersion[] = "0.1-beta";
+using std::fstream;
 
 namespace lc2kicad
 {
-  int parseDocumentList(int fileCount, char *args[])
-  {
-    return 0;
-  }
+  const char softwareVersion[] = "0.1-beta";
 
   void errorAndQuit(std::runtime_error *e)
+  {
+    cout << "Error running the program: " << e->what() << endl << endl
+         << "The intended operation cannot be done. The application will quit.\n";
+    exit(1);
+  }
+
+  void errorAndAbort(std::runtime_error *e)
   {
     cout << "Runtime error: " << e->what() << endl << endl
          << "The intended operation cannot be done. The application will quit.\n";
@@ -64,5 +67,32 @@ namespace lc2kicad
           << "warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
           << "You should have received a copy of the GNU Lesser General Public License\n"
           << "along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.\n";
+  }
+
+
+  int parseDocumentList(int fileCount, char *args[])
+  {
+    fstream opener;
+    bool iferrored = false;
+    for(int i = 1; i <= fileCount; i++)
+    {
+      opener.open(args[i], std::_Ios_Openmode::_S_in);
+      if(opener.fail())
+      {
+        iferrored = true;
+        cout << "Failed to locate file \"" << args[i] << "\".\n";
+      }
+      else
+      {
+        cout << "File \"" << args[i] << "\" was located.\n";
+        opener.close();
+      }
+      if(iferrored)
+      {
+        std::runtime_error e("Missing specified file(s).");
+        errorAndQuit(&e);
+      }
+    }
+    return 0;
   }
 }

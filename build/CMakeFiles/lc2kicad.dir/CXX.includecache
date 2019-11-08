@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-../inc/include.h
+../inc/include.hpp
 iostream
 -
 fstream
@@ -19,6 +19,6 @@ cstring
 -
 
 /home/rigoligo/C++ Projects/0001 LC2KiCad/src/lc2kicadcore.cpp
-include.h
+include.hpp
 -
 

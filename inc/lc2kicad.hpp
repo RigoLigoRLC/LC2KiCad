@@ -13,6 +13,7 @@
     //Function Prototypes here.
     void displayUsage();
     void displayAbout();
+    void errorAndAbort(std::runtime_error*);
     void errorAndQuit(std::runtime_error*);
     int parseDocumentList(int fileCount, char *args[]);
 
