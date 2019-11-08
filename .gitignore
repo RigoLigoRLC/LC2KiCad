@@ -1,3 +1,5 @@
 0001 LC2KiCad.code-workspace
 CMakeFiles/
 build/
+CMakeCache.txt
+cmake_install.cmake
