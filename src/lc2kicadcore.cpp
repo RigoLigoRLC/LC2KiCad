@@ -201,7 +201,7 @@ namespace lc2kicad
     //If this file is a valid JSON file, continue parsing.
 
     int documentType = -1;
-    string filename = base_name(string(filePath));
+    string filename = base_name(string(filePath)), editorVer = "";
 
     //Judge the document type and do tasks accordingly.
     if(parseTargetDoc.HasMember("head"))
@@ -210,15 +210,25 @@ namespace lc2kicad
       assertRTE(head.IsObject(), "Invalid \"head\" type.");
       assertRTE(head.HasMember("docType"), "\"docType\" not found.");
       documentType = stoi(head["docType"].GetString());
+      if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
+        editorVer = head["editorVersion"].GetString();
     }
     else
     {
       assertRTE(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
       assertRTE(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
       documentType = stoi(parseTargetDoc["docType"].GetString());
+      if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
+        editorVer = parseTargetDoc["editorVersion"].GetString();
     }
     if(documentType >= 1 && documentType <= 7)
-      cout << "\tThis document is a " << documentTypeName[documentType] << " file.\n";
+    {
+      cout << "\tThis document is a " << documentTypeName[documentType] << " file";
+      if(editorVer != "")
+        cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
+      else
+        cout << ". Unknown EasyEDA Editor version.\n";
+    }
     else
       assertRTE(false, "Not supported document type.");
       
