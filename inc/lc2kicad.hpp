@@ -15,13 +15,12 @@
     void displayAbout();
     void errorAndAbort(std::runtime_error*);
     void errorAndQuit(std::runtime_error*);
-    int parseDocumentList(int fileCount, char *args[]);
+    void parseDocumentList(int fileCount, char *args[]);
+    void parseDocuments(int fileCount, char* args[]);
+    void parseDocument(char *filePath, char* bufferField);
 
     //Variables for global uses here.
 
-
-    //Constants for the main program here.
-    extern const char softwareVersion[];
   }
 
 #endif

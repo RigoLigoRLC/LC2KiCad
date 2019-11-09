@@ -18,10 +18,13 @@
 */
 
 #include <include.hpp>
+#include <rapidjson.hpp>
 
 using std::cout;
 using std::endl;
 using std::fstream;
+using rapidjson::FileReadStream;
+using rapidjson::Document;
 
 namespace lc2kicad
 {
@@ -53,7 +56,7 @@ namespace lc2kicad
 
   void displayAbout()
   {
-    cout  << "LC2KiCad version " << softwareVersion << endl << endl
+    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl << endl
           << "This program is an utility that allows you to convert your EasyEDA documents\n"
           << "into the KiCad 5 version document, so that you will be able to move your\n"
           << "designs in EasyEDA to KiCad for any legit purpose.\n\n"
@@ -69,8 +72,51 @@ namespace lc2kicad
           << "along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.\n";
   }
 
+  void parseDocument(char *filePath, char *bufferField)
+  {
+    std::FILE *parseTarget = std::fopen(filePath, "r");
 
-  int parseDocumentList(int fileCount, char *args[])
+    FileReadStream fileReader(parseTarget, bufferField, READ_BUFFER_SIZE);
+    Document parseTargetDoc;
+    parseTargetDoc.ParseStream(fileReader);
+
+    std::fclose(parseTarget);
+
+    if(parseTargetDoc.HasParseError())
+    {
+      cout << "Error when parsing file \"" << filePath << "\":\n"
+           << "Error code " << parseTargetDoc.GetParseError() << " at offset " << parseTargetDoc.GetErrorOffset() << ".\n";
+      std::runtime_error e("Error occured while parsing a file.");
+      throw e;
+    }
+    else
+    {
+      cout << "Successfully parsed file \"" << filePath << "\".\n";
+    }
+    
+
+  }
+
+  void parseDocuments(int fileCount, char *args[])
+  {
+    fstream opener;
+    char *readBufferField = new char[65536];
+
+    for(int i = 1; i <= fileCount; i++)
+    {
+      cout << "Parsing of file \"" << args[i] << "\" has started...\n";
+      try
+      {
+        parseDocument(args[i], readBufferField);
+      }
+      catch (std::runtime_error& e)
+      {
+        errorAndQuit(&e);
+      }
+    }
+  }
+
+  void parseDocumentList(int fileCount, char *args[])
   {
     fstream opener;
     bool iferrored = false;
@@ -90,9 +136,8 @@ namespace lc2kicad
       if(iferrored)
       {
         std::runtime_error e("Missing specified file(s).");
-        errorAndQuit(&e);
+        throw e;
       }
     }
-    return 0;
   }
 }

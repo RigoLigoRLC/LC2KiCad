@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/rigoligo/C++ Projects/0001 LC2KiCad/src/lc2kicadcore.cpp" "/home/rigoligo/C++ Projects/0001 LC2KiCad/build/CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o"
-  "/home/rigoligo/C++ Projects/0001 LC2KiCad/src/main.cpp" "/home/rigoligo/C++ Projects/0001 LC2KiCad/build/CMakeFiles/lc2kicad.dir/src/main.o"
+  "/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp" "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o"
+  "/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/main.cpp" "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles/lc2kicad.dir/src/main.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

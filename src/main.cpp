@@ -49,11 +49,21 @@ int main(int argc, const char** argv) {
       }
 #endif
     default:
+      //try to parse all the documents specified
       try
       {
         parseDocumentList(argc - 1, (char **)argv);
       }
       catch(runtime_error& e)
+      {
+        errorAndQuit(&e);
+      }
+      //if all the files can be found, then start parsing each file.
+      try
+      {
+        parseDocuments(argc - 1, (char **)argv);
+      }
+      catch (runtime_error& e)
       {
         errorAndQuit(&e);
       }
