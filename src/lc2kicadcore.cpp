@@ -130,7 +130,7 @@ namespace lc2kicad
 
   void docPCBLibParser(Document &parseTarget, string &filename)
   {
-    cout << "\tPCB Library file parser function has been called. Starting PCB Library file parsing.\n";
+    cout << "\tPCB library file parser function has been called. Starting PCB library file parsing.\n";
 
     fstream outputFile;
     outputFile.open(filename + ".pretty");
