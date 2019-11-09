@@ -22,6 +22,7 @@
     void assertRTE(bool statement, const char *message);
     std::vector<std::string> splitString(std::string sourceString, char delimeter);
 
+    int  layerMap(std::string &layerString);
     void docPCBLibParser(rapidjson::Document &parseTarget, std::string &filename);
 
     //Variables for global uses here.
