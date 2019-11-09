@@ -1,5 +1,5 @@
 #include <include.hpp>
-
+#include <rapidjson.hpp>
 
 #ifndef lc2kicad_
 
@@ -16,8 +16,13 @@
     void errorAndAbort(std::runtime_error*);
     void errorAndQuit(std::runtime_error*);
     void parseDocumentList(int fileCount, char *args[]);
-    void parseDocuments(int fileCount, char* args[]);
-    void parseDocument(char *filePath, char* bufferField);
+    void parseDocuments(int fileCount, char *args[]);
+    void parseDocument(char *filePath, char *bufferField);
+
+    void assertRTE(bool statement, const char *message);
+    std::vector<std::string> splitString(std::string sourceString, char delimeter);
+
+    void docPCBLibParser(rapidjson::Document &parseTarget, std::string &filename);
 
     //Variables for global uses here.
 

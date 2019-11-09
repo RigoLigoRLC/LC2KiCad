@@ -36,4 +36,31 @@ CMakeFiles/lc2kicad.dir/src/main.o
  ../inc/consts.hpp
  ../inc/include.hpp
  ../inc/lc2kicad.hpp
+ ../inc/rapidjson.hpp
+ ../inc/rapidjson/allocators.h
+ ../inc/rapidjson/document.h
+ ../inc/rapidjson/encodedstream.h
+ ../inc/rapidjson/encodings.h
+ ../inc/rapidjson/error/error.h
+ ../inc/rapidjson/filereadstream.h
+ ../inc/rapidjson/internal/biginteger.h
+ ../inc/rapidjson/internal/clzll.h
+ ../inc/rapidjson/internal/diyfp.h
+ ../inc/rapidjson/internal/dtoa.h
+ ../inc/rapidjson/internal/ieee754.h
+ ../inc/rapidjson/internal/itoa.h
+ ../inc/rapidjson/internal/meta.h
+ ../inc/rapidjson/internal/pow10.h
+ ../inc/rapidjson/internal/stack.h
+ ../inc/rapidjson/internal/strfunc.h
+ ../inc/rapidjson/internal/strtod.h
+ ../inc/rapidjson/internal/swap.h
+ ../inc/rapidjson/memorystream.h
+ ../inc/rapidjson/msinttypes/inttypes.h
+ ../inc/rapidjson/msinttypes/stdint.h
+ ../inc/rapidjson/rapidjson.h
+ ../inc/rapidjson/reader.h
+ ../inc/rapidjson/stream.h
+ ../inc/rapidjson/stringbuffer.h
+ ../inc/rapidjson/writer.h
  /home/rigoligo/Documents/C++ Projects/LC2KiCad/src/main.cpp

@@ -50,6 +50,10 @@ int main(int argc, const char** argv) {
 #endif
     default:
       //try to parse all the documents specified
+
+      cout << argc - 1 << " document(s) specified in this session.\n"
+           << "Try to locate all the specified files now.\n\n";
+
       try
       {
         parseDocumentList(argc - 1, (char **)argv);

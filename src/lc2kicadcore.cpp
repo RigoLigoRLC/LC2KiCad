@@ -23,25 +23,45 @@
 using std::cout;
 using std::endl;
 using std::fstream;
+using std::string;
+using std::vector;
+using std::stof;
+using std::stoi;
 using rapidjson::FileReadStream;
 using rapidjson::Document;
+using rapidjson::Value;
 
 namespace lc2kicad
 {
   const char softwareVersion[] = "0.1-beta";
 
+  enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
+  const char *documentTypeName[8] = {"", "schematics", "schematic library", "PCB", "PCB library", "project", "sub-part", "SPICE symbol"};
+
   void errorAndQuit(std::runtime_error *e)
+#ifdef ERROR_EXIT
   {
     cout << "Error running the program: " << e->what() << endl << endl
          << "The intended operation cannot be done. The application will quit.\n";
     exit(1);
   }
+#else
+  #ifdef ERROR_ABORT
+    {
+      cout << "Runtime error: " << e->what() << endl << endl
+          << "The intended operation cannot be done. The application will quit.\n";
+      abort();
+    }
+  #endif
+#endif
 
-  void errorAndAbort(std::runtime_error *e)
+  void assertRTE(bool statement, const char* message)
   {
-    cout << "Runtime error: " << e->what() << endl << endl
-         << "The intended operation cannot be done. The application will quit.\n";
-    abort();
+    if(!statement)
+    {
+      std::runtime_error e(message);
+      errorAndQuit(&e);
+    }
   }
 
   void displayUsage()
@@ -72,6 +92,52 @@ namespace lc2kicad
           << "along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.\n";
   }
 
+  string base_name(string const& path)
+  {
+    return path.substr(path.find_last_of("/\\") + 1);
+  }
+
+  vector<string> splitString(string sourceString, char delimeter)
+  {
+    std::stringstream ss(sourceString);
+    string item;
+    vector<string> rtn;
+    while(std::getline(ss, item, delimeter))
+      rtn.push_back(item);
+    return rtn;
+  }
+
+  void docPCBLibParser(Document &parseTarget, string &filename)
+  {
+    cout << "\tPCB Library file parser function has been called. Starting PCB file parsing.\n";
+    
+    string propertyStr;
+    vector<string> propList;
+    float originX, originY, gridSize, traceWidth;
+    string packageName, prefix, contributor;
+    
+    //Parse canvas properties
+    propertyStr = parseTarget["canvas"].GetString();
+    propList = splitString(propertyStr, '~');
+    //Read canvas properties
+    originX = stof(propList[16]);
+    originY = stof(propList[17]);
+    gridSize = stof(propList[6]);
+    traceWidth  =stof(propList[12]);
+      //cout << originX << ',' << originY << endl;
+    propertyStr.clear();
+    propList.clear();
+
+    //Parse Prefix and contributor
+    Value& cp = parseTarget["head"];
+    cp = cp.GetObject()["c_para"];
+    packageName = cp["package"].GetString();
+    prefix = cp["pre"].GetString();
+    contributor = cp["Contributor"].GetString();
+
+    
+  }
+
   void parseDocument(char *filePath, char *bufferField)
   {
     std::FILE *parseTarget = std::fopen(filePath, "r");
@@ -84,16 +150,45 @@ namespace lc2kicad
 
     if(parseTargetDoc.HasParseError())
     {
-      cout << "Error when parsing file \"" << filePath << "\":\n"
-           << "Error code " << parseTargetDoc.GetParseError() << " at offset " << parseTargetDoc.GetErrorOffset() << ".\n";
-      std::runtime_error e("Error occured while parsing a file.");
-      throw e;
+      cout << "\tError when parsing file \"" << filePath << "\":\n"
+           << "\tError code " << parseTargetDoc.GetParseError() << " at offset " << parseTargetDoc.GetErrorOffset() << ".\n";
+      assertRTE(false, "Error occured while parsing a file.");
+    }
+
+    //If this file is a valid JSON file, continue parsing.
+
+    int documentType = -1;
+    string filename = base_name(string(filePath));
+
+    //Judge the document type and do tasks accordingly.
+    if(parseTargetDoc.HasMember("head"))
+    {
+      Value& head = parseTargetDoc["head"];
+      assertRTE(head.IsObject(), "Invalid \"head\" type.");
+      assertRTE(head.HasMember("docType"), "\"docType\" not found.");
+      documentType = stoi(head["docType"].GetString());
     }
     else
     {
-      cout << "Successfully parsed file \"" << filePath << "\".\n";
+      assertRTE(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
+      assertRTE(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
+      documentType = stoi(parseTargetDoc["docType"].GetString());
     }
+    if(documentType >= 1 && documentType <= 7)
+      cout << "\tThis document is a " << documentTypeName[documentType] << " file.\n";
+    else
+      assertRTE(false, "Not supported document type.");
+      
     
+    //Now decide what are we going to parse, whether schematics or PCB, anything else.
+    switch(documentType)
+    {
+      case 4:
+        docPCBLibParser(parseTargetDoc, filename);
+        break;
+      default:
+        assertRTE(false, "This kind of document type is not supported yet.");
+    }
 
   }
 
@@ -123,6 +218,7 @@ namespace lc2kicad
     for(int i = 1; i <= fileCount; i++)
     {
       opener.open(args[i], std::_Ios_Openmode::_S_in);
+      cout << "(" << i << ") ";
       if(opener.fail())
       {
         iferrored = true;
@@ -133,11 +229,8 @@ namespace lc2kicad
         cout << "File \"" << args[i] << "\" was located.\n";
         opener.close();
       }
-      if(iferrored)
-      {
-        std::runtime_error e("Missing specified file(s).");
-        throw e;
-      }
+      cout << endl;
+      assertRTE(!iferrored, "Missing specified file(s).");
     }
   }
 }

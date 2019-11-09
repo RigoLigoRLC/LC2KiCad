@@ -5,6 +5,9 @@
   {
     #define READ_BUFFER_SIZE 65536
     #define SOFTWARE_VERSION "version 0.1-b"
+
+    #define ERROR_EXIT
+  //#define ERROR_ABORT
   }
 
 #endif // !LC2KICAD_CONSTS

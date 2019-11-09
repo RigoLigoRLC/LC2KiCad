@@ -17,6 +17,8 @@ vector
 -
 string
 -
+sstream
+-
 cstring
 -
 cstdio
@@ -26,6 +28,8 @@ consts.hpp
 
 ../inc/lc2kicad.hpp
 include.hpp
+-
+rapidjson.hpp
 -
 
 ../inc/rapidjson.hpp
