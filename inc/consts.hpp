@@ -8,6 +8,10 @@
 
     #define ERROR_EXIT
   //#define ERROR_ABORT
+
+    extern const char *documentTypeName[8];
+    extern const int layerMapperLUT[];
+    extern const char *layerNameLUT[];
   }
 
 #endif // !LC2KICAD_CONSTS

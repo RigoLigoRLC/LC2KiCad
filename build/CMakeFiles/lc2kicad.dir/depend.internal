@@ -3,6 +3,7 @@
 
 CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o
  ../inc/consts.hpp
+ ../inc/elements.hpp
  ../inc/include.hpp
  ../inc/rapidjson.hpp
  ../inc/rapidjson/allocators.h
@@ -34,6 +35,7 @@ CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o
  /home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp
 CMakeFiles/lc2kicad.dir/src/main.o
  ../inc/consts.hpp
+ ../inc/elements.hpp
  ../inc/include.hpp
  ../inc/lc2kicad.hpp
  ../inc/rapidjson.hpp

@@ -8,6 +8,10 @@
 
 ../inc/consts.hpp
 
+../inc/elements.hpp
+consts.hpp
+-
+
 ../inc/include.hpp
 iostream
 -
@@ -24,6 +28,8 @@ cstring
 cstdio
 -
 consts.hpp
+-
+elements.hpp
 -
 
 ../inc/lc2kicad.hpp
