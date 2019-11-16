@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build"
 CMakeFiles/lc2kicad.dir/all:
 	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/depend
 	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles" --progress-num=1,2,3 "Built target lc2kicad"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles" --progress-num=1,2,3,4 "Built target lc2kicad"
 .PHONY : CMakeFiles/lc2kicad.dir/all
 
 # Include target in all.
@@ -76,7 +76,7 @@ all: CMakeFiles/lc2kicad.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/lc2kicad.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles" 3
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles" 4
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/lc2kicad.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles" 0
 .PHONY : CMakeFiles/lc2kicad.dir/rule

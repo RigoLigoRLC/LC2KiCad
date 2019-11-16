@@ -31,6 +31,27 @@ using rapidjson::FileReadStream;
 using rapidjson::Document;
 using rapidjson::Value;
 
+void errorAndQuit(std::runtime_error *e)
+  #ifdef ERROR_EXIT
+    { std::cout << "Error running the program: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; exit(1); }
+  #else
+    #ifdef ERROR_ABORT
+      { cout << "Runtime error: " << e->what() << endl << endl << "The intended operation cannot be done. The application will quit.\n"; abort(); }
+    #endif
+  #endif
+void assertRTE(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
+
+vector<string> splitString(string sourceString, char delimeter)
+{
+  std::stringstream ss(sourceString);
+  string item;
+  vector<string> rtn;
+  while(std::getline(ss, item, delimeter))
+    rtn.push_back(item);
+  return rtn;
+}
+
+
 namespace lc2kicad
 {
   const char softwareVersion[] = "0.1-beta";
@@ -40,32 +61,6 @@ namespace lc2kicad
   //Layer mapper. Input EasyEDA, ouput KiCad.
   const int layerMapperLUT[] = {-1, 0, 31, 37, 36, 35, 34, 39, 38, -1, 44, -1, 41, 49, 48, -1, -1, -1, -1, -1, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
   const char *layerNameLUT[] = {"F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu", "In6.Cu", "In7.Cu", "In8.Cu", "In9.Cu","In10.Cu", "In11.Cu", "In12.Cu", "In13.Cu", "In14.Cu", "In15.Cu", "In16.Cu", "In17.Cu", "In18.Cu", "In19.Cu", "In20.Cu", "In21.Cu", "In22.Cu", "In23.Cu", "In24.Cu", "In25.Cu", "In26.Cu", "In27.Cu", "In28.Cu", "In29.Cu", "In30.Cu", "B.Cu", "B.Adhes", "F.Adhes", "B.Paste", "F.Paste", "B.SilkS", "F.SilkS", "B.Mask", "F.Mask", "Dwgs.User", "Cmts.User", "Eco1.User", "Eco2.User", "Edge.Cuts", "Margin", "B.CrtYd", "F.CrtYd", "B.Fab", "F.Fab"};
-
-  void errorAndQuit(std::runtime_error *e)
-#ifdef ERROR_EXIT
-  {
-    cout << "Error running the program: " << e->what() << endl << endl
-         << "The intended operation cannot be done. The application will quit.\n";
-    exit(1);
-  }
-#else
-  #ifdef ERROR_ABORT
-    {
-      cout << "Runtime error: " << e->what() << endl << endl
-          << "The intended operation cannot be done. The application will quit.\n";
-      abort();
-    }
-  #endif
-#endif
-
-  void assertRTE(bool statement, const char* message)
-  {
-    if(!statement)
-    {
-      std::runtime_error e(message);
-      errorAndQuit(&e);
-    }
-  }
 
   void displayUsage()
   {
@@ -100,15 +95,7 @@ namespace lc2kicad
     return path.substr(path.find_last_of("/\\") + 1);
   }
 
-  vector<string> splitString(string sourceString, char delimeter)
-  {
-    std::stringstream ss(sourceString);
-    string item;
-    vector<string> rtn;
-    while(std::getline(ss, item, delimeter))
-      rtn.push_back(item);
-    return rtn;
-  }
+
 
   int layerMap(string &layerString)
   {

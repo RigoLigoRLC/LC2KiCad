@@ -124,6 +124,21 @@ lc2kicad/fast:
 .PHONY : lc2kicad/fast
 
 # target to build an object file
+src/elements.o:
+	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/src/elements.o
+.PHONY : src/elements.o
+
+# target to preprocess a source file
+src/elements.i:
+	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/src/elements.i
+.PHONY : src/elements.i
+
+# target to generate assembly for a file
+src/elements.s:
+	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/src/elements.s
+.PHONY : src/elements.s
+
+# target to build an object file
 src/lc2kicadcore.o:
 	$(MAKE) -f CMakeFiles/lc2kicad.dir/build.make CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o
 .PHONY : src/lc2kicadcore.o
@@ -162,6 +177,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... lc2kicad"
 	@echo "... edit_cache"
+	@echo "... src/elements.o"
+	@echo "... src/elements.i"
+	@echo "... src/elements.s"
 	@echo "... src/lc2kicadcore.o"
 	@echo "... src/lc2kicadcore.i"
 	@echo "... src/lc2kicadcore.s"

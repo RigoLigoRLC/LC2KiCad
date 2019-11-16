@@ -9,7 +9,11 @@
 ../inc/consts.hpp
 
 ../inc/elements.hpp
+include.hpp
+-
 consts.hpp
+-
+rapidjson.hpp
 -
 
 ../inc/include.hpp
@@ -289,6 +293,16 @@ emmintrin.h
 -
 arm_neon.h
 -
+
+/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/elements.cpp
+elements.hpp
+/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/elements.hpp
+include.hpp
+/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/include.hpp
+consts.hpp
+/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/consts.hpp
+rapidjson.hpp
+/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/rapidjson.hpp
 
 /home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp
 include.hpp

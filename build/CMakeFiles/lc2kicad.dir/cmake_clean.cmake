@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/lc2kicad.dir/src/elements.o"
   "CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o"
   "CMakeFiles/lc2kicad.dir/src/main.o"
   "lc2kicad.pdb"
