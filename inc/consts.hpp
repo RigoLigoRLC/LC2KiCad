@@ -33,6 +33,8 @@
     extern const char *documentTypeName[8];
     extern const int layerMapperLUT[];
     extern const char *layerNameLUT[];
+    extern const char *padTypeKiCad[];
+    extern const char *padShapeKiCad[];
     
   }
 

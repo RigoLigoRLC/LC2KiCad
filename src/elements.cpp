@@ -23,6 +23,7 @@
 #include "rapidjson.hpp"
 
 using std::vector;
+using std::to_string;
 using rapidjson::Value;
 
 namespace lc2kicad
@@ -32,7 +33,7 @@ namespace lc2kicad
   PCB_Pad::PCB_Pad(vector<string> &paramList, coordinates origin)
   {
     //Resolve pad shape
-      switch (paramList[1][1])
+      switch (paramList[1][0])
       {
       case 'E': //ELLIPSE, ROUND
         padShape = PCBPadShape::circle;
@@ -51,31 +52,35 @@ namespace lc2kicad
         break;
       }
     //Resolve pad coordinates
+    coordinates _rawCoords = { static_cast<float>(atof(paramList[2].c_str())), static_cast<float>(atof(paramList[3].c_str())) };
     padCoordinates.X = (atof(paramList[2].c_str()) - origin.X) * tenmils_to_mm_coefficient;
     padCoordinates.Y = (atof(paramList[3].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
     orientation = static_cast<int>(atof(paramList[12].c_str()));
-    //Resolve slot drill length and pad size
-    if(padShape == PCBPadShape::oval || padShape == PCBPadShape::rectangle)
+    //Resolve hole shape size
+    if(holeShape == PCBHoleShape::slot)
     {
       holeSize.X = atof(paramList[13].c_str()) * tenmils_to_mm_coefficient;
       holeSize.Y = atof(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+    }
+    else
+      holeSize.X = holeSize.Y = atof(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+    //Resolve pad shape and size
+    if(padShape == PCBPadShape::oval || padShape == PCBPadShape::rectangle)
+    {
       padSize.X = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
       padSize.Y = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient;
     }
     else if(padShape == PCBPadShape::circle)
-    {
-      holeSize.X = padSize.Y = atof(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
       padSize.X = padSize.Y = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-    }
     else //polygon
     {
-      padSize.X = padSize.Y = 0.0f;
+      padSize.X = padSize.Y = holeSize.Y;
       vector<string> polygonCoordinates = splitString(paramList[10], ' ');
       coordinates polygonPointTemp = { 0.0f, 0.0f };
       for(int i = 0; i < polygonCoordinates.size(); i += 2)
       {
-        polygonPointTemp.X = (atof(polygonCoordinates[  i  ].c_str()) - origin.X) * tenmils_to_mm_coefficient;
-        polygonPointTemp.Y = (atof(polygonCoordinates[i + 1].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
+        polygonPointTemp.X = (atof(polygonCoordinates[  i  ].c_str()) - _rawCoords.X) * tenmils_to_mm_coefficient;
+        polygonPointTemp.Y = (atof(polygonCoordinates[i + 1].c_str()) - _rawCoords.Y) * tenmils_to_mm_coefficient;
         shapePolygonPoints.push_back(polygonPointTemp);
       }
     }
@@ -91,6 +96,53 @@ namespace lc2kicad
         padType = PCBPadType::top;
       else if(padTypeTemp == 2)
         padType = PCBPadType::bottom;
+    //store net name
+    netName = paramList[7];
+    pinNumber = paramList[8];
+  }
+
+  string PCB_Pad::outputKiCadFormat(string &convArgs)
+  {
+    std::stringstream returnValue;
+    returnValue << "(pad \"" << pinNumber << "\" " << padTypeKiCad[static_cast<int>(padType)] << ' '
+                << padShapeKiCad[static_cast<int>(padShape)] << " (at " << to_string(padCoordinates.X)
+                << ' ' << to_string(padCoordinates.Y) << ") (size " << to_string(padSize.X) << ' '
+                << to_string(padSize.Y);
+    if(padType == PCBPadType::through || padType == PCBPadType::noplating)
+    {
+      returnValue << ") (drill";
+      if(holeShape == PCBHoleShape::slot)
+      {
+        returnValue << " oval " << to_string(holeSize.X) << ' ' << to_string(holeSize.Y);
+      }
+      else
+      {
+        returnValue << ' ' << to_string(holeSize.X);
+      }
+    }
+    returnValue << ") (layers ";
+    switch(padType)
+    {
+      case PCBPadType::top:
+        returnValue << "F.Cu F.Paste F.Mask)";
+        break;
+      case PCBPadType::bottom:
+        returnValue << "B.Cu B.Paste B.Mask)";
+        break;
+      default:
+        returnValue << "*.Cu *.Mask)";
+    }
+    if(padShape != PCBPadShape::polygon)
+      returnValue << ')';
+    else
+    {
+      returnValue << "\n  (zone_connect 2)\n  (options (clearance outline) (anchor circle))\n  (primitives\n"
+                  << "    (gr_poly (pts\n      ";
+      for(int i = 0; i < shapePolygonPoints.size(); i++)
+        returnValue << " (xy " << to_string(shapePolygonPoints[i].X) << ' ' << to_string(shapePolygonPoints[i].Y) << ')';
+      returnValue << ") (width 0))\n  ))";
+    }
+    return returnValue.str();
   }
 }
 

@@ -45,12 +45,13 @@
       public:
         bool getVisibility() { return isVisible; };
         bool setVisibility(bool visibility) { isVisible = visibility; };
-        int  outputToKiCadFile(fstream &kicadFile);
+        string outputKiCadFormat(string &convArgs);
+        string outputKiCadFormat();
     };
 
-    enum class PCBPadShape : int { circle = 1, oval = 2, rectangle = 3, polygon = 4 };
-    enum class PCBPadType : int { top = 1, bottom = 2, through = 3, noplating = 4 };
-    enum class PCBHoleShape : int { circle = 1, slot = 2 };
+    enum class PCBPadShape : int { circle = 0, oval = 1, rectangle = 2, polygon = 3 };
+    enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
+    enum class PCBHoleShape : int { circle = 0, slot = 1 };
 
     class PCB_Pad : public PCBElements
     {
@@ -61,11 +62,12 @@
         int orientation;
         coordinates padCoordinates;
         sizeXY padSize, holeSize;
-        string netName;
+        string netName, pinNumber;
       public:
         PCB_Pad();
         PCB_Pad(vector<string> &paramList, coordinates origin);
-        ~PCB_Pad();
+        //~PCB_Pad();
+        virtual string outputKiCadFormat(string &convArgs);
         vector<coordinates> shapePolygonPoints;
         /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
           void setPadSize(float X, float Y) { padSize.X = X; padSize.Y = Y; };
