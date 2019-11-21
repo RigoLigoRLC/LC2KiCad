@@ -52,7 +52,6 @@ namespace lc2kicad
         break;
       }
     //Resolve pad coordinates
-    coordinates _rawCoords = { static_cast<float>(atof(paramList[2].c_str())), static_cast<float>(atof(paramList[3].c_str())) };
     padCoordinates.X = (atof(paramList[2].c_str()) - origin.X) * tenmils_to_mm_coefficient;
     padCoordinates.Y = (atof(paramList[3].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
     orientation = static_cast<int>(atof(paramList[12].c_str()));
@@ -144,5 +143,18 @@ namespace lc2kicad
     }
     return returnValue.str();
   }
+    
+  PCB_Via::PCB::Via(vector<string> &paramList, coordinates origin)
+  {
+    //Resolving the via coordinates
+    viaCoordinates.X = (atof(paramList[1].c_str()) - origin.X) * ten_mils_to_mm_coefficient;
+    viaCoordinates.Y = (atof(paramList[2].c_str()) - origin.Y) * ten_mils_to_mm_coefficient;
+    //Resolve via diameter (size)
+    viaSize = atof(paramList[3].c_str()) * ten_mils_to_mm_coefficient;
+    drillSize = atof(paramList[5].c_str()) * ten_mils_to_mm_coefficient;
+    netName = paramList[4];
+  }
+  
+  
 }
 
