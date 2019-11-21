@@ -101,7 +101,7 @@
     class PCB_Via : public PCBElements
     {
       private:
-        int diameter, drillDiameter;
+        int viaSize, drillSize;
         coordinates viaCoordinates;
         string netName;
       public:
