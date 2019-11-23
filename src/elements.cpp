@@ -51,6 +51,7 @@ namespace lc2kicad
         break;
       }
     //Resolve pad coordinates
+    coordinates _rawCoords = { static_cast<float>(atof(paramList[2].c_str())), static_cast<float>(atof(paramList[3].c_str())) };
     padCoordinates.X = (atof(paramList[2].c_str()) - origin.X) * tenmils_to_mm_coefficient;
     padCoordinates.Y = (atof(paramList[3].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
     orientation = static_cast<int>(atof(paramList[12].c_str()));
@@ -142,18 +143,42 @@ namespace lc2kicad
     }
     return returnValue.str();
   }
+
+  PCB_Pad::~PCB_Pad()
+  {
+    //To be filled later if anything requires the deconstruction function.
+  }
     
   PCB_Via::PCB_Via(vector<string> &paramList, coordinates origin)
   {
     //Resolving the via coordinates
-    viaCoordinates.X = (atof(paramList[1].c_str()) - origin.X) * ten_mils_to_mm_coefficient;
-    viaCoordinates.Y = (atof(paramList[2].c_str()) - origin.Y) * ten_mils_to_mm_coefficient;
+    viaCoordinates.X = (atof(paramList[1].c_str()) - origin.X) * tenmils_to_mm_coefficient;
+    viaCoordinates.Y = (atof(paramList[2].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
     //Resolve via diameter (size)
-    viaSize = atof(paramList[3].c_str()) * ten_mils_to_mm_coefficient;
-    drillSize = atof(paramList[5].c_str()) * ten_mils_to_mm_coefficient;
+    viaSize = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    drillSize = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient;
+
     netName = paramList[4];
   }
-  
-  
+
+  string PCB_Via::outputKiCadFormat(string &convArgs)
+  {
+    std::stringstream returnValue;
+
+    returnValue << "(via (at " << to_string(viaCoordinates.X) << ' ' << to_string(viaCoordinates.Y) << ") (size " << viaSize
+                << ") (drill " << to_string(drillSize) << ") (layers ";
+    
+    //LCEDA currently doesn't support buried or blind vias. If this function is implemented later, we'll have to update
+    //the layer section.
+    returnValue << "F.Cu B.Cu";
+
+    returnValue << ") (net " << netName << "))";
+    return returnValue.str();
+  }
+
+  PCB_Via::~PCB_Via()
+  {
+    //To be filled later if anything requires the deconstruction function.
+  }
 }
 

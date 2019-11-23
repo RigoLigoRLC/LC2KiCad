@@ -66,7 +66,7 @@
       public:
         PCB_Pad();
         PCB_Pad(vector<string> &paramList, coordinates origin);
-        //~PCB_Pad();
+        ~PCB_Pad();
         virtual string outputKiCadFormat(string &convArgs);
         vector<coordinates> shapePolygonPoints;
         /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
@@ -108,6 +108,7 @@
         PCB_Via();
         PCB_Via(vector<string> &paramList, coordinates origin);
         ~PCB_Via();
+        virtual string outputKiCadFormat(string &convArgs);
     };
   }
 #endif
