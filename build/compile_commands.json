@@ -1,17 +1,17 @@
 [
 {
   "directory": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build",
-  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -g   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/elements.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/elements.cpp\"",
+  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/elements.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/elements.cpp\"",
   "file": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/elements.cpp"
 },
 {
   "directory": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build",
-  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -g   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp\"",
+  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp\"",
   "file": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/lc2kicadcore.cpp"
 },
 {
   "directory": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/build",
-  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -g   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/main.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/main.cpp\"",
+  "command": "/usr/bin/g++-7   -I\"/home/rigoligo/Documents/C++ Projects/LC2KiCad/inc\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/lc2kicad.dir/src/main.o -c \"/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/main.cpp\"",
   "file": "/home/rigoligo/Documents/C++ Projects/LC2KiCad/src/main.cpp"
 }
 ]

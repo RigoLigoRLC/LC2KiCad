@@ -38,15 +38,24 @@
     };
     typedef coordinates sizeXY;
 
+    enum class PCBElementType : int
+    {
+      //The types are of KiCad element types.
+      pad = 0, via = 1, track = 2, graphical_line = 3, solid_region = 4, flood_region = 5, hole = 6,
+      graphical_circle = 7, graphical_arc = 8, graphical_dimension = 9, text = 10
+    };
+
     class PCBElements
     {
-      private:
+      protected:
+        PCBElementType elementType;
         bool isVisible;
       public:
+        PCBElementType getElementType() { return elementType; }
         bool getVisibility() { return isVisible; };
         bool setVisibility(bool visibility) { isVisible = visibility; };
-        string outputKiCadFormat(string &convArgs);
-        string outputKiCadFormat();
+        string outputKiCadFormat(string &convArgs) { return string("default"); };
+        //string outputKiCadFormat();
     };
 
     enum class PCBPadShape : int { circle = 0, oval = 1, rectangle = 2, polygon = 3 };
@@ -65,7 +74,7 @@
         string netName, pinNumber;
       public:
         PCB_Pad();
-        PCB_Pad(vector<string> &paramList, coordinates origin);
+        PCB_Pad(vector<string> &paramList, coordinates &origin);
         ~PCB_Pad();
         virtual string outputKiCadFormat(string &convArgs);
         vector<coordinates> shapePolygonPoints;
@@ -106,7 +115,7 @@
         string netName;
       public:
         PCB_Via();
-        PCB_Via(vector<string> &paramList, coordinates origin);
+        PCB_Via(vector<string> &paramList, coordinates &origin);
         ~PCB_Via();
         virtual string outputKiCadFormat(string &convArgs);
     };

@@ -29,8 +29,9 @@ using rapidjson::Value;
 namespace lc2kicad
 {
 
-  PCB_Pad::PCB_Pad(vector<string> &paramList, coordinates origin)
+  PCB_Pad::PCB_Pad(vector<string> &paramList, coordinates &origin)
   {
+    elementType = PCBElementType::pad;
     //Resolve pad shape
       switch (paramList[1][0])
       {
@@ -149,8 +150,9 @@ namespace lc2kicad
     //To be filled later if anything requires the deconstruction function.
   }
     
-  PCB_Via::PCB_Via(vector<string> &paramList, coordinates origin)
+  PCB_Via::PCB_Via(vector<string> &paramList, coordinates &origin)
   {
+    elementType = PCBElementType::via;
     //Resolving the via coordinates
     viaCoordinates.X = (atof(paramList[1].c_str()) - origin.X) * tenmils_to_mm_coefficient;
     viaCoordinates.Y = (atof(paramList[2].c_str()) - origin.Y) * tenmils_to_mm_coefficient;

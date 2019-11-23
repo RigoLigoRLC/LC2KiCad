@@ -168,11 +168,12 @@ namespace lc2kicad
     layer.~GenericValue();
     cout << "\tFinished parsing layers. " << layerCount << " layers were(was) used in total.\n";
 
+    assertRTE(parseTarget["shape"].IsArray(), "Not an array.");
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
     vector<PCBElements*> elementsPtrList;
     for(int i = 0; i < shape.Size(); i++)
-      shapesList.push_back(parseTarget[i].GetString());
+      shapesList.push_back(shape[i].GetString());
 
     for(int i = 0; i < shapesList.size(); i++)
     {
@@ -180,6 +181,7 @@ namespace lc2kicad
       switch(shapesList[i].c_str()[0])
       {
         case 'P': //Pad
+          cout << "Pad\n";
           elementsPtrList.push_back(new PCB_Pad(parameters, origin));
           break;
         case 'T':
@@ -205,17 +207,24 @@ namespace lc2kicad
         case 'A': //Arc
           break;
         case 'V': //Via
+          cout << "Via\n";
+          elementsPtrList.push_back(new PCB_Via(parameters, origin));
           break;
         case 'H': //Hole
           break;
         case 'D': //Dimension
           break;
         default:
-          string e = "Invalid element of" + shapesList[i];
+          string e = "Invalid element of " + shapesList[i];
           assertRTE(false, e.c_str());
       }
     }
-
+    cout << "abc\n";
+    string a = "";
+    for(int i = 0; i < elementsPtrList.size(); i++)
+    {
+      cout << (elementsPtrList[i] -> outputKiCadFormat(a)) << endl;
+    }
   }
 
   void parseDocument(char *filePath, char *bufferField)
