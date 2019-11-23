@@ -101,12 +101,12 @@
     class PCB_Via : public PCBElements
     {
       private:
-        int diameter, drillDiameter;
+        int viaSize, drillSize;
         coordinates viaCoordinates;
         string netName;
       public:
         PCB_Via();
-        PCB_Via(vector<string> &paramList);
+        PCB_Via(vector<string> &paramList, coordinates origin);
         ~PCB_Via();
     };
   }
