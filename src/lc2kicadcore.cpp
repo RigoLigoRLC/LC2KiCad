@@ -118,7 +118,7 @@ namespace lc2kicad
       return -1;
   }
 
-  void docPCBLibParser(Document &parseTarget, string &filename)
+  void docPCBLibParser(Document &parseTarget, string &filename, int iteration)
   {
     cout << "\tPCB library file parser function has been called. Starting PCB library file parsing.\n";
 
@@ -181,7 +181,6 @@ namespace lc2kicad
       switch(shapesList[i].c_str()[0])
       {
         case 'P': //Pad
-          cout << "Pad\n";
           elementsPtrList.push_back(new PCB_Pad(parameters, origin));
           break;
         case 'T':
@@ -207,7 +206,6 @@ namespace lc2kicad
         case 'A': //Arc
           break;
         case 'V': //Via
-          cout << "Via\n";
           elementsPtrList.push_back(new PCB_Via(parameters, origin));
           break;
         case 'H': //Hole
@@ -219,11 +217,11 @@ namespace lc2kicad
           assertRTE(false, e.c_str());
       }
     }
-    cout << "abc\n";
-    string a = "";
+    string a = "  ";
+    char* A = (char*) a.c_str();
     for(int i = 0; i < elementsPtrList.size(); i++)
     {
-      cout << (elementsPtrList[i] -> outputKiCadFormat(a)) << endl;
+      cout << (elementsPtrList[i] -> outputKiCadFormat(a, A)) << endl;
     }
   }
 
@@ -283,7 +281,7 @@ namespace lc2kicad
     switch(documentType)
     {
       case 4:
-        docPCBLibParser(parseTargetDoc, filename);
+        docPCBLibParser(parseTargetDoc, filename, 1);
         break;
       default:
         assertRTE(false, "This kind of document type is not supported yet.");

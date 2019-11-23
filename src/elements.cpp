@@ -31,7 +31,6 @@ namespace lc2kicad
 
   PCB_Pad::PCB_Pad(vector<string> &paramList, coordinates &origin)
   {
-    elementType = PCBElementType::pad;
     //Resolve pad shape
       switch (paramList[1][0])
       {
@@ -101,9 +100,10 @@ namespace lc2kicad
     pinNumber = paramList[8];
   }
 
-  string PCB_Pad::outputKiCadFormat(string &convArgs)
+  string PCB_Pad::outputKiCadFormat(string &convArgs, char* &indent)
   {
     std::stringstream returnValue;
+    returnValue << indent;
     returnValue << "(pad \"" << pinNumber << "\" " << padTypeKiCad[static_cast<int>(padType)] << ' '
                 << padShapeKiCad[static_cast<int>(padShape)] << " (at " << to_string(padCoordinates.X)
                 << ' ' << to_string(padCoordinates.Y) << ") (size " << to_string(padSize.X) << ' '
@@ -136,11 +136,11 @@ namespace lc2kicad
       returnValue << ')';
     else
     {
-      returnValue << "\n  (zone_connect 2)\n  (options (clearance outline) (anchor circle))\n  (primitives\n"
-                  << "    (gr_poly (pts\n      ";
+      returnValue << '\n' << indent << "  (zone_connect 2)" << '\n' << indent << "  (options (clearance outline) (anchor circle))\n"
+                  << indent << "  (primitives\n" << indent << "    (gr_poly (pts\n      " << indent;
       for(int i = 0; i < shapePolygonPoints.size(); i++)
         returnValue << " (xy " << to_string(shapePolygonPoints[i].X) << ' ' << to_string(shapePolygonPoints[i].Y) << ')';
-      returnValue << ") (width 0))\n  ))";
+      returnValue << ") (width 0))\n" << indent << "  ))";
     }
     return returnValue.str();
   }
@@ -152,7 +152,6 @@ namespace lc2kicad
     
   PCB_Via::PCB_Via(vector<string> &paramList, coordinates &origin)
   {
-    elementType = PCBElementType::via;
     //Resolving the via coordinates
     viaCoordinates.X = (atof(paramList[1].c_str()) - origin.X) * tenmils_to_mm_coefficient;
     viaCoordinates.Y = (atof(paramList[2].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
@@ -163,10 +162,11 @@ namespace lc2kicad
     netName = paramList[4];
   }
 
-  string PCB_Via::outputKiCadFormat(string &convArgs)
+  string PCB_Via::outputKiCadFormat(string &convArgs, char* &indent)
   {
     std::stringstream returnValue;
 
+    returnValue << indent;
     returnValue << "(via (at " << to_string(viaCoordinates.X) << ' ' << to_string(viaCoordinates.Y) << ") (size " << viaSize
                 << ") (drill " << to_string(drillSize) << ") (layers ";
     
