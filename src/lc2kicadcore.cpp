@@ -137,8 +137,9 @@ namespace lc2kicad
     propertyStr = parseTarget["canvas"].GetString();
     propList = splitString(propertyStr, '~');
     //Read canvas properties
-    originX = stof(propList[16]);
-    originY = stof(propList[17]);
+    coordinates origin;
+    origin.X = stof(propList[16]);
+    origin.Y = stof(propList[17]);
     gridSize = stof(propList[6]);
     traceWidth = stof(propList[12]);
       //cout << originX << ',' << originY << endl;
@@ -168,10 +169,52 @@ namespace lc2kicad
     cout << "\tFinished parsing layers. " << layerCount << " layers were(was) used in total.\n";
 
     Value shape = parseTarget["shape"].GetArray();
-    vector<string> pad = splitString(shape[0].GetString(), '~');
+    vector<string> shapesList;
+    vector<PCBElements*> elementsPtrList;
+    for(int i = 0; i < shape.Size(); i++)
+      shapesList.push_back(parseTarget[i].GetString());
 
-    PCB_Pad p(pad, {originX, originY});
-    cout << endl << p.outputKiCadFormat(pad[0]) << endl;
+    for(int i = 0; i < shapesList.size(); i++)
+    {
+      vector<string> parameters = splitString(shapesList[i], '~');
+      switch(shapesList[i].c_str()[0])
+      {
+        case 'P': //Pad
+          elementsPtrList.push_back(new PCB_Pad(parameters, origin));
+          break;
+        case 'T':
+          switch(shapesList[i].c_str()[1])
+          {
+            case 'E': //Text
+              break;
+            case 'R': //Track
+              break;
+          }
+          break;
+        case 'C':
+          switch(shapesList[i][1])
+          {
+            case 'O': //CopperArea
+              break;
+            case 'I': //Circle
+              break;
+          }
+          break;
+        case 'R': //Rect
+          break;
+        case 'A': //Arc
+          break;
+        case 'V': //Via
+          break;
+        case 'H': //Hole
+          break;
+        case 'D': //Dimension
+          break;
+        default:
+          string e = "Invalid element of" + shapesList[i];
+          assertRTE(false, e.c_str());
+      }
+    }
 
   }
 

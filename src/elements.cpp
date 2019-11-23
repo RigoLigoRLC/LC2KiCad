@@ -28,7 +28,6 @@ using rapidjson::Value;
 
 namespace lc2kicad
 {
-  
 
   PCB_Pad::PCB_Pad(vector<string> &paramList, coordinates origin)
   {
@@ -144,5 +143,6 @@ namespace lc2kicad
     }
     return returnValue.str();
   }
+  
 }
 
