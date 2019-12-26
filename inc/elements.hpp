@@ -31,12 +31,70 @@
 
   namespace lc2kicad
   {
-    struct coordinates
+    class coordinates
     {
-      float X;
-      float Y;
+      public:
+        float X;
+        float Y;
     };
     typedef coordinates sizeXY;
+
+    coordinates coordinates::operator+(coordinates coord1, coordinates coord2)
+    {
+      coordinates ret;
+      ret.X = coord1.X + coord2.X;
+      ret.Y = coord1.Y + coord2.Y;
+      return ret;
+    }
+    coordinates coordinates::operator-(coordinates coord1, coordinates coord2)
+    {
+      coordinates ret;
+      ret.X = coord1.X - coord2.X;
+      ret.Y = coord1.Y - coord2.Y;
+      return ret;
+    }
+    coordinates coordinates::operator*(coordinates coord1, coordinates coord2)
+    {
+      coordinates ret;
+      ret.X = coord1.X * coord2.X;
+      ret.Y = coord1.Y * coord2.Y;
+      return ret;
+    }
+    coordinates coordinates::operator/(coordinates coord1, coordinates coord2)
+    {
+      coordinates ret;
+      ret.X = coord1.X / coord2.X;
+      ret.Y = coord1.Y / coord2.Y;
+      return ret;
+    }
+    coordinates coordinates::operator+(coordinates coord1, float n)
+    {
+      coordinates ret;
+      ret.X = coord1.X + n;
+      ret.Y = coord1.Y + n;
+      return ret;
+    }
+    coordinates coordinates::operator-(coordinates coord1, float n)
+    {
+      coordinates ret;
+      ret.X = coord1.X - n;
+      ret.Y = coord1.Y - n;
+      return ret;
+    }
+    coordinates coordinates::operator*(coordinates coord1, float n)
+    {
+      coordinates ret;
+      ret.X = coord1.X * n;
+      ret.Y = coord1.Y * n;
+      return ret;
+    }
+    coordinates coordinates::operator/(coordinates coord1, float n)
+    {
+      coordinates ret;
+      ret.X = coord1.X / n;
+      ret.Y = coord1.Y / n;
+      return ret;
+    }
 
     class PCBElements
     {
