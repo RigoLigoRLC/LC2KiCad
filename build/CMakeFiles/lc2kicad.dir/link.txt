@@ -1,1 +1,0 @@
-/usr/bin/g++-7  -g  -rdynamic CMakeFiles/lc2kicad.dir/src/elements.o CMakeFiles/lc2kicad.dir/src/lc2kicadcore.o CMakeFiles/lc2kicad.dir/src/main.o  -o lc2kicad 

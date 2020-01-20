@@ -1,3 +1,0 @@
-/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles/rebuild_cache.dir
-/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles/lc2kicad.dir
-/home/rigoligo/Documents/C++ Projects/LC2KiCad/build/CMakeFiles/edit_cache.dir
