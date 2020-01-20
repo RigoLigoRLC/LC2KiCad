@@ -17,7 +17,7 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
   
-  #ifndef LC2KICAD_ELEMENTS
+#ifndef LC2KICAD_ELEMENTS
   #define LC2KICAD_ELEMENTS
 
   #include <include.hpp>
@@ -36,65 +36,22 @@
       public:
         float X;
         float Y;
-    };
-    typedef coordinates sizeXY;
 
-    coordinates coordinates::operator+(coordinates coord1, coordinates coord2)
-    {
-      coordinates ret;
-      ret.X = coord1.X + coord2.X;
-      ret.Y = coord1.Y + coord2.Y;
-      return ret;
-    }
-    coordinates coordinates::operator-(coordinates coord1, coordinates coord2)
-    {
-      coordinates ret;
-      ret.X = coord1.X - coord2.X;
-      ret.Y = coord1.Y - coord2.Y;
-      return ret;
-    }
-    coordinates coordinates::operator*(coordinates coord1, coordinates coord2)
-    {
-      coordinates ret;
-      ret.X = coord1.X * coord2.X;
-      ret.Y = coord1.Y * coord2.Y;
-      return ret;
-    }
-    coordinates coordinates::operator/(coordinates coord1, coordinates coord2)
-    {
-      coordinates ret;
-      ret.X = coord1.X / coord2.X;
-      ret.Y = coord1.Y / coord2.Y;
-      return ret;
-    }
-    coordinates coordinates::operator+(coordinates coord1, float n)
-    {
-      coordinates ret;
-      ret.X = coord1.X + n;
-      ret.Y = coord1.Y + n;
-      return ret;
-    }
-    coordinates coordinates::operator-(coordinates coord1, float n)
-    {
-      coordinates ret;
-      ret.X = coord1.X - n;
-      ret.Y = coord1.Y - n;
-      return ret;
-    }
-    coordinates coordinates::operator*(coordinates coord1, float n)
-    {
-      coordinates ret;
-      ret.X = coord1.X * n;
-      ret.Y = coord1.Y * n;
-      return ret;
-    }
-    coordinates coordinates::operator/(coordinates coord1, float n)
-    {
-      coordinates ret;
-      ret.X = coord1.X / n;
-      ret.Y = coord1.Y / n;
-      return ret;
-    }
+        coordinates operator+(coordinates coord)
+          { coordinates ret; ret.X = this->X + coord.X; ret.Y = this->Y + coord.Y; return ret; }
+        coordinates operator-(coordinates coord)
+          { coordinates ret; ret.X = this->X - coord.X; ret.Y = this->Y - coord.Y; return ret; }
+        coordinates operator*(coordinates coord)
+          { coordinates ret; ret.X = this->X * coord.X; ret.Y = this->Y * coord.Y; return ret; }
+        coordinates operator/(coordinates coord)
+          { coordinates ret; ret.X = this->X / coord.X; ret.Y = this->Y / coord.Y; return ret; }
+        coordinates operator+(float n)
+          { coordinates ret; ret.X = this->X + n; ret.Y = this->Y + n; return ret; }
+        coordinates operator*(float n)
+          { coordinates ret; ret.X = this->X * n; ret.Y = this->Y * n; return ret; }
+    };
+
+    typedef coordinates sizeXY;
 
     class PCBElements
     {
@@ -102,7 +59,7 @@
         bool isVisible;
       public:
         bool getVisibility() { return isVisible; };
-        bool setVisibility(bool visibility) { isVisible = visibility; };
+        void setVisibility(bool visibility) { isVisible = visibility; };
         virtual string outputKiCadFormat(string &convArgs, char* &indent) { return string("default"); };
         //string outputKiCadFormat();
     };

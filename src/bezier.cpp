@@ -36,7 +36,7 @@ namespace lc2kicad
       throw "Invalid iterations for Bezier curve renderer.";
 
     vector<coordinates> cp, *ret = new vector<coordinates>;
-    for(int i = 0; i < control_points.length(); i++)
+    for(int i = 0; i < control_points.size(); i++)
       cp[i] = control_points[i];
     
     float t = 0;
@@ -46,7 +46,7 @@ namespace lc2kicad
       t = float (i) / 1.0f;
       (*ret)[1] = middlepoint(cp[i], cp[i + 1], t);
     }
-    (*ret).push_back(cp[cp.length() - 1]);
+    (*ret).push_back(cp[cp.size() - 1]);
     return ret;
   }
 }
