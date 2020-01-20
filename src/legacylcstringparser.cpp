@@ -23,9 +23,9 @@
 
 namespace lc2kicad
 {
-  string LegacyLCStringParser::getParserType()	const{ return string("Legacy LC String Parser"); };
+  string StandardLCStringParser::getParserType()	const{ return string("Standard LC String Parser"); };
   
-  PCB_Pad LegacyLCStringParser::parsePadString(const string &LCJSONString, const coordinates &origin) const
+  PCB_Pad StandardLCStringParser::parsePadString(const string &LCJSONString, const coordinates &origin) const
   {
     PCB_Pad ret;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -105,7 +105,7 @@ namespace lc2kicad
     return ret;
   }
 
-  PCB_Via LegacyLCStringParser::parseViaString(const string &LCJSONString, const coordinates &origin) const 
+  PCB_Via StandardLCStringParser::parseViaString(const string &LCJSONString, const coordinates &origin) const 
   {
     PCB_Via ret;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -122,7 +122,7 @@ namespace lc2kicad
     return ret;
   }
   
-  PCB_Track LegacyLCStringParser::parseTrackString(const string &LCJSONString, const coordinates &origin) const
+  PCB_Track StandardLCStringParser::parseTrackString(const string &LCJSONString, const coordinates &origin) const
   {
     PCB_Track ret;
     stringlist paramList = splitString(LCJSONString, '~');
