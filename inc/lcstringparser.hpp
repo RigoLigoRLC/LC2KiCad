@@ -34,7 +34,7 @@
         virtual PCB_Track parseTrackString(const string&, const coordinates&) const { return PCB_Track(); };
     };
 
-    class LegacyLCStringParser : public LCStringParserContainer
+    class StandardLCStringParser : public LCStringParserContainer
     {
       public:
         std::string getParserType() const;
