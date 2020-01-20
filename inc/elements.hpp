@@ -53,11 +53,11 @@
 
     typedef coordinates sizeXY;
 
-    class PCBElements
+    struct PCBElements
     {
-      protected:
+
         bool isVisible;
-      public:
+
         bool getVisibility() { return isVisible; };
         void setVisibility(bool visibility) { isVisible = visibility; };
         virtual string outputKiCadFormat(string &convArgs, char* &indent) { return string("default"); };
@@ -68,9 +68,9 @@
     enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
     enum class PCBHoleShape : int { circle = 0, slot = 1 };
 
-    class PCB_Pad : public PCBElements
+    struct PCB_Pad : public PCBElements
     {
-      private:
+
         PCBPadShape padShape;
         PCBPadType padType;
         PCBHoleShape holeShape;
@@ -78,10 +78,7 @@
         coordinates padCoordinates;
         sizeXY padSize, holeSize;
         string netName, pinNumber;
-      public:
-        PCB_Pad();
-        PCB_Pad(vector<string> &paramList, coordinates &origin);
-        ~PCB_Pad();
+
         string outputKiCadFormat(string &convArgs, char* &indent);
         vector<coordinates> shapePolygonPoints;
         /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
@@ -101,28 +98,19 @@
           int getHoleShape() { return holeShape; };*/
     };
 
-    class PCB_Track : public PCBElements
+    struct PCB_Track : public PCBElements
     {
-      private:
         int  width, layerKiCad;
         vector<coordinates> trackPoints;
         string netName;
-      public:
-        PCB_Track();
-        PCB_Track(vector<string> &paramList);
-        ~PCB_Track();
     };
 
-    class PCB_Via : public PCBElements
+    struct PCB_Via : public PCBElements
     {
-      private:
         int viaSize, drillSize;
         coordinates viaCoordinates;
         string netName;
-      public:
-        PCB_Via();
-        PCB_Via(vector<string> &paramList, coordinates &origin);
-        ~PCB_Via();
+
         string outputKiCadFormat(string &convArgs, char* &indent);
     };
   }

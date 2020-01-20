@@ -17,8 +17,9 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <include.hpp>
-#include <rapidjson.hpp>
+#include "include.hpp"
+#include "rapidjson.hpp"
+#include "lcstringparser.hpp"
 
 using std::cout;
 using std::endl;
@@ -31,25 +32,6 @@ using rapidjson::FileReadStream;
 using rapidjson::Document;
 using rapidjson::Value;
 
-void errorAndQuit(std::runtime_error *e)
-  #ifdef ERROR_EXIT
-    { std::cout << "Error running the program: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; exit(1); }
-  #else
-    #ifdef ERROR_ABORT
-      { cout << "Runtime error: " << e->what() << endl << endl << "The intended operation cannot be done. The application will quit.\n"; abort(); }
-    #endif
-  #endif
-void assertRTE(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
-
-vector<string> splitString(string sourceString, char delimeter)
-{
-  std::stringstream ss(sourceString);
-  string item;
-  vector<string> rtn;
-  while(std::getline(ss, item, delimeter))
-    rtn.push_back(item);
-  return rtn;
-}
 
 
 namespace lc2kicad
@@ -63,6 +45,27 @@ namespace lc2kicad
   const char *layerNameLUT[] = {"F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu", "In6.Cu", "In7.Cu", "In8.Cu", "In9.Cu","In10.Cu", "In11.Cu", "In12.Cu", "In13.Cu", "In14.Cu", "In15.Cu", "In16.Cu", "In17.Cu", "In18.Cu", "In19.Cu", "In20.Cu", "In21.Cu", "In22.Cu", "In23.Cu", "In24.Cu", "In25.Cu", "In26.Cu", "In27.Cu", "In28.Cu", "In29.Cu", "In30.Cu", "B.Cu", "B.Adhes", "F.Adhes", "B.Paste", "F.Paste", "B.SilkS", "F.SilkS", "B.Mask", "F.Mask", "Dwgs.User", "Cmts.User", "Eco1.User", "Eco2.User", "Edge.Cuts", "Margin", "B.CrtYd", "F.CrtYd", "B.Fab", "F.Fab"};
   const char *padTypeKiCad[] = {"smd", "smd", "thru_hole", "np_thru_hole"};
   const char *padShapeKiCad[] = {"circle", "oval", "rect", "custom"};
+
+  void errorAndQuit(std::runtime_error *e)
+  #ifdef ERROR_EXIT
+    { std::cout << "Error running the program: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; exit(1); }
+  #else
+    #ifdef ERROR_ABORT
+      { cout << "Runtime error: " << e->what() << endl << endl << "The intended operation cannot be done. The application will quit.\n"; abort(); }
+    #endif
+  #endif
+  
+  void assertRTE(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
+
+  vector<string> splitString(string sourceString, char delimeter)
+  {
+    std::stringstream ss(sourceString);
+    string item;
+    vector<string> rtn;
+    while(std::getline(ss, item, delimeter))
+      rtn.push_back(item);
+    return rtn;
+  }
 
 
   void displayUsage()
@@ -114,11 +117,11 @@ namespace lc2kicad
       {
        return -1;
       }
-    else
+    else    vector<string> layerProp = splitString(layerString, '~');
       return -1;
   }
 
-  void docPCBLibParser(Document &parseTarget, string &filename, int iteration)
+  void docPCBLibParser(Document &parseTarget, string &filename, int iteration, LCStringParserContainer& parser)
   {
     cout << "\tPCB library file parser function has been called. Starting PCB library file parsing.\n";
 
@@ -171,17 +174,17 @@ namespace lc2kicad
     assertRTE(parseTarget["shape"].IsArray(), "Not an array.");
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
-    vector<PCBElements*> elementsPtrList;
+    vector<PCBElements> elementsList;
     for(int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
     for(int i = 0; i < shapesList.size(); i++)
     {
-      vector<string> parameters = splitString(shapesList[i], '~');
+      //vector<string> parameters = splitString(shapesList[i], '~');
       switch(shapesList[i].c_str()[0])
       {
         case 'P': //Pad
-          elementsPtrList.push_back(new PCB_Pad(parameters, origin));
+          elementsList.push_back(parser.parseViaString(shapesList[i], origin));
           break;
         case 'T':
           switch(shapesList[i].c_str()[1])
@@ -206,7 +209,7 @@ namespace lc2kicad
         case 'A': //Arc
           break;
         case 'V': //Via
-          elementsPtrList.push_back(new PCB_Via(parameters, origin));
+          elementsList.push_back(parser.parseViaString(shapesList[i], origin));
           break;
         case 'H': //Hole
           break;
@@ -219,9 +222,9 @@ namespace lc2kicad
     }
     string a = "  ";
     char* A = (char*) a.c_str();
-    for(int i = 0; i < elementsPtrList.size(); i++)
+    for(int i = 0; i < elementsList.size(); i++)
     {
-      cout << (elementsPtrList[i] -> outputKiCadFormat(a, A)) << endl;
+      cout << (elementsList[i].outputKiCadFormat(a, A)) << endl;
     }
   }
 
@@ -232,6 +235,8 @@ namespace lc2kicad
     FileReadStream fileReader(parseTarget, bufferField, READ_BUFFER_SIZE);
     Document parseTargetDoc;
     parseTargetDoc.ParseStream(fileReader);
+
+    LCStringParserContainer LCParser;
 
     std::fclose(parseTarget);
 
@@ -275,13 +280,15 @@ namespace lc2kicad
     }
     else
       assertRTE(false, "Not supported document type.");
+
+    LCParser = LegacyLCStringParser();
       
     
     //Now decide what are we going to parse, whether schematics or PCB, anything else.
     switch(documentType)
     {
       case 4:
-        docPCBLibParser(parseTargetDoc, filename, 1);
+        docPCBLibParser(parseTargetDoc, filename, 1, LCParser);
         break;
       default:
         assertRTE(false, "This kind of document type is not supported yet.");
