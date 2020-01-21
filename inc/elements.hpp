@@ -31,27 +31,6 @@
 
   namespace lc2kicad
   {
-    class coordinates
-    {
-      public:
-        float X;
-        float Y;
-
-        coordinates operator+(coordinates coord)
-          { coordinates ret; ret.X = this->X + coord.X; ret.Y = this->Y + coord.Y; return ret; }
-        coordinates operator-(coordinates coord)
-          { coordinates ret; ret.X = this->X - coord.X; ret.Y = this->Y - coord.Y; return ret; }
-        coordinates operator*(coordinates coord)
-          { coordinates ret; ret.X = this->X * coord.X; ret.Y = this->Y * coord.Y; return ret; }
-        coordinates operator/(coordinates coord)
-          { coordinates ret; ret.X = this->X / coord.X; ret.Y = this->Y / coord.Y; return ret; }
-        coordinates operator+(float n)
-          { coordinates ret; ret.X = this->X + n; ret.Y = this->Y + n; return ret; }
-        coordinates operator*(float n)
-          { coordinates ret; ret.X = this->X * n; ret.Y = this->Y * n; return ret; }
-    };
-
-    typedef coordinates sizeXY;
 
     struct PCBElements
     {
@@ -80,10 +59,10 @@
 
       string outputKiCadFormat(string &convArgs, char* &indent);
       coordslist shapePolygonPoints;
-      /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
-          void setPadSize(float X, float Y) { padSize.X = X; padSize.Y = Y; };
-          void setHoleSize(float X, float Y) { holeSize.X = X; holeSize.Y = Y; };
-          void setPadRotation(float rotation) { orientation = rotation; };
+      /*void setPadCoordinate(double X, double Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
+          void setPadSize(double X, double Y) { padSize.X = X; padSize.Y = Y; };
+          void setHoleSize(double X, double Y) { holeSize.X = X; holeSize.Y = Y; };
+          void setPadRotation(double rotation) { orientation = rotation; };
           void setPadShape(int shape) { padShape = shape; };
           void setPadType(int type) { padType = type; };
           void setHoleShape(int shape) { holeShape = shape; };
@@ -91,7 +70,7 @@
           const coordinates &getPadCoordinate() { return padCoordinates; };
           const sizeXY &setPadSize() { return padSize; };
           const sizeXY &setHoleSize() { return holeSize; };
-          float getPadRotation() { return orientation; };
+          double getPadRotation() { return orientation; };
           int getPadShape() { return padShape; };
           int getPadType() { return padType; };
           int getHoleShape() { return holeShape; };*/

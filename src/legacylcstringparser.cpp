@@ -77,7 +77,7 @@ namespace lc2kicad
     {
       ret.padSize.X = ret.padSize.Y = ret.holeSize.Y;
       vector<string> polygonCoordinates = splitString(paramList[10], ' ');
-      coordinates polygonPointTemp = { 0.0f, 0.0f };
+      coordinates polygonPointTemp = { 0.0, 0.0 };
       for(int i = 0; i < polygonCoordinates.size(); i += 2)
       {
         polygonPointTemp.X = (atof(polygonCoordinates[  i  ].c_str()) - _rawCoords.X) * tenmils_to_mm_coefficient;
@@ -127,6 +127,19 @@ namespace lc2kicad
     PCB_Track ret;
     stringlist paramList = splitString(LCJSONString, '~');
 
+    //Resolve track width
+    ret.width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    //Resolve track layer
+    ret.layerKiCad = LCtoKiCadLayerLUT[int (atof(paramList[2].c_str()))];
+    //Resolve track points
+    stringlist pointsStrList = splitString(paramList[4], ' ');
+    coordinates tempCoord;
+    for(int i = 0; i < pointsStrList.size(); i += 2)
+    {
+      tempCoord.X = (atof(pointsStrList[i].c_str()) - origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (atof(pointsStrList[i + 1].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
+      ret.trackPoints.push_back(tempCoord);
+    }
 
     return ret;
   }

@@ -88,5 +88,10 @@ namespace lc2kicad
     returnValue << ") (net " << netName << "))";
     return returnValue.str();
   }
+
+  string PCB_Track::outputKiCadFormat(string &convArgs, char* &indent)
+  {
+
+  }
 }
 

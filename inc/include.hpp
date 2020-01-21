@@ -33,6 +33,28 @@
 
   namespace lc2kicad
   {
+    class coordinates
+    {
+      public:
+        double X;
+        double Y;
+
+        coordinates operator+(coordinates coord)
+          { coordinates ret; ret.X = this->X + coord.X; ret.Y = this->Y + coord.Y; return ret; }
+        coordinates operator-(coordinates coord)
+          { coordinates ret; ret.X = this->X - coord.X; ret.Y = this->Y - coord.Y; return ret; }
+        coordinates operator*(coordinates coord)
+          { coordinates ret; ret.X = this->X * coord.X; ret.Y = this->Y * coord.Y; return ret; }
+        coordinates operator/(coordinates coord)
+          { coordinates ret; ret.X = this->X / coord.X; ret.Y = this->Y / coord.Y; return ret; }
+        coordinates operator+(double n)
+          { coordinates ret; ret.X = this->X + n; ret.Y = this->Y + n; return ret; }
+        coordinates operator*(double n)
+          { coordinates ret; ret.X = this->X * n; ret.Y = this->Y * n; return ret; }
+    };
+
+    typedef coordinates sizeXY;
+
     typedef std::vector<std::string> stringlist;
     typedef std::vector<coordinates> coordslist;
     extern void errorAndQuit(std::runtime_error *e);

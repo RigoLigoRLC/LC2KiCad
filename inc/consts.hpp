@@ -28,10 +28,10 @@
     #define ERROR_EXIT
   //#define ERROR_ABORT
 
-    const float tenmils_to_mm_coefficient = 0.254;
+    const double tenmils_to_mm_coefficient = 0.254;
 
     extern const char *documentTypeName[8];
-    extern const int layerMapperLUT[];
+    extern const int LCtoKiCadLayerLUT[];
     extern const char *layerNameLUT[];
     extern const char *padTypeKiCad[];
     extern const char *padShapeKiCad[];

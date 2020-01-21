@@ -25,7 +25,7 @@ using std::vector;
 
 namespace lc2kicad
 {
-  coordinates middlepoint(coordinates coord1, coordinates coord2, float t)
+  coordinates middlepoint(coordinates coord1, coordinates coord2, double t)
   {
     return (coord1 - coord2) * t + coord1;
   }
@@ -39,11 +39,11 @@ namespace lc2kicad
     for(int i = 0; i < control_points.size(); i++)
       cp[i] = control_points[i];
     
-    float t = 0;
+    double t = 0;
     (*ret)[0] = cp[0];
     for(int i = 1; i < iterations; i++)
     {
-      t = float (i) / 1.0f;
+      t = double (i) / 1.0;
       (*ret)[1] = middlepoint(cp[i], cp[i + 1], t);
     }
     (*ret).push_back(cp[cp.size() - 1]);
