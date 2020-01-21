@@ -70,18 +70,17 @@
 
     struct PCB_Pad : public PCBElements
     {
+      PCBPadShape padShape;
+      PCBPadType padType;
+      PCBHoleShape holeShape;
+      int orientation;
+      coordinates padCoordinates;
+      sizeXY padSize, holeSize;
+      string netName, pinNumber;
 
-        PCBPadShape padShape;
-        PCBPadType padType;
-        PCBHoleShape holeShape;
-        int orientation;
-        coordinates padCoordinates;
-        sizeXY padSize, holeSize;
-        string netName, pinNumber;
-
-        string outputKiCadFormat(string &convArgs, char* &indent);
-        vector<coordinates> shapePolygonPoints;
-        /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
+      string outputKiCadFormat(string &convArgs, char* &indent);
+      coordslist shapePolygonPoints;
+      /*void setPadCoordinate(float X, float Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
           void setPadSize(float X, float Y) { padSize.X = X; padSize.Y = Y; };
           void setHoleSize(float X, float Y) { holeSize.X = X; holeSize.Y = Y; };
           void setPadRotation(float rotation) { orientation = rotation; };
@@ -100,18 +99,20 @@
 
     struct PCB_Track : public PCBElements
     {
-        int  width, layerKiCad;
-        vector<coordinates> trackPoints;
-        string netName;
+      int  width, layerKiCad;
+      coordslist trackPoints;
+      string netName;
+
+      string outputKiCadFormat(string &convArgs, char* &indent);
     };
 
     struct PCB_Via : public PCBElements
     {
-        int viaSize, drillSize;
-        coordinates viaCoordinates;
-        string netName;
+      int viaSize, drillSize;
+      coordinates viaCoordinates;
+      string netName;
 
-        string outputKiCadFormat(string &convArgs, char* &indent);
+      string outputKiCadFormat(string &convArgs, char* &indent);
     };
   }
 #endif

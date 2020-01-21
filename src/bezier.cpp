@@ -30,12 +30,12 @@ namespace lc2kicad
     return (coord1 - coord2) * t + coord1;
   }
 
-  vector<coordinates>* render_bezier_curve(vector<coordinates>& control_points, int iterations)
+  coordslist* render_bezier_curve(coordslist& control_points, int iterations)
   {
     if(iterations < 2)
       throw "Invalid iterations for Bezier curve renderer.";
 
-    vector<coordinates> cp, *ret = new vector<coordinates>;
+    coordslist cp, *ret = new coordslist;
     for(int i = 0; i < control_points.size(); i++)
       cp[i] = control_points[i];
     
