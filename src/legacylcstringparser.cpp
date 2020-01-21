@@ -46,7 +46,7 @@ namespace lc2kicad
       ret.padShape = PCBPadShape::polygon;
       break;
     default:
-      assertRTE(false, (string("Invalid pad shape: ") + paramList[12]).data());
+      assertThrow(false, (string("Invalid pad shape: ") + paramList[12]).data());
       break;
     }
 

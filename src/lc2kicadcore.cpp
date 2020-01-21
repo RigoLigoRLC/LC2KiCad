@@ -55,7 +55,8 @@ namespace lc2kicad
     #endif
   #endif
   
-  void assertRTE(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
+  //void assertThrow(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
+  void assertThrow(bool statement, const char* message){if(!statement){throw std::runtime_error(message);}}
 
   vector<string> splitString(string sourceString, char delimeter)
   {
@@ -127,7 +128,7 @@ namespace lc2kicad
 
     fstream outputFile;
     outputFile.open(filename + ".pretty");
-    assertRTE(outputFile.fail(), "Cannot create the output file.");
+    assertThrow(outputFile.fail(), "Cannot create the output file.");
     
     string propertyStr;
     vector<string> propList;
@@ -171,7 +172,7 @@ namespace lc2kicad
     layer.~GenericValue();
     cout << "\tFinished parsing layers. " << layerCount << " layers were(was) used in total.\n";
 
-    assertRTE(parseTarget["shape"].IsArray(), "Not an array.");
+    assertThrow(parseTarget["shape"].IsArray(), "Not an array.");
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
     vector<PCBElements> elementsList;
@@ -217,7 +218,7 @@ namespace lc2kicad
           break;
         default:
           string e = "Invalid element of " + shapesList[i];
-          assertRTE(false, e.c_str());
+          assertThrow(false, e.c_str());
       }
     }
     string a = "  ";
@@ -244,7 +245,7 @@ namespace lc2kicad
     {
       cout << "\tError when parsing file \"" << filePath << "\":\n"
            << "\tError code " << parseTargetDoc.GetParseError() << " at offset " << parseTargetDoc.GetErrorOffset() << ".\n";
-      assertRTE(false, "Error occured while parsing a file.");
+      assertThrow(false, "Error occured while parsing a file.");
     }
 
     //If this file is a valid JSON file, continue parsing.
@@ -256,16 +257,16 @@ namespace lc2kicad
     if(parseTargetDoc.HasMember("head"))
     {
       Value& head = parseTargetDoc["head"];
-      assertRTE(head.IsObject(), "Invalid \"head\" type.");
-      assertRTE(head.HasMember("docType"), "\"docType\" not found.");
+      assertThrow(head.IsObject(), "Invalid \"head\" type.");
+      assertThrow(head.HasMember("docType"), "\"docType\" not found.");
       documentType = stoi(head["docType"].GetString());
       if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
         editorVer = head["editorVersion"].GetString();
     }
     else
     {
-      assertRTE(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
-      assertRTE(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
+      assertThrow(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
+      assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
       documentType = stoi(parseTargetDoc["docType"].GetString());
       if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
         editorVer = parseTargetDoc["editorVersion"].GetString();
@@ -279,7 +280,7 @@ namespace lc2kicad
         cout << ". Unknown EasyEDA Editor version.\n";
     }
     else
-      assertRTE(false, "Not supported document type.");
+      assertThrow(false, "Not supported document type.");
 
     LCParser = StandardLCStringParser();
       
@@ -291,7 +292,7 @@ namespace lc2kicad
         docPCBLibParser(parseTargetDoc, filename, 1, LCParser);
         break;
       default:
-        assertRTE(false, "This kind of document type is not supported yet.");
+        assertThrow(false, "This kind of document type is not supported yet.");
     }
 
   }
@@ -334,7 +335,7 @@ namespace lc2kicad
         opener.close();
       }
       cout << endl;
-      assertRTE(!iferrored, "Missing specified file(s).");
+      assertThrow(!iferrored, "Missing specified file(s).");
     }
   }
 }

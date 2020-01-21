@@ -58,7 +58,7 @@
     typedef std::vector<std::string> stringlist;
     typedef std::vector<coordinates> coordslist;
     extern void errorAndQuit(std::runtime_error *e);
-    extern void assertRTE(bool statement, const char* message);  
+    extern void assertThrow(bool statement, const char* message);  
 
     extern stringlist splitString(std::string sourceString, char delimeter);
   }

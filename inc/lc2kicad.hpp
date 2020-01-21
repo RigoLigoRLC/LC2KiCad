@@ -36,7 +36,7 @@
     void parseDocuments(int fileCount, char *args[]);
     void parseDocument(char *filePath, char *bufferField);
 
-    void assertRTE(bool statement, const char *message);
+    void assertThrow(bool statement, const char *message);
 
     int  layerMap(std::string &layerString);
     void docPCBLibParser(rapidjson::Document &parseTarget, std::string &filename);
