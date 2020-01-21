@@ -4,3 +4,4 @@ build/
 CMakeCache.txt
 cmake_install.cmake
 .vscode/
+lc2kicad

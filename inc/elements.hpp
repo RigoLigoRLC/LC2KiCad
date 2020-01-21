@@ -20,7 +20,7 @@
 #ifndef LC2KICAD_ELEMENTS
   #define LC2KICAD_ELEMENTS
 
-  #include <include.hpp>
+  #include <includes.hpp>
   #include <consts.hpp>
   #include <rapidjson.hpp>
 
@@ -39,7 +39,7 @@
 
         bool getVisibility() { return isVisible; };
         void setVisibility(bool visibility) { isVisible = visibility; };
-        virtual string outputKiCadFormat(string &convArgs, char* &indent) { return string("default"); };
+        virtual string outputKiCadFormat(string &convArgs, char* &indent) { assertThrow(false, "This is PCBElement base class. This class should not be used in the program."); return "";};
         //string outputKiCadFormat();
     };
 
@@ -82,6 +82,11 @@
       coordslist trackPoints;
       string netName;
 
+      string outputKiCadFormat(string &convArgs, char* &indent);
+    };
+
+    struct PCB_GraphicalLine : public PCB_Track
+    {
       string outputKiCadFormat(string &convArgs, char* &indent);
     };
 

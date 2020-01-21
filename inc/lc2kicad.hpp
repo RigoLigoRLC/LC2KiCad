@@ -17,7 +17,7 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <include.hpp>
+#include <includes.hpp>
 #include <rapidjson.hpp>
 
 #ifndef lc2kicad_

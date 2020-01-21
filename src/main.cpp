@@ -17,7 +17,7 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <include.hpp>
+#include <includes.hpp>
 #include <lc2kicad.hpp>
 
 using namespace std;

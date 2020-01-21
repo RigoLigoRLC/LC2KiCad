@@ -32,7 +32,7 @@
 
     extern const char *documentTypeName[8];
     extern const int LCtoKiCadLayerLUT[];
-    extern const char *layerNameLUT[];
+    extern const char *KiCadLayerNameLUT[];
     extern const char *padTypeKiCad[];
     extern const char *padShapeKiCad[];
     

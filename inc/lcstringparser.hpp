@@ -29,18 +29,22 @@
     {
       public:
         virtual std::string getParserType() const { return "LC String Parser Container"; };
-        virtual PCB_Pad parsePadString(const string&, const coordinates&) { return PCB_Pad(); };
-        virtual PCB_Via parseViaString(const string&, const coordinates&) const { return PCB_Via(); };
-        virtual PCB_Track parseTrackString(const string&, const coordinates&) const { return PCB_Track(); };
+        virtual PCB_Pad* parsePadString(const string&, const coordinates&) { return new PCB_Pad(); };
+        virtual PCB_Via* parseViaString(const string&, const coordinates&) const { return new PCB_Via(); };
+        virtual PCB_Track* parseTrackString(const string&, const coordinates&) const { return new PCB_Track(); };
+        virtual PCB_GraphicalLine* parseGraphicalLineString(const string&, const coordinates&) const { return new PCB_GraphicalLine(); };
+        virtual bool judgeIsOnCopperLayer(const int layerKiCad) const { return true; };
     };
 
     class StandardLCStringParser : public LCStringParserContainer
     {
       public:
         std::string getParserType() const;
-        PCB_Pad parsePadString(const string&, const coordinates&) const;
-        PCB_Via parseViaString(const string&, const coordinates&) const;
-        PCB_Track parseTrackString(const string&, const coordinates&) const;
+        PCB_Pad* parsePadString(const string&, const coordinates&) const;
+        PCB_Via* parseViaString(const string&, const coordinates&) const;
+        PCB_Track* parseTrackString(const string&, const coordinates&) const;
+        PCB_GraphicalLine* parseGraphicalLineString(const string&, const coordinates&) const;
+        bool judgeIsOnCopperLayer(const int layerKiCad) const;
     };
   }
 

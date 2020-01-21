@@ -18,7 +18,7 @@
 */
 
 #include "elements.hpp"
-#include "include.hpp"
+#include "includes.hpp"
 #include "consts.hpp"
 #include "rapidjson.hpp"
 
@@ -30,68 +30,93 @@ namespace lc2kicad
 {
   string PCB_Pad::outputKiCadFormat(string &convArgs, char* &indent)
   {
-    std::stringstream returnValue;
-    returnValue << indent;
-    returnValue << "(pad \"" << pinNumber << "\" " << padTypeKiCad[static_cast<int>(padType)] << ' '
-                << padShapeKiCad[static_cast<int>(padShape)] << " (at " << to_string(padCoordinates.X)
-                << ' ' << to_string(padCoordinates.Y) << ") (size " << to_string(padSize.X) << ' '
-                << to_string(padSize.Y);
+    string ret;
+    ret += indent;
+    ret += "(pad \"" + pinNumber + "\" " + padTypeKiCad[static_cast<int>(padType)] + ' '
+                + padShapeKiCad[static_cast<int>(padShape)] + " (at " + to_string(padCoordinates.X)
+                + ' ' + to_string(padCoordinates.Y) + ") (size " + to_string(padSize.X) + ' '
+                + to_string(padSize.Y);
     if(padType == PCBPadType::through || padType == PCBPadType::noplating)
     {
-      returnValue << ") (drill";
+      ret += ") (drill";
       if(holeShape == PCBHoleShape::slot)
       {
-        returnValue << " oval " << to_string(holeSize.X) << ' ' << to_string(holeSize.Y);
+        ret += " oval " + to_string(holeSize.X) + ' ' + to_string(holeSize.Y);
       }
       else
       {
-        returnValue << ' ' << to_string(holeSize.X);
+        ret += ' ' + to_string(holeSize.X);
       }
     }
-    returnValue << ") (layers ";
+    ret += ") (layers ";
     switch(padType)
     {
       case PCBPadType::top:
-        returnValue << "F.Cu F.Paste F.Mask)";
+        ret += "F.Cu F.Paste F.Mask)";
         break;
       case PCBPadType::bottom:
-        returnValue << "B.Cu B.Paste B.Mask)";
+        ret += "B.Cu B.Paste B.Mask)";
         break;
       default:
-        returnValue << "*.Cu *.Mask)";
+        ret += "*.Cu *.Mask)";
     }
     if(padShape != PCBPadShape::polygon)
-      returnValue << ')';
+      ret += ')';
     else
     {
-      returnValue << '\n' << indent << "  (zone_connect 2)" << '\n' << indent << "  (options (clearance outline) (anchor circle))\n"
-                  << indent << "  (primitives\n" << indent << "    (gr_poly (pts\n      " << indent;
+      ret += '\n' + indent + string("  (zone_connect 2)") + '\n' + indent + "  (options (clearance outline) (anchor circle))\n"
+                  + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
       for(int i = 0; i < shapePolygonPoints.size(); i++)
-        returnValue << " (xy " << to_string(shapePolygonPoints[i].X) << ' ' << to_string(shapePolygonPoints[i].Y) << ')';
-      returnValue << ") (width 0))\n" << indent << "  ))";
+        ret += " (xy " + to_string(shapePolygonPoints[i].X) + ' ' + to_string(shapePolygonPoints[i].Y) + ')';
+      ret += string(") (width 0))\n") + indent + "  ))";
     }
-    return returnValue.str();
+    return ret;
   }
 
   string PCB_Via::outputKiCadFormat(string &convArgs, char* &indent)
   {
-    std::stringstream returnValue;
+    string ret;
 
-    returnValue << indent;
-    returnValue << "(via (at " << to_string(viaCoordinates.X) << ' ' << to_string(viaCoordinates.Y) << ") (size " << viaSize
-                << ") (drill " << to_string(drillSize) << ") (layers ";
+    ret += indent;
+    ret += "(via (at " + to_string(viaCoordinates.X) + ' ' + to_string(viaCoordinates.Y) + ") (size " + to_string(viaSize)
+                + ") (drill " + to_string(drillSize) + ") (layers ";
     
     //LCEDA currently doesn't support buried or blind vias. If this function is implemented later, we'll have to update
     //the layer section.
-    returnValue << "F.Cu B.Cu";
+    ret += "F.Cu B.Cu";
 
-    returnValue << ") (net " << netName << "))";
-    return returnValue.str();
+    ret += ") (net " + netName + "))";
+    return ret;
   }
 
   string PCB_Track::outputKiCadFormat(string &convArgs, char* &indent)
   {
+    string ret;
 
+    for(int i = 0; i < trackPoints.size() - 1; i++)
+      ret += indent + string("(segment (start ") + to_string(trackPoints[i].X) + ' '
+           + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
+           + to_string(trackPoints[i + 1].Y) + ") (width " + to_string(width) + ") (layer "
+           + KiCadLayerNameLUT[layerKiCad] + ") (net " + netName + "))\n";
+
+    ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
+    
+    return ret;
+  }
+
+  string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char* &indent)
+  {
+    string ret;
+
+    for(int i = 0; i < trackPoints.size() - 1; i++)
+      ret += indent + string("(gr_line (start ") + to_string(trackPoints[i].X) + ' '
+           + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
+           + to_string(trackPoints[i + 1].Y) + ") (layer " + ") (width " + to_string(width)
+           + KiCadLayerNameLUT[layerKiCad] + ") (net " + netName + "))\n";
+
+    ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
+    
+    return ret;
   }
 }
 
