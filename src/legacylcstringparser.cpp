@@ -129,8 +129,11 @@ namespace lc2kicad
 
     //Resolve track width
     ret.width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+
     //Resolve track layer
     ret.layerKiCad = LCtoKiCadLayerLUT[int (atof(paramList[2].c_str()))];
+    assertThrow(ret.layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
+
     //Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
