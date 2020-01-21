@@ -111,8 +111,8 @@ namespace lc2kicad
     for(int i = 0; i < trackPoints.size() - 1; i++)
       ret += indent + string("(gr_line (start ") + to_string(trackPoints[i].X) + ' '
            + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
-           + to_string(trackPoints[i + 1].Y) + ") (layer " + ") (width " + to_string(width)
-           + KiCadLayerNameLUT[layerKiCad] + ") (net " + netName + "))\n";
+           + to_string(trackPoints[i + 1].Y) + ") (layer " + KiCadLayerNameLUT[layerKiCad] + ") (width "
+           + to_string(width) + "))\n";
 
     ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
     

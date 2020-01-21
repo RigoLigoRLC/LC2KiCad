@@ -195,7 +195,7 @@ namespace lc2kicad
               break;
             case 'R': //Track
               stringlist tmp = splitString(shapesList[i], '~');
-              if(parser.judgeIsOnCopperLayer(atoi(tmp[2].c_str())))
+              if(parser.judgeIsOnCopperLayer(LCtoKiCadLayerLUT[atoi(tmp[2].c_str())]))
                 elementsList.push_back(parser.parseTrackString(shapesList[i], origin));
               else
                 elementsList.push_back(parser.parseGraphicalLineString(shapesList[i], origin));

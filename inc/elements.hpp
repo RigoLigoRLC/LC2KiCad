@@ -78,7 +78,8 @@
 
     struct PCB_Track : public PCBElements
     {
-      int  width, layerKiCad;
+      int layerKiCad;
+      double width;
       coordslist trackPoints;
       string netName;
 
