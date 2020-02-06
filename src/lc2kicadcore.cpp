@@ -46,30 +46,6 @@ namespace lc2kicad
   const char *padTypeKiCad[] = {"smd", "smd", "thru_hole", "np_thru_hole"};
   const char *padShapeKiCad[] = {"circle", "oval", "rect", "custom"};
 
-  void errorAndQuit(std::runtime_error *e)
-  #ifdef ERROR_EXIT
-    { std::cout << "Error running the program: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; exit(1); }
-  #else
-    #ifdef ERROR_ABORT
-      { std::cout << "Runtime error: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; abort(); }
-    #endif
-  #endif
-  
-  //void assertThrow(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
-  void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
-  void assertThrow(const bool statement, const std::string &message) {if(!statement){throw std::runtime_error(message.c_str());}}
-
-  vector<string> splitString(string sourceString, char delimeter)
-  {
-    std::stringstream ss(sourceString);
-    string item;
-    vector<string> rtn;
-    while(std::getline(ss, item, delimeter))
-      rtn.push_back(item);
-    return rtn;
-  }
-
-
   void displayUsage()
   {
     cout  << "Usage: lc2kicad FILENAME...\n"

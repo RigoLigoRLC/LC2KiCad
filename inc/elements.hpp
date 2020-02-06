@@ -31,6 +31,13 @@
 
   namespace lc2kicad
   {
+    //LCEDA flood fill (COPPERAREA) fill style. KiCad does not support grid fill yet,
+    //thus a warning should be given to the user.
+    enum class floodFillStyle : int { noFill = 1, solidFill = 2, gridFill = 3 };
+
+    enum class PCBPadShape : int { circle = 0, oval = 1, rectangle = 2, polygon = 3 };
+    enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
+    enum class PCBHoleShape : int { circle = 0, slot = 1 };
 
     struct PCBElements
     {
@@ -39,14 +46,12 @@
 
         bool getVisibility() { return isVisible; };
         void setVisibility(bool visibility) { isVisible = visibility; };
-        virtual string outputKiCadFormat(string &convArgs, char* &indent) { assertThrow(false, "This is PCBElement base class. This class should not be used in the program."); return "";};
+        virtual string outputKiCadFormat(string &convArgs, char* indent) { assertThrow(false, "This is PCBElement base class. This class should not be used in the program."); return "";};
         //string outputKiCadFormat();
     };
 
-    enum class PCBPadShape : int { circle = 0, oval = 1, rectangle = 2, polygon = 3 };
-    enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
-    enum class PCBHoleShape : int { circle = 0, slot = 1 };
-
+    //PADs in LCEDA.
+    //Note: Orphaned PADs on PCBs should be converted inside a MODULE, then placed onto PCB.
     struct PCB_Pad : public PCBElements
     {
       PCBPadShape padShape;
@@ -57,7 +62,7 @@
       sizeXY padSize, holeSize;
       string netName, pinNumber;
 
-      string outputKiCadFormat(string &convArgs, char* &indent);
+      string outputKiCadFormat(string &convArgs, char* indent);
       coordslist shapePolygonPoints;
       /*void setPadCoordinate(double X, double Y) { padCoordinates.X = X; padCoordinates.Y = Y; };
           void setPadSize(double X, double Y) { padSize.X = X; padSize.Y = Y; };
@@ -76,6 +81,7 @@
           int getHoleShape() { return holeShape; };*/
     };
 
+    //TRACKs on copper layers.
     struct PCB_Track : public PCBElements
     {
       int layerKiCad;
@@ -83,21 +89,48 @@
       coordslist trackPoints;
       string netName;
 
-      string outputKiCadFormat(string &convArgs, char* &indent);
+      string outputKiCadFormat(string &convArgs, char* indent);
     };
 
+    //TRACKs that were not on copper layers. Derived from PCB_Track.
     struct PCB_GraphicalLine : public PCB_Track
     {
-      string outputKiCadFormat(string &convArgs, char* &indent);
+      string outputKiCadFormat(string &convArgs, char* indent);
     };
 
+    //VIAs in LCEDA.
     struct PCB_Via : public PCBElements
     {
-      int viaSize, drillSize;
+      double viaSize, drillSize;
       coordinates viaCoordinates;
       string netName;
 
-      string outputKiCadFormat(string &convArgs, char* &indent);
+      string outputKiCadFormat(string &convArgs, char* indent);
     };
+
+    //HOLEs (non-plated through-holes) in LCEDA.
+    struct PCB_Hole : public PCBElements
+    {
+      double holeSize; //Note: LCEDA HOLE represent size in diameter.
+      coordinates holeCoordinates;
+    };
+
+    /**
+     * COPPERAREAs in LCEDA.
+     * Several features were not implemented or supported by KiCad:
+     * Grid fill style, improve fabrication, board border clearance.
+     */
+    struct PCB_FloodFill : public PCBElements
+    {
+      double spokeWidth, clearanceWidth;
+      bool isPreservingIslands, isSpokeConnection;
+      int layerKiCad, fillStyle;
+      coordslist fillAreaPolygonPoints;
+      string netName;
+
+      string outputKiCadFormat(string &convArgs, char* indent);
+    };
+
+
   }
 #endif

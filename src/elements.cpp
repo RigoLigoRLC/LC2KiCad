@@ -28,7 +28,7 @@ using rapidjson::Value;
 
 namespace lc2kicad
 {
-  string PCB_Pad::outputKiCadFormat(string &convArgs, char* &indent)
+  string PCB_Pad::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
     ret += indent;
@@ -73,7 +73,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_Via::outputKiCadFormat(string &convArgs, char* &indent)
+  string PCB_Via::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
 
@@ -89,7 +89,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_Track::outputKiCadFormat(string &convArgs, char* &indent)
+  string PCB_Track::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
 
@@ -104,7 +104,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char* &indent)
+  string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
 
@@ -117,6 +117,13 @@ namespace lc2kicad
     ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
     
     return ret;
+  }
+
+  string PCB_FloodFill::outputKiCadFormat(string &convArgs, char* indent)
+  {
+    string ret;
+
+    ret += indent + string("(zone (net ") + netName;
   }
 }
 

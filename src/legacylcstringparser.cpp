@@ -156,7 +156,7 @@ namespace lc2kicad
     ret->width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
 
     //Resolve track layer
-    ret->layerKiCad = LCtoKiCadLayerLUT[int (atof(paramList[2].c_str()))];
+    ret->layerKiCad = LCLayerToKiCadLayer((int) (atof(paramList[2].c_str())));
     assertThrow(ret->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
 
     //Resolve track points
@@ -172,10 +172,22 @@ namespace lc2kicad
     return ret;
   }
 
+  PCB_FloodFill* StandardLCStringParser::parseFloodFillString(const string &LCJSONString, const coordinates &origin) const
+  {
+    PCB_FloodFill *ret = new PCB_FloodFill();
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    //Resolve layer ID and net name
+    ret->netName = paramList[3].c_str();
+    ret->layerKiCad = LCLayerToKiCadLayer((int) (atof(paramList[2].c_str())));
+    assertThrow(ret->layerKiCad != -1, "Invalid layer for TRACK " + paramList[3]);
+  }
+
   //Judgement member function of parsers
 
   bool StandardLCStringParser::judgeIsOnCopperLayer(const int layerKiCad) const
   {
     return layerKiCad >= 0 && layerKiCad <= 31;
   }
+
 }
