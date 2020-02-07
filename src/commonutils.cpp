@@ -61,5 +61,14 @@ namespace lc2kicad
     assertThrow(LCLayer <= 51, string("LCLayerToKiCadLayer: Invalid LC Layer number ") + std::to_string(LCLayer));
     return LCtoKiCadLayerLUT[LCLayer];
   }
+  
+  void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos)
+    {
+      subject.replace(pos, search.length(), replace);
+      pos += replace.length();
+    }
+  }
 
 }

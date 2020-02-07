@@ -57,6 +57,8 @@
 
     typedef std::vector<std::string> stringlist;
     typedef std::vector<coordinates> coordslist;
+    
+    enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
 
     extern void errorAndQuit(std::runtime_error *e);
     extern void assertThrow(const bool statement, const char* message);  
@@ -65,6 +67,8 @@
     extern int  LCLayerToKiCadLayer(const int&);
 
     extern stringlist splitString(std::string sourceString, char delimeter);
+    extern void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
+    
   }
 
 #endif
