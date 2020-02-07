@@ -38,7 +38,6 @@ namespace lc2kicad
 {
   const char softwareVersion[] = "0.1-beta";
 
-  enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
   const char *documentTypeName[8] = {"", "schematics", "schematic library", "PCB", "PCB library", "project", "sub-part", "SPICE symbol"};
   //Layer mapper. Input EasyEDA, ouput KiCad.
   const int LCtoKiCadLayerLUT[] = {-1, 0, 31, 37, 36, 35, 34, 39, 38, -1, 44, -1, 41, 49, 48, -1, -1, -1, -1, -1, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
@@ -132,6 +131,7 @@ namespace lc2kicad
     Value &headlist = head.GetObject()["c_para"];
     packageName = headlist["package"].GetString();
     prefix = headlist["pre"].GetString();
+    findAndReplaceString(prefix, "?", "**");
     contributor = headlist["Contributor"].GetString();
 
     //Parse Layer information
@@ -205,10 +205,20 @@ namespace lc2kicad
     }
     string a = "  ";
     char* A = (char*) a.c_str();
+    
+    time_t currentTime = time(nullptr);
+    cout << "(module " << packageName << " (layer F.Cu) (tedit " << std::hex << time(nullptr) << ")\n";
+    
+    cout << "  (fp_text reference " << prefix << "(at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )";
+    
+    cout << "  (fp_text value " << packageName << "(at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )";
+    
     for(int i = 0; i < elementsList.size(); i++)
     {
       cout << (elementsList[i]->outputKiCadFormat(a, A)) << endl;
     }
+    
+    cout << ")\n";
   }
 
   void parseDocument(char *filePath, char *bufferField)
