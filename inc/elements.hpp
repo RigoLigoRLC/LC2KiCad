@@ -124,7 +124,8 @@
     {
       double spokeWidth, clearanceWidth;
       bool isPreservingIslands, isSpokeConnection;
-      int layerKiCad, fillStyle;
+      int layerKiCad;
+      floodFillStyle fillStyle;
       coordslist fillAreaPolygonPoints;
       string netName;
 

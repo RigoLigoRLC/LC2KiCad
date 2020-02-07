@@ -180,7 +180,27 @@ namespace lc2kicad
     //Resolve layer ID and net name
     ret->netName = paramList[3].c_str();
     ret->layerKiCad = LCLayerToKiCadLayer((int) (atof(paramList[2].c_str())));
-    assertThrow(ret->layerKiCad != -1, "Invalid layer for TRACK " + paramList[3]);
+    //Throw error with gge ID if layer is invalid
+    assertThrow(ret->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
+
+    //Resolve track points
+    stringlist pointsStrList = splitString(paramList[4], ' ');
+    coordinates tempCoord;
+    for(int i = 0; i < pointsStrList.size(); i += 2)
+    {
+      tempCoord.X = (atof(pointsStrList[i].c_str()) - origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (atof(pointsStrList[i + 1].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
+      ret->fillAreaPolygonPoints.push_back(tempCoord);
+    }
+
+
+    ret->clearanceWidth = atof(paramList[5].c_str()); //Resolve clearance width
+    ret->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
+      //Resolve fill style
+    ret->isSpokeConnection = (paramList[8] == "spoke" ? true : false); //Resolve connection type
+    ret->isPreservingIslands = (paramList[9] == "yes" ? true : false); //Resolve island keep
+
+    return ret;
   }
 
   //Judgement member function of parsers

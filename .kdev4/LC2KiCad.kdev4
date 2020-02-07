@@ -1,0 +1,40 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x10\x00L\x00C\x002\x00K\x00i\x00C\x00a\x00d)
+
+[CMake]
+Build Directory Count=1
+Current Build Directory Index-Host System=0
+
+[CMake][CMake Build Directory 0]
+Build Directory Path=/home/rigoligo/Documents/C++ Projects/LC2KiCad/LC2KiCad/build
+Build Type=Debug\n
+CMake Binary=/usr/bin/cmake
+CMake Executable=/usr/bin/cmake
+Environment Profile=
+Extra Arguments=
+Install Directory=
+Runtime=Host System
+
+[Launch]
+Launch Configurations=Launch Configuration 0
+
+[Launch][Launch Configuration 0]
+Configured Launch Modes=execute
+Configured Launchers=nativeAppLauncher
+Name=lc2kicad
+Type=Native Application
+
+[Launch][Launch Configuration 0][Data]
+Arguments=USP-3_L1.2-W1.2-P0.60.json
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x02\x00\x00\x00\x10\x00L\x00C\x002\x00K\x00i\x00C\x00a\x00d\x00\x00\x00\x10\x00l\x00c\x002\x00k\x00i\x00c\x00a\x00d)
+Dependency Action=Build
+EnvironmentGroup=
+Executable=file:///home/rigoligo/Documents/C++ Projects/LC2KiCad/LC2KiCad
+External Terminal=konsole --noclose --workdir %workdir -e %exe
+Project Target=LC2KiCad,lc2kicad
+Use External Terminal=false
+Working Directory=file:///home/rigoligo/Documents/C++ Projects/LC2KiCad/LC2KiCad/build
+isExecutable=false
+
+[Project]
+VersionControlSupport=kdevgit

@@ -99,7 +99,7 @@ namespace lc2kicad
       return -1;
   }
 
-  void docPCBLibParser(Document &parseTarget, string &filename, int iteration, LCStringParserContainer& parser)
+  void docPCBLibParser(Document &parseTarget, string &filename, int iteration, LCStringParserContainer *parser)
   {
     cout << "\tPCB library file parser function has been called. Starting PCB library file parsing.\n";
 
@@ -162,7 +162,7 @@ namespace lc2kicad
       switch(shapesList[i].c_str()[0])
       {
         case 'P': //Pad
-          elementsList.push_back(parser.parsePadString(shapesList[i], origin));
+          elementsList.push_back(parser->parsePadString(shapesList[i], origin));
           break;
         case 'T':
           switch(shapesList[i].c_str()[1])
@@ -171,10 +171,10 @@ namespace lc2kicad
               break;
             case 'R': //Track
               stringlist tmp = splitString(shapesList[i], '~');
-              if(parser.judgeIsOnCopperLayer(LCtoKiCadLayerLUT[atoi(tmp[2].c_str())]))
-                elementsList.push_back(parser.parseTrackString(shapesList[i], origin));
+              if(parser->judgeIsOnCopperLayer(LCtoKiCadLayerLUT[atoi(tmp[2].c_str())]))
+                elementsList.push_back(parser->parseTrackString(shapesList[i], origin));
               else
-                elementsList.push_back(parser.parseGraphicalLineString(shapesList[i], origin));
+                elementsList.push_back(parser->parseGraphicalLineString(shapesList[i], origin));
               break;
           }
           break;
@@ -192,7 +192,7 @@ namespace lc2kicad
         case 'A': //Arc
           break;
         case 'V': //Via
-          elementsList.push_back(parser.parseViaString(shapesList[i], origin));
+          elementsList.push_back(parser->parseViaString(shapesList[i], origin));
           break;
         case 'H': //Hole
           break;
@@ -271,7 +271,7 @@ namespace lc2kicad
     switch(documentType)
     {
       case 4:
-        docPCBLibParser(parseTargetDoc, filename, 1, *LCParser);
+        docPCBLibParser(parseTargetDoc, filename, 1, LCParser);
         break;
       default:
         assertThrow(false, "This kind of document type is not supported yet.");
