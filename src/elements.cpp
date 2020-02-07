@@ -27,7 +27,7 @@ using std::to_string;
 using rapidjson::Value;
 
 namespace lc2kicad
-{
+{  
   string PCB_Pad::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
@@ -64,7 +64,7 @@ namespace lc2kicad
       ret += ')';
     else
     {
-      ret += '\n' + indent + string("  (zone_connect 2)") + '\n' + indent + "  (options (clearance outline) (anchor circle))\n"
+      ret += string("\n") + indent + string("  (zone_connect 2)") + '\n' + indent + "  (options (clearance outline) (anchor circle))\n"
                   + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
       for(int i = 0; i < shapePolygonPoints.size(); i++)
         ret += " (xy " + to_string(shapePolygonPoints[i].X) + ' ' + to_string(shapePolygonPoints[i].Y) + ')';
@@ -107,10 +107,17 @@ namespace lc2kicad
   string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char* indent)
   {
     string ret;
+    bool isInFootprint;
+    
+    if(convArgs[0] == char (documentTypes::pcb)) //Determine if this graphical line is used in footprint
+      isInFootprint = true;
+    else
+      isInFootprint = false;                     //If not in a footprint, use gr_line. Else, use fp_line
+      
 
     for(int i = 0; i < trackPoints.size() - 1; i++)
-      ret += indent + string("(gr_line (start ") + to_string(trackPoints[i].X) + ' '
-           + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
+      ret += indent + string(isInFootprint ? "(fp_line (start" : "(gr_line (start ") + to_string(trackPoints[i].X)
+           + ' ' + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
            + to_string(trackPoints[i + 1].Y) + ") (layer " + KiCadLayerNameLUT[layerKiCad] + ") (width "
            + to_string(width) + "))\n";
 
@@ -124,6 +131,9 @@ namespace lc2kicad
     string ret;
 
     ret += indent + string("(zone (net ") + netName;
+    
+    //TO BE FINISHED
+    return ret;
   }
 }
 
