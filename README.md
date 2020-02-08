@@ -2,6 +2,8 @@
 
 ![The LC2KiCad Logo. This Logo is licensed under CC-BY-SA 3.0 license.](./docs/LC2KiCad-Logo.svg)
 
+[中文版本README](./docs/README.zh_CN.md)
+
 ---
 
 ## Overview
