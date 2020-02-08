@@ -132,7 +132,8 @@ namespace lc2kicad
     packageName = headlist["package"].GetString();
     prefix = headlist["pre"].GetString();
     findAndReplaceString(prefix, "?", "**");
-    contributor = headlist["Contributor"].GetString();
+    
+    contributor = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
 
     //Parse Layer information
     Value layer = parseTarget["layers"].GetArray();
@@ -203,22 +204,34 @@ namespace lc2kicad
           assertThrow(false, e.c_str());
       }
     }
-    string a = "  ";
+    string a = "  ", arg = "\004";
     char* A = (char*) a.c_str();
     
     time_t currentTime = time(nullptr);
-    cout << "(module " << packageName << " (layer F.Cu) (tedit " << std::hex << time(nullptr) << ")\n";
     
-    cout << "  (fp_text reference " << prefix << "(at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )";
+    std::ofstream writer;
+    writer.open(packageName + ".kicad_mod", std::_Ios_Openmode::_S_out);
     
-    cout << "  (fp_text value " << packageName << "(at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )";
+    std::ostream *outstream = &cout;
+    
+    if(writer.fail())
+      cout << "Error: Cannot create file. Will print the file content out.\n";
+    else
+      outstream = &writer;
+      
+    
+    *outstream << "(module " << packageName << " (layer F.Cu) (tedit " << std::hex << time(nullptr) << ")\n";
+    
+    *outstream << "  (fp_text reference " << prefix << " (at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )\n\n";
+    
+    *outstream << "  (fp_text value " << packageName << " (at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )\n\n";
     
     for(int i = 0; i < elementsList.size(); i++)
     {
-      cout << (elementsList[i]->outputKiCadFormat(a, A)) << endl;
+      *outstream << (elementsList[i]->outputKiCadFormat(arg, A)) << endl;
     }
     
-    cout << ")\n";
+    *outstream << ")\n";
   }
 
   void parseDocument(char *filePath, char *bufferField)

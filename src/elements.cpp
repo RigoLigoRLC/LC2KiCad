@@ -109,14 +109,14 @@ namespace lc2kicad
     string ret;
     bool isInFootprint;
     
-    if(convArgs[0] == char (documentTypes::pcb)) //Determine if this graphical line is used in footprint
+    if(convArgs[0] == (char) documentTypes::pcb_lib) //Determine if this graphical line is used in footprint
       isInFootprint = true;
     else
       isInFootprint = false;                     //If not in a footprint, use gr_line. Else, use fp_line
       
 
     for(int i = 0; i < trackPoints.size() - 1; i++)
-      ret += indent + string(isInFootprint ? "(fp_line (start" : "(gr_line (start ") + to_string(trackPoints[i].X)
+      ret += indent + string(isInFootprint ? "(fp_line (start " : "(gr_line (start ") + to_string(trackPoints[i].X)
            + ' ' + to_string(trackPoints[i].Y) + ") (end " + to_string(trackPoints[i + 1].X) + ' '
            + to_string(trackPoints[i + 1].Y) + ") (layer " + KiCadLayerNameLUT[layerKiCad] + ") (width "
            + to_string(width) + "))\n";
