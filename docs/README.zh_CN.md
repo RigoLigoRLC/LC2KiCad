@@ -1,6 +1,6 @@
 # LC2KiCad
 
-![LC2KiCad Logo。此Logo以CC-BY-SA 3.0协议授权。](./docs/LC2KiCad-Logo.svg)
+![LC2KiCad Logo。此Logo以CC-BY-SA 3.0协议授权。](./LC2KiCad-Logo.svg)
 
 ---
 
