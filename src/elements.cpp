@@ -65,9 +65,9 @@ namespace lc2kicad
     else
     {
       ret += string("\n") + indent + string("  (zone_connect 2)") + '\n' + indent + "  (options (clearance outline) (anchor circle))\n"
-                  + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
-      for(int i = 0; i < shapePolygonPoints.size(); i++)
-        ret += " (xy " + to_string(shapePolygonPoints[i].X) + ' ' + to_string(shapePolygonPoints[i].Y) + ')';
+           + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
+      for(coordinates i : shapePolygonPoints)
+        ret += " (xy " + to_string(i.X) + ' ' + to_string(i.Y) + ')';
       ret += string(") (width 0))\n") + indent + "  ))";
     }
     return ret;
