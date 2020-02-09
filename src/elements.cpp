@@ -128,11 +128,21 @@ namespace lc2kicad
 
   string PCB_FloodFill::outputKiCadFormat(string &convArgs, char* indent)
   {
+    //untested
     string ret;
 
-    ret += indent + string("(zone (net ") + netName;
+    ret += indent + string("(zone (net ") + netName + ") (layer " + KiCadLayerNameLUT[layerKiCad]
+        + ") (tstamp 0) (hatch edge 0.508)\n" + indent + "  (connect_pads " + (isSpokeConnection ? "" : "yes")
+        + " (clearance " + to_string(clearanceWidth) + "))\n" + indent + "  (min_thickness 0.254)\n" + indent
+        + "  (fill " + (fillStyle == floodFillStyle::noFill ? "no" : "yes") + " (arc_segments 32) (thermal_gap "
+        + to_string(clearanceWidth) + ") (thermal_bridge_width " + to_string(spokeWidth) + "))\n" + indent
+        + "  (polygon\n" + indent + "    (pts\n" + indent + "      ";
     
-    //TO BE FINISHED
+    for(coordinates i : fillAreaPolygonPoints)
+      ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";
+
+    ret += indent + string("    )\n") + indent + "  )\n" + indent + ")";
+
     return ret;
   }
 }
