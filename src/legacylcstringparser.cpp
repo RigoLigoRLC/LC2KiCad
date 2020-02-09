@@ -205,7 +205,7 @@ namespace lc2kicad
 
   //Judgement member function of parsers
 
-  bool StandardLCStringParser::judgeIsOnCopperLayer(const int layerKiCad) const
+  inline bool StandardLCStringParser::judgeIsOnCopperLayer(const int layerKiCad) const
   {
     return layerKiCad >= 0 && layerKiCad <= 31;
   }
