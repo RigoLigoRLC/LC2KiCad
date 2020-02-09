@@ -56,10 +56,15 @@ namespace lc2kicad
    * @param LCLayer Layer ID in LCEDA
    * @return KiCad Layer ID.
    */
-  int LCLayerToKiCadLayer(const int &LCLayer)
+  inline int LCLayerToKiCadLayer(const int &LCLayer)
   {
     assertThrow(LCLayer <= 51, string("LCLayerToKiCadLayer: Invalid LC Layer number ") + std::to_string(LCLayer));
     return LCtoKiCadLayerLUT[LCLayer];
+  }
+
+  inline std::string LCLayerToKiCadName(const int &LCLayer)
+  {
+    return KiCadLayerNameLUT[LCLayerToKiCadLayer(LCLayer)];
   }
   
   void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace) {
