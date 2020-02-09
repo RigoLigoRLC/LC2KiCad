@@ -30,6 +30,10 @@ namespace lc2kicad
     return (coord1 - coord2) * t + coord1;
   }
 
+  /**
+   * Control points are in the order of P1 C1 ... Cn P2.
+   * At least 3 iterations are required for a proper rendering.
+   */
   coordslist* render_bezier_curve(coordslist& control_points, int iterations)
   {
     if(iterations < 2)
