@@ -39,6 +39,7 @@ git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 cmake . && make
 ```
+Notice: On Windows you need some MinGW runtime libraries to make sure that the program will work. You can find them in 'bin' folder of KiCad.
 
 ### macOS
 
