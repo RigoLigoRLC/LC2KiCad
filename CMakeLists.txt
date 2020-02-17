@@ -1,6 +1,6 @@
 project(lc2kicad)
 
-set(EXEC ./build/lc2kicad)
+set(EXEC lc2kicad)
 
 set(CMAKE_CXX_STANDARD 14)
 
