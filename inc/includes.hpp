@@ -64,8 +64,8 @@
     extern void assertThrow(const bool statement, const char* message);  
     extern void assertThrow(const bool statement, const std::string &message);
 
-    extern inline int  LCLayerToKiCadLayer(const int&);
-    extern inline std::string LCLayerToKiCadName(const int&);
+    extern int  LCLayerToKiCadLayer(const int&);
+    extern std::string LCLayerToKiCadName(const int&);
 
     extern stringlist splitString(std::string sourceString, char delimeter);
     extern void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
