@@ -38,6 +38,7 @@ cd lc2kicad
 cmake . && make
 ```
 ~~注意：Windows下用MinGW编译出的程序需要一些MinGW动态链接库才可以运行。您可以在KiCad的bin文件夹内找到这些运行库。~~
+
 CMakeLists.txt已被调整。生成的程序已被静态链接，无需运行库。
 
 ### macOS
