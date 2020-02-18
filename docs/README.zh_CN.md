@@ -37,7 +37,7 @@ cmake .. && make
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && make
+cmake .. && mingw32-make
 ```
 ### macOS
 

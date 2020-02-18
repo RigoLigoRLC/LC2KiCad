@@ -19,7 +19,6 @@
 
 #include <string>
 #include <vector>
-#include </usr/include/stdlib.h>
 
 #include "consts.hpp"
 #include "includes.hpp"

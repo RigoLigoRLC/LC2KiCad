@@ -39,7 +39,7 @@ You need to get Git, CMake and Mingw working, and make sure all of them are avai
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && make
+cmake .. && mingw32-make
 ```
 ### macOS
 
