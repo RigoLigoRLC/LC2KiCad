@@ -25,7 +25,8 @@ LC2KiCad requires C++ standard libraries to be present. Compilation process requ
 ```shell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
-cmake . && make
+mkdir build && cd build
+cmake .. && make
 ```
 
 The compiled executable is right in `lc2kicad/build/`.
@@ -37,10 +38,9 @@ You need to get Git, CMake and Mingw working, and make sure all of them are avai
 ```powershell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
-cmake . && make
+mkdir build && cd build
+cmake .. && make
 ```
-Notice: On Windows you need some MinGW runtime libraries to make sure that the program will work. You can find them in 'bin' folder of KiCad.
-
 ### macOS
 
 No macOS compilation has been done.
