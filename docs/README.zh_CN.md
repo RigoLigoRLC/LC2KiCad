@@ -23,7 +23,8 @@ LC2KiCad需要使用C++的标准库组件。编译过程需要使用GCC和CMake�
 ```shell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
-cmake . && make
+mkdir build && cd build
+cmake .. && make
 ```
 
 编译出的二进制文件被存放在 `lc2kicad/build/`
@@ -35,12 +36,9 @@ cmake . && make
 ```powershell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
-cmake . && make
+mkdir build && cd build
+cmake .. && make
 ```
-~~注意：Windows下用MinGW编译出的程序需要一些MinGW动态链接库才可以运行。您可以在KiCad的bin文件夹内找到这些运行库。~~
-
-CMakeLists.txt已被调整。生成的程序已被静态链接，无需运行库。
-
 ### macOS
 
 本程序没有在macOS下编译的文档。
