@@ -20,10 +20,14 @@
 #ifndef LC2KICAD_ELEMENTS
   #define LC2KICAD_ELEMENTS
 
-  #include <includes.hpp>
-  #include <consts.hpp>
-  #include <rapidjson.hpp>
+  #include <vector>
+  #include <fstream>
+  #include <string>
 
+  #include "includes.hpp"
+  #include "consts.hpp"
+  #include "rapidjson.hpp"
+  
   using std::vector;
   using std::fstream;
   using std::string;

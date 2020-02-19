@@ -19,6 +19,8 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <sstream>
 
 #include "consts.hpp"
 #include "includes.hpp"
@@ -39,11 +41,11 @@ namespace lc2kicad
   void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
   void assertThrow(const bool statement, const std::string &message) {if(!statement){throw std::runtime_error(message.c_str());}}
 
-  vector<string> splitString(string sourceString, char delimeter)
+  std::vector<std::string> splitString(std::string sourceString, char delimeter)
   {
     std::stringstream ss(sourceString);
-    string item;
-    vector<string> rtn;
+    std::string item;
+    std::vector<std::string> rtn;
     while(std::getline(ss, item, delimeter))
       rtn.push_back(item);
     return rtn;
@@ -57,7 +59,7 @@ namespace lc2kicad
    */
   int LCLayerToKiCadLayer(const int &LCLayer)
   {
-    assertThrow(LCLayer <= 51, string("LCLayerToKiCadLayer: Invalid LC Layer number ") + std::to_string(LCLayer));
+    assertThrow(LCLayer <= 51, std::string("LCLayerToKiCadLayer: Invalid LC Layer number ") + std::to_string(LCLayer));
     return LCtoKiCadLayerLUT[LCLayer];
   }
 
