@@ -17,20 +17,18 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <cstring>
-#include <cstdio>
 
-#include <consts.hpp>
-#include <elements.hpp>
+
 
 #ifndef GLOBAL_FUNCS
   #define GLOBAL_FUNCS
-
+  
+  #include "consts.hpp"
+  
+  #include <vector>
+  #include <string>
+  #include <stdexcept>
+  
   namespace lc2kicad
   {
     class coordinates
@@ -60,15 +58,15 @@
     
     enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
 
-    extern void errorAndQuit(std::runtime_error *e);
-    extern void assertThrow(const bool statement, const char* message);  
-    extern void assertThrow(const bool statement, const std::string &message);
+    void errorAndQuit(std::runtime_error *e);
+    void assertThrow(const bool statement, const char* message);  
+    void assertThrow(const bool statement, const std::string &message);
 
-    extern int  LCLayerToKiCadLayer(const int&);
-    extern std::string LCLayerToKiCadName(const int&);
+    int LCLayerToKiCadLayer(const int&);
+    std::string LCLayerToKiCadName(const int&);
 
-    extern stringlist splitString(std::string sourceString, char delimeter);
-    extern void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
+    stringlist splitString(std::string sourceString, char delimeter);
+    void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     
   }
 

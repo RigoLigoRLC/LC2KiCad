@@ -17,6 +17,10 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <iostream>
+#include <vector>
+#include <fstream>
+
 #include "includes.hpp"
 #include "rapidjson.hpp"
 #include "lcstringparser.hpp"

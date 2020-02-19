@@ -19,7 +19,13 @@
 
 #include "includes.hpp"
 #include "lcstringparser.hpp"
+#include "elements.hpp"
+
 #include <string>
+#include <vector>
+
+using std::vector;
+using std::string;
 
 namespace lc2kicad
 {
