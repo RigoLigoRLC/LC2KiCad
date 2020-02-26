@@ -96,7 +96,7 @@
       string outputKiCadFormat(string &convArgs, char* indent);
     };
 
-    //TRACKs that were not on copper layers. Derived from PCB_Track.
+    //TRACKs on non copper layers. Derived from PCB_Track.
     struct PCB_GraphicalLine : public PCB_Track
     {
       string outputKiCadFormat(string &convArgs, char* indent);
@@ -135,7 +135,29 @@
 
       string outputKiCadFormat(string &convArgs, char* indent);
     };
+    
+    //CIRCLEs on copper layers.
+    struct PCB_Circle : public PCBElements
+    {
+      int layerKiCad;
+      double width, radius; //Width and radius in millimeters.
+      coordinates center;
+      string netName;
+      
+      string outputKiCadFormat(string &convArgs, char *indent);
+    };
+    
+    //CIRCLEs on non copper layers. Derived from PCB_Circle.
+    struct PCB_GraphicalCircle : public PCB_Circle
+    {
+      string outputKiCadFormat(string &convArgs, char *indent);
+    };
 
+    //SOLIDREGIONs of Footprints. PCB solid region is not supported and won't be converted.
+    struct PCB_SolidRegion : public PCBElements
+    {
+      
+    };
 
   }
 #endif

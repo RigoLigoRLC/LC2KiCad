@@ -30,7 +30,7 @@ namespace lc2kicad
 {
   
   
-  string PCB_Pad::outputKiCadFormat(string &convArgs, char* indent)
+  string PCB_Pad::outputKiCadFormat(string &convArgs, char *indent)
   {
     string ret;
     ret += indent;
@@ -75,7 +75,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_Via::outputKiCadFormat(string &convArgs, char* indent)
+  string PCB_Via::outputKiCadFormat(string &convArgs, char *indent)
   {
     string ret;
 
@@ -91,7 +91,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_Track::outputKiCadFormat(string &convArgs, char* indent)
+  string PCB_Track::outputKiCadFormat(string &convArgs, char *indent)
   {
     string ret;
 
@@ -106,7 +106,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char* indent)
+  string PCB_GraphicalLine::outputKiCadFormat(string &convArgs, char *indent)
   {
     string ret;
     bool isInFootprint;
@@ -128,7 +128,7 @@ namespace lc2kicad
     return ret;
   }
 
-  string PCB_FloodFill::outputKiCadFormat(string &convArgs, char* indent)
+  string PCB_FloodFill::outputKiCadFormat(string &convArgs, char *indent)
   {
     //untested
     string ret;
@@ -145,6 +145,45 @@ namespace lc2kicad
 
     ret += indent + string("    )\n") + indent + "  )\n" + indent + ")";
 
+    return ret;
+  }
+  
+  string PCB_Circle::outputKiCadFormat(string &convArgs, char *indent)
+  {
+    string ret;
+    
+    //Notice: PCB circle involves compatibility issues. We need to implement compatibility settings first
+    //        before we can start working on PCB circle output.
+    
+    /*
+    bool isInFootprint;
+
+    ret += indent + string("(fp_circle (start ") + to_string(center.X) + ' ' + to_string(center.Y) + ") (end "
+        + to_string(center.X) + ' ' + to_string(center.Y + radius) + ") (layer " + KiCadLayerNameLUT[layerKiCad]
+        + ") (width " + to_string(width) + "))\n";
+
+    ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
+    */
+    
+    return ret;
+  }
+  
+  string PCB_GraphicalCircle::outputKiCadFormat(string &convArgs, char *indent)
+  {
+    string ret;
+    bool isInFootprint;
+    
+    if(convArgs[0] == (char) documentTypes::pcb_lib) //Determine if this graphical line is used in footprint
+      isInFootprint = true;
+    else
+      isInFootprint = false;                     //If not in a footprint, use gr_circle. Else, use fp_circle
+      
+    ret += indent + string(isInFootprint ? "(fp_circle (start " : "(gr_circle (center ") + to_string(center.X)
+          + ' ' + to_string(center.Y) + ") (end " + to_string(center.X) + ' ' + to_string(center.Y + radius)
+          + ") (layer " + KiCadLayerNameLUT[layerKiCad] + ") (width " + to_string(width) + "))\n";
+
+    ret[ret.size()] = '\0'; //Remove the last '\n' because no end-of-line is needed at the end right there
+    
     return ret;
   }
 }

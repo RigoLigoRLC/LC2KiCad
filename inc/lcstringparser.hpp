@@ -34,6 +34,8 @@
         virtual PCB_Track* parseTrackString(const string&, const coordinates&) const { return new PCB_Track(); };
         virtual PCB_GraphicalLine* parseGraphicalLineString(const string&, const coordinates&) const { return new PCB_GraphicalLine(); };
         virtual PCB_FloodFill* parseFloodFillString(const string&, const coordinates&) const { return new PCB_FloodFill(); };
+        virtual PCB_Circle* parseCircleString(const string&, const coordinates&) const { return new PCB_Circle(); };
+        virtual PCB_GraphicalCircle* parseGraphicalCircleString(const string&, const coordinates&) const { return new PCB_GraphicalCircle(); };
         virtual bool judgeIsOnCopperLayer(const int layerKiCad) const { return true; };
     };
 
@@ -46,6 +48,8 @@
         PCB_Track* parseTrackString(const string&, const coordinates&) const;
         PCB_GraphicalLine* parseGraphicalLineString(const string&, const coordinates&) const;
         PCB_FloodFill* parseFloodFillString(const string&, const coordinates&) const;
+        PCB_Circle* parseCircleString(const string&, const coordinates&) const;
+        PCB_GraphicalCircle* parseGraphicalCircleString(const string&, const coordinates&) const;
         bool judgeIsOnCopperLayer(const int layerKiCad) const;
     };
   }
