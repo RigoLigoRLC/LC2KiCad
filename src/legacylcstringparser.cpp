@@ -162,7 +162,7 @@ namespace lc2kicad
     ret->width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
 
     //Resolve track layer
-    ret->layerKiCad = LCLayerToKiCadLayer((int) (atof(paramList[2].c_str())));
+    ret->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[2].c_str()));
     assertThrow(ret->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
 
     //Resolve track points
@@ -185,7 +185,7 @@ namespace lc2kicad
 
     //Resolve layer ID and net name
     ret->netName = paramList[3].c_str();
-    ret->layerKiCad = LCLayerToKiCadLayer((int) (atof(paramList[2].c_str())));
+    ret->layerKiCad = LCLayerToKiCadLayer(atof(paramList[2].c_str()));
     //Throw error with gge ID if layer is invalid
     assertThrow(ret->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
 
@@ -200,12 +200,41 @@ namespace lc2kicad
     }
 
 
-    ret->clearanceWidth = atof(paramList[5].c_str()); //Resolve clearance width
+    ret->clearanceWidth = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient; //Resolve clearance width
     ret->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
       //Resolve fill style
     ret->isSpokeConnection = (paramList[8] == "spoke" ? true : false); //Resolve connection type
     ret->isPreservingIslands = (paramList[9] == "yes" ? true : false); //Resolve island keep
 
+    return ret;
+  }
+  
+  PCB_Circle* StandardLCStringParser::parseCircleString(const string &LCJSONString, const coordinates &origin) const
+  {
+    PCB_Circle *ret = new PCB_Circle();
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    ret->center.X = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    ret->center.Y = atof(paramList[2].c_str()) * tenmils_to_mm_coefficient;
+    ret->radius = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    ret->width = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+    ret->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
+    ret->netName = paramList[8];
+    
+    return ret;
+  }
+  
+  PCB_GraphicalCircle* StandardLCStringParser::parseGraphicalCircleString(const string &LCJSONString, const coordinates &origin) const
+  {
+    PCB_GraphicalCircle *ret = new PCB_GraphicalCircle();
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    ret->center.X = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    ret->center.Y = atof(paramList[2].c_str()) * tenmils_to_mm_coefficient;
+    ret->radius = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    ret->width = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+    ret->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
+    
     return ret;
   }
 
