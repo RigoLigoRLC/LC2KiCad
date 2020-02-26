@@ -76,5 +76,15 @@ namespace lc2kicad
       pos += replace.length();
     }
   }
+  
+  coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
+  {
+    coordslist *ret = new coordslist;
+    stringlist pathPartials = splitString(SVGPath, ' ');
+    
+    arcResolution < 2 ? arcResolution = 2 : 0;
+    
+    return ret;
+  }
 
 }

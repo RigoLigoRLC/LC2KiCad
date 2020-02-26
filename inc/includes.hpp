@@ -65,7 +65,7 @@
     int LCLayerToKiCadLayer(const int&);
     std::string LCLayerToKiCadName(const int&);
 
-    coordslist* simpleLCSVGSegmentizer(const std::string&, const int&);
+    coordslist* simpleLCSVGSegmentizer(const std::string&, int);
     stringlist splitString(std::string sourceString, char delimeter);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     
