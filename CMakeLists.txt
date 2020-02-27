@@ -8,6 +8,6 @@ set(CMAKE_EXE_LINKER_FLAGS -static)
 
 include_directories(inc)
 
-file(GLOB SOURCES src/*.cpp)
+file(GLOB SOURCES src/*.cpp src/icon/*.rc)
 
 add_executable(${EXEC} ${SOURCES})
