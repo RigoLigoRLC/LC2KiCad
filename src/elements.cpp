@@ -178,7 +178,7 @@ namespace lc2kicad
     else
       isInFootprint = false;                     //If not in a footprint, use gr_circle. Else, use fp_circle
       
-    ret += indent + string(isInFootprint ? "(fp_circle (start " : "(gr_circle (center ") + to_string(center.X)
+    ret += indent + string(isInFootprint ? "(fp_circle (center " : "(gr_circle (center ") + to_string(center.X)
           + ' ' + to_string(center.Y) + ") (end " + to_string(center.X) + ' ' + to_string(center.Y + radius)
           + ") (layer " + KiCadLayerNameLUT[layerKiCad] + ") (width " + to_string(width) + "))\n";
 
