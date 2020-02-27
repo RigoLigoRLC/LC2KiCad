@@ -66,7 +66,7 @@ version:
 a header file that is part of the Library.  You may convey such object
 code under terms of your choice, provided that, if the incorporated
 material is not limited to numerical parameters, data structure
-layouts and accessors, or small macros, inline functions and templates
+layouts and accessors, or small macros, functions and templates
 (ten or fewer lines in length), you do both of the following:
 
    a) Give prominent notice with each copy of the object code that the

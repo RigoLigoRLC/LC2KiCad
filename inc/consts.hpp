@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 Harrison Wade, aka "RigoLigo RLC"
+    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
 
     This file is part of LC2KiCad.
 
@@ -23,7 +23,7 @@
   namespace lc2kicad
   {
     #define READ_BUFFER_SIZE 65536
-    #define SOFTWARE_VERSION "version 0.1-b"
+    #define SOFTWARE_VERSION "version alpha-0.1.2"
 
     #define ERROR_EXIT
   //#define ERROR_ABORT

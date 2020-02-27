@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 Harrison Wade, aka "RigoLigo RLC"
+    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
 
     This file is part of LC2KiCad.
 
@@ -240,7 +240,7 @@ namespace lc2kicad
 
   //Judgement member function of parsers
 
-  inline bool StandardLCStringParser::judgeIsOnCopperLayer(const int layerKiCad) const
+  bool StandardLCStringParser::judgeIsOnCopperLayer(const int layerKiCad) const
   {
     return layerKiCad >= 0 && layerKiCad <= 31;
   }

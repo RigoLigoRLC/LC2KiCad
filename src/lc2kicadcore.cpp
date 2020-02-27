@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 Harrison Wade, aka "RigoLigo RLC"
+    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
 
     This file is part of LC2KiCad.
 
@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <ctime>
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
@@ -219,7 +220,7 @@ namespace lc2kicad
     time_t currentTime = time(nullptr);
     
     std::ofstream writer;
-    writer.open(packageName + ".kicad_mod", std::_Ios_Openmode::_S_out);
+    writer.open(packageName + ".kicad_mod", std::ios::out);
     
     std::ostream *outstream = &cout;
     
@@ -336,7 +337,7 @@ namespace lc2kicad
     bool iferrored = false;
     for(int i = 1; i <= fileCount; i++)
     {
-      opener.open(args[i], std::_Ios_Openmode::_S_in);
+      opener.open(args[i], std::ios::in);
       cout << "(" << i << ") ";
       if(opener.fail())
       {
