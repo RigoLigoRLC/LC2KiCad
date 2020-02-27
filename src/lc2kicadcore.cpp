@@ -234,7 +234,7 @@ namespace lc2kicad
     
     *outstream << "  (fp_text reference " << prefix << " (at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )\n\n";
     
-    *outstream << "  (fp_text value " << packageName << " (at 0 0) (layer F.SilkS)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )\n\n";
+    *outstream << "  (fp_text value " << packageName << " (at 0 0) (layer F.Fab)\n" << "    (effects (font (size 1 1) (thickness 0.15)))\n  )\n\n";
     
     for(int i = 0; i < elementsList.size(); i++)
     {
