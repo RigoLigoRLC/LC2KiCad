@@ -23,7 +23,7 @@
   namespace lc2kicad
   {
     #define READ_BUFFER_SIZE 65536
-    #define SOFTWARE_VERSION "version alpha-0.1.2"
+    #define SOFTWARE_VERSION "version alpha-0.1.3"
 
     #define ERROR_EXIT
   //#define ERROR_ABORT

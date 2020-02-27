@@ -229,8 +229,8 @@ namespace lc2kicad
     PCB_GraphicalCircle *ret = new PCB_GraphicalCircle();
     stringlist paramList = splitString(LCJSONString, '~');
     
-    ret->center.X = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
-    ret->center.Y = atof(paramList[2].c_str()) * tenmils_to_mm_coefficient;
+    ret->center.X = (atof(paramList[1].c_str()) - origin.X) * tenmils_to_mm_coefficient;
+    ret->center.Y = (atof(paramList[2].c_str()) - origin.Y) * tenmils_to_mm_coefficient;
     ret->radius = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
     ret->width = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
     ret->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
