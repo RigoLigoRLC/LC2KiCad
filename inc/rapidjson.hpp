@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 Harrison Wade, aka "RigoLigo RLC"
+    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
 
     This file is part of LC2KiCad.
 
