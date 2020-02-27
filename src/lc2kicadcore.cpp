@@ -189,6 +189,11 @@ namespace lc2kicad
             case 'O': //CopperArea
               break;
             case 'I': //Circle
+              stringlist tmp = splitString(shapesList[i], '~');
+              if(parser->judgeIsOnCopperLayer(LCtoKiCadLayerLUT[atoi(tmp[5].c_str())]))
+                elementsList.push_back(parser->parseCircleString(shapesList[i], origin));
+              else
+                elementsList.push_back(parser->parseGraphicalCircleString(shapesList[i], origin));
               break;
           }
           break;
