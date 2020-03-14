@@ -61,7 +61,7 @@ No macOS compilation has been done.
 - `lc2kicad -h` or `lc2kicad --help` Display the help message.
 - `lc2kicad -V` or `lc2kicad --version` Display the version and about message.
 - `lc2kicad FILE1 [FILE2] ...` Convert the files specified.
-- **PLANNED BUT NOT IMPLEMENTED** *`lc2kicad -C[compatibility switches] FILE1 [FILE2] ...`* Convert the files with compatibility option(s).
+- **PLANNED BUT NOT IMPLEMENTED** *`lc2kicad -C[compatibility switches] FILE1 [FILE2] ...`* Convert the files with compatibility option(s). [Compatibility switches documentation](./docs/compatibility_switches.md)
 
 LC2KiCad will open each file and try to parse each of them. If the parsing succeeded , LC2KiCad will try to write the converted content to a new file, with the same name (but not same extension name). If LC2KiCad cannot open a new file to write into, it will write everything into the standard output stream.
 
