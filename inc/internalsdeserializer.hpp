@@ -16,26 +16,19 @@
     You should have received a copy of the GNU Lesser General Public License
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
-  
-  #ifndef LC2KICAD_CONSTS
-  #define LC2KICAD_CONSTS
 
-  namespace lc2kicad
-  {
-    #define READ_BUFFER_SIZE 65536
-    #define SOFTWARE_VERSION "version alpha-0.1.3"
-
-    #define ERROR_EXIT
-  //#define ERROR_ABORT
-
-    const double tenmils_to_mm_coefficient = 0.254;
-
-    extern const char *documentTypeName[8];
-    extern const int LCtoKiCadLayerLUT[];
-    extern const char *KiCadLayerNameLUT[];
-    extern const char *padTypeKiCad[];
-    extern const char *padShapeKiCad[];
+/*
     
-  }
+*/
 
-#endif // !LC2KICAD_CONSTS
+#include <vector>
+#include <string>
+#include "includes.hpp"
+
+namespace lc2kicad
+{
+  class deserializerKiCad5_Mk1
+  {
+
+  };
+}

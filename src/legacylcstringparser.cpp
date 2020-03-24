@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -18,8 +18,8 @@
 */
 
 #include "includes.hpp"
-#include "lcstringparser.hpp"
-#include "elements.hpp"
+#include "internalsserializer.hpp"
+#include "edaclasses.hpp"
 
 #include <string>
 #include <vector>
@@ -29,7 +29,6 @@ using std::string;
 
 namespace lc2kicad
 {
-  string StandardLCStringParser::getParserType()	const{ return string("Standard LC String Parser"); };
   
   PCB_Pad*  StandardLCStringParser::parsePadString(const string &LCJSONString, const coordinates &origin) const
   {

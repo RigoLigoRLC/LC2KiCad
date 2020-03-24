@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -76,13 +76,55 @@ namespace lc2kicad
       pos += replace.length();
     }
   }
+
+  std::string base_name(const std::string& path)
+  {
+    return path.substr(path.find_last_of("/\\") + 1);
+  }
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
   {
     coordslist *ret = new coordslist;
-    stringlist pathPartials = splitString(SVGPath, ' ');
+    size_t indexer = 0;
+    coordinates subpathHead {0, 0}, penLocation {0, 0};
+    bool relative = false;
     
     arcResolution < 2 ? arcResolution = 2 : 0;
+    
+    while(indexer < SVGPath.size())
+    {
+      switch(SVGPath[indexer])
+      {
+        case ' ': //Blank space, fetch next character
+          indexer++;
+          continue;
+
+        case 'm': //Move to, relative
+          relative = true;
+        case 'M': //Move to, absolute
+          coordinates moveTo {0, 0};
+          size_t xbegin = SVGPath.find_first_not_of(' ', indexer), xend = SVGPath.find_first_of(' ', xbegin) - 1;
+          size_t ybegin = SVGPath.find_first_not_of(' ', xend), yend = SVGPath.find_first_of(' ', ybegin) - 1;
+          indexer = yend + 1;
+          moveTo.X = atof(SVGPath.substr(xbegin, xend - xbegin + 1).c_str());
+          moveTo.Y = atof(SVGPath.substr(ybegin, yend - ybegin + 1).c_str());
+          subpathHead = penLocation = (relative ? penLocation + moveTo : moveTo);
+          break;
+
+        case 'l': //Line to, relative
+          relative = true;
+        case 'L': //Lint to, absolute
+
+          break;
+        
+        default: //Unknown situation
+          std::cout << ">>> Warning: error executing SVG path graph conversion, offset " << std::to_string(indexer)
+                    << " of path \"" << SVGPath << "\". This may cause problem.";
+          indexer++;
+          break;
+        relative = false;
+      }
+    }
     
     return ret;
   }

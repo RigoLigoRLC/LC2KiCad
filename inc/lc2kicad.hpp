@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -30,8 +30,6 @@
     #define ENABLE_EXCEPTION_TESTER
 
     //Function Prototypes here.
-    void displayUsage();
-    void displayAbout();
     void parseDocumentList(int fileCount, char *args[]);
     void parseDocuments(int fileCount, char *args[]);
     void parseDocument(char *filePath, char *bufferField);
