@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -17,7 +17,7 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "elements.hpp"
+#include "edaclasses.hpp"
 #include "includes.hpp"
 #include "consts.hpp"
 #include "rapidjson.hpp"

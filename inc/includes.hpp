@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -27,6 +27,7 @@
   
   #include <vector>
   #include <string>
+  #include <map>
   #include <stdexcept>
   
   namespace lc2kicad
@@ -52,12 +53,24 @@
     };
 
     typedef coordinates sizeXY;
-
     typedef std::vector<std::string> stringlist;
     typedef std::vector<coordinates> coordslist;
+    typedef std::pair<std::string, double> str_dbl_pair;
+    typedef std::map<std::string, double> str_dbl_map;
+    typedef std::vector<str_dbl_pair> str_dbl_pairlist;
     
     enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
 
+    struct programArgumentParseResult
+    {
+      bool invokeHelp = true, invokeVersionInfo = false;
+      bool convertAsProject = false;
+      bool useCompatibilitySwitches = false;
+      str_dbl_map compatibilityOptions;
+      stringlist filenames;
+    };
+
+    programArgumentParseResult programArgumentParser(const int&, const char**&);
     void errorAndQuit(std::runtime_error *e);
     void assertThrow(const bool statement, const char* message);  
     void assertThrow(const bool statement, const std::string &message);
@@ -67,6 +80,7 @@
 
     coordslist* simpleLCSVGSegmentizer(const std::string&, int);
     stringlist splitString(std::string sourceString, char delimeter);
+    std::string base_name(const std::string& path)
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     
   }

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -24,58 +24,53 @@
 #include <includes.hpp>
 #include <lc2kicad.hpp>
 
-using namespace std;
+using std::cout;
+using std::endl;
 using namespace lc2kicad;
 
-int main(int argc, const char** argv) {
-  switch(argc)
-  {
-    case 1:
-      displayUsage();
-      break;
-    case 2:
-      if((strcmp(argv[1], "-h") * strcmp(argv[1], "--help")) == 0)
-      {
-        displayUsage();
-        break;
-      }
-      else if ((strcmp(argv[1], "-v") * strcmp(argv[1], "--version")) == 0)
-      {
-        displayAbout();
-        break;
-      }
-#ifdef ENABLE_EXCEPTION_TESTER
-    case 3:
-      if(strcmp(argv[1], "--testerr") == 0)
-      {
-        runtime_error *e = new runtime_error(argv[2]);
-        errorAndQuit(e);
-      }
-#endif
-    default:
-      //try to parse all the documents specified
+void lc2kicad::displayUsage();
+void lc2kicad::displayAbout();
 
-      cout << argc - 1 << " document(s) specified in this session.\n"
-           << "Try to locate all the specified files now.\n\n";
+int main(int argc, const char** argv)
+{
+  auto argParseResult = programArgumentParser(argc, argv);
+  /**/ if(argParseResult.invokeHelp)
+    lc2kicad::displayUsage();
+  else if(argParseResult.invokeVersionInfo)
+    lc2kicad::displayAbout();
+  else if(argParseResult.useCompatibilitySwitches);
 
-      try
-      {
-        parseDocumentList(argc - 1, (char **)argv);
-      }
-      catch(runtime_error& e)
-      {
-        errorAndQuit(&e);
-      }
-      //if all the files can be found, then start parsing each file.
-      try
-      {
-        parseDocuments(argc - 1, (char **)argv);
-      }
-      catch (runtime_error& e)
-      {
-        errorAndQuit(&e);
-      }
-      break;
-  }
   return 0;
+}
+
+
+namespace lc2kicad
+{
+  void displayUsage()
+  {
+    cout  << "Usage: lc2kicad FILENAME...\n"
+          << "  or:  lc2kicad [OPTION]\n\n"
+          << "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
+          << "          vis EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
+          << "  -h, --help:     Display this help message and quit.\n"
+          << "  -v, --version:  Display about message.\n";
+  }
+
+  void displayAbout()
+  {
+    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl << endl
+          << "This program is an utility that allows you to convert your EasyEDA documents\n"
+          << "into the KiCad 5 version document, so that you will be able to move your\n"
+          << "designs in EasyEDA to KiCad for any legit purpose.\n\n"
+          << "Note that you should not convert any document that is not owned by you without\n"
+          << "written permission from the document author. You should NOT use this software\n"
+          << "if you don't accept the EasyEDA Terms of Service.\n\n"
+          << "LC2KiCad is a free software, distributed under the terms of GNU Lesser General\n"
+          << "Public License as published by Free Software Foundation, either version 3, or\n"
+          << "(at your option) any later version.\n\n"
+          << "This software comes with ABSOLUTE NO WARRANTY, without even the implied\n"
+          << "warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+          << "You should have received a copy of the GNU Lesser General Public License\n"
+          << "along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.\n";
+  }
 }

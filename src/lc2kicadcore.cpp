@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC, BadLuckW and all other LC2KiCad contributers.
+    Copyright (c) 2020 RigoLigoRLC.
 
     This file is part of LC2KiCad.
 
@@ -24,7 +24,7 @@
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
-#include "lcstringparser.hpp"
+#include "internalsserializer.hpp"
 
 using std::cout;
 using std::endl;
@@ -50,38 +50,7 @@ namespace lc2kicad
   const char *padTypeKiCad[] = {"smd", "smd", "thru_hole", "np_thru_hole"};
   const char *padShapeKiCad[] = {"circle", "oval", "rect", "custom"};
 
-  void displayUsage()
-  {
-    cout  << "Usage: lc2kicad FILENAME...\n"
-          << "  or:  lc2kicad [OPTION]\n\n"
-          << "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
-          << "          vis EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
-          << "  -h, --help:     Display this help message and quit.\n"
-          << "  -v, --version:  Display about message.\n";
-  }
 
-  void displayAbout()
-  {
-    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl << endl
-          << "This program is an utility that allows you to convert your EasyEDA documents\n"
-          << "into the KiCad 5 version document, so that you will be able to move your\n"
-          << "designs in EasyEDA to KiCad for any legit purpose.\n\n"
-          << "Note that you should not convert any document that is not owned by you without\n"
-          << "written permission from the document author. You should NOT use this software\n"
-          << "if you don't accept the EasyEDA Terms of Service.\n\n"
-          << "LC2KiCad is a free software, distributed under the terms of GNU Lesser General\n"
-          << "Public License as published by Free Software Foundation, either version 3, or\n"
-          << "(at your option) any later version.\n\n"
-          << "This software comes with ABSOLUTE NO WARRANTY, without even the implied\n"
-          << "warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
-          << "You should have received a copy of the GNU Lesser General Public License\n"
-          << "along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.\n";
-  }
-
-  string base_name(string const& path)
-  {
-    return path.substr(path.find_last_of("/\\") + 1);
-  }
 
 
 
@@ -246,69 +215,6 @@ namespace lc2kicad
 
   void parseDocument(char *filePath, char *bufferField)
   {
-    std::FILE *parseTarget = std::fopen(filePath, "r");
-
-    FileReadStream fileReader(parseTarget, bufferField, READ_BUFFER_SIZE);
-    Document parseTargetDoc;
-    parseTargetDoc.ParseStream(fileReader);
-
-    LCStringParserContainer *LCParser;
-
-    std::fclose(parseTarget);
-
-    if(parseTargetDoc.HasParseError())
-    {
-      cout << "\tError when parsing file \"" << filePath << "\":\n"
-           << "\tError code " << parseTargetDoc.GetParseError() << " at offset " << parseTargetDoc.GetErrorOffset() << ".\n";
-      assertThrow(false, "Error occured while parsing a file.");
-    }
-
-    //If this file is a valid JSON file, continue parsing.
-
-    int documentType = -1;
-    string filename = base_name(string(filePath)), editorVer = "";
-
-    //Judge the document type and do tasks accordingly.
-    if(parseTargetDoc.HasMember("head"))
-    {
-      Value& head = parseTargetDoc["head"];
-      assertThrow(head.IsObject(), "Invalid \"head\" type.");
-      assertThrow(head.HasMember("docType"), "\"docType\" not found.");
-      documentType = stoi(head["docType"].GetString());
-      if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
-        editorVer = head["editorVersion"].GetString();
-    }
-    else
-    {
-      assertThrow(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
-      assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
-      documentType = stoi(parseTargetDoc["docType"].GetString());
-      if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
-        editorVer = parseTargetDoc["editorVersion"].GetString();
-    }
-    if(documentType >= 1 && documentType <= 7)
-    {
-      cout << "\tThis document is a " << documentTypeName[documentType] << " file";
-      if(editorVer != "")
-        cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
-      else
-        cout << ". Unknown EasyEDA Editor version.\n";
-    }
-    else
-      assertThrow(false, "Not supported document type.");
-
-    LCParser = new StandardLCStringParser();
-      
-    
-    //Now decide what are we going to parse, whether schematics or PCB, anything else.
-    switch(documentType)
-    {
-      case 4:
-        docPCBLibParser(parseTargetDoc, filename, 1, LCParser);
-        break;
-      default:
-        assertThrow(false, "This kind of document type is not supported yet.");
-    }
 
   }
 
