@@ -27,19 +27,12 @@
 
 namespace lc2kicad
 {
-
-  void errorAndQuit(std::runtime_error *e)
-  #ifdef ERROR_EXIT
-    { std::cout << "Error running the program: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; exit(1); }
-  #else
-    #ifdef ERROR_ABORT
-      { std::cout << "Runtime error: " << e->what() << std::endl << std::endl << "The intended operation cannot be done. The application will quit.\n"; abort(); }
-    #endif
-  #endif
   
   //void assertThrow(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
   void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
   void assertThrow(const bool statement, const std::string &message) {if(!statement){throw std::runtime_error(message.c_str());}}
+
+  const char gitCommitHash[] = "@GIT_SHA1@";
 
   std::vector<std::string> splitString(std::string sourceString, char delimeter)
   {
@@ -81,6 +74,13 @@ namespace lc2kicad
   {
     return path.substr(path.find_last_of("/\\") + 1);
   }
+
+  std::string decToHex(long _decimal)
+  {
+    std::stringstream tmp;
+    tmp << std::hex << _decimal;
+    return tmp.str();
+  }
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
   {
@@ -102,6 +102,7 @@ namespace lc2kicad
         case 'm': //Move to, relative
           relative = true;
         case 'M': //Move to, absolute
+        {
           coordinates moveTo {0, 0};
           size_t xbegin = SVGPath.find_first_not_of(' ', indexer), xend = SVGPath.find_first_of(' ', xbegin) - 1;
           size_t ybegin = SVGPath.find_first_not_of(' ', xend), yend = SVGPath.find_first_of(' ', ybegin) - 1;
@@ -110,13 +111,13 @@ namespace lc2kicad
           moveTo.Y = atof(SVGPath.substr(ybegin, yend - ybegin + 1).c_str());
           subpathHead = penLocation = (relative ? penLocation + moveTo : moveTo);
           break;
-
+        }
         case 'l': //Line to, relative
           relative = true;
         case 'L': //Lint to, absolute
-
+        {
           break;
-        
+        }
         default: //Unknown situation
           std::cout << ">>> Warning: error executing SVG path graph conversion, offset " << std::to_string(indexer)
                     << " of path \"" << SVGPath << "\". This may cause problem.";

@@ -16,13 +16,13 @@
     You should have received a copy of the GNU Lesser General Public License
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
-  
-#ifndef LC2KICAD_ELEMENTS
-  #define LC2KICAD_ELEMENTS
+
+#pragma once
 
   #include <vector>
   #include <fstream>
   #include <string>
+  #include <memory>
 
   #include "includes.hpp"
   #include "consts.hpp"
@@ -31,6 +31,7 @@
   using std::vector;
   using std::fstream;
   using std::string;
+  using std::shared_ptr;
 
   /**
    * This section is dedicated for class definitions of EDA documents.
@@ -47,27 +48,50 @@
    */
   namespace lc2kicad
   {
+    class LC2KiCadCore;
+    class KiCad_5_Deserializer;
+
+    struct EDAElement;
+    //Referencing each other, must declare one first.
+
     struct EDADocument
     {
       string pathToFile;
       bool module; // When is true, means only convert the first element contained and output as a module.
+      shared_ptr<rapidjson::Document> jsonParseResult; // For convenience. This is only one pointer and isn't gonna take much RAM
+      str_str_map docInfo; // Due to compatibility concerns, use a map to store temporary info for use
+      documentTypes docType;
+      coordinates origin;
+      double gridSize;
 
-      string* parseSelf();
-      string* parseSelf(str_dbl_pair deserializerSwitch);
-      //string* parseSelf(EDAInternalDeserializer& deserializer)
+      std::vector<EDAElement*> containedElements;
+
+      LC2KiCadCore *parent = nullptr;
+      virtual string* deserializeSelf() const;
+      virtual string* deserializeSelf(str_dbl_pair deserializerSwitch);
+      //string* deserializeSelf(KiCad_5_Deserializer&)
+
+      EDADocument(bool useJSONStorage = true);
+      ~EDADocument();
     };
 
     struct PCBDocument : public EDADocument
     {
-      std::vector<PCBElements*> containedElements;
+      PCBDocument(const EDADocument& a);
+      ~PCBDocument();
     };
-  }
+    
+    struct EDAElement
+    {
+      bool visibility = true, locked = false;
+      EDADocument *parent = nullptr;
 
-  /**
-   * This section is dedicated for elements on the PCBs and footprints.
-   */
-  namespace lc2kicad
-  {
+      virtual string* deserializeSelf() const = 0;
+      virtual string* deserializeSelf(KiCad_5_Deserializer&) const = 0;
+    };
+    /**
+     * This section is dedicated for elements on the PCBs and footprints.
+     */
     /**
      * LCEDA flood fill (COPPERAREA) fill style. KiCad does not support grid fill yet,
      * thus a warning should be given to the user.
@@ -77,27 +101,21 @@
     enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
     enum class PCBHoleShape : int { circle = 0, slot = 1 };
 
-    struct PCBElements
-    {
-        bool isVisible;
+    struct PCBElement : public EDAElement { };
 
-        bool getVisibility() { return isVisible; };
-        void setVisibility(bool visibility) { isVisible = visibility; };
-        virtual string* parseSelf() = 0;
-        virtual string* parseSelf(str_dbl_pair& deserializerSwitch)
-        {//TODO: Split deserializer
-          //if (deserializerSwitch.first == "")
-            //parseSelf(currentLatestDeserializer)
-        }
-        //string* parseSelf(EDAInternalDeserializer& deserializer) const = 0;
-        //Haven't decided to use abstract data type.
+    struct PCB_Module : public PCBElement
+    {
+      vector<PCBElement*> containedElements;
+      double orientation;
+      bool topLayer = true;
+      string reference, value;
     };
 
     /**
      * PADs as said. Soldering pads.
      * Fixme: Orphaned PADs on PCBs should be converted inside a MODULE, then placed onto PCB.
      */
-    struct PCB_Pad : public PCBElements
+    struct PCB_Pad : public PCBElement
     {
       PCBPadShape padShape;
       PCBPadType padType;
@@ -107,31 +125,35 @@
       sizeXY padSize, holeSize;
       string netName, pinNumber;
       coordslist shapePolygonPoints;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //TRACKs on non copper layers.
-    struct PCB_GraphicalTrack : public PCBElements
+    struct PCB_GraphicalTrack : public PCBElement
     {
       int layerKiCad;
       double width;
       coordslist trackPoints;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //TRACKs on copper layers.
     struct PCB_CopperTrack : public PCB_GraphicalTrack
     {
       string netName;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //HOLEs (non-plated through-holes) in LCEDA.
-    struct PCB_Hole : public PCBElements
+    struct PCB_Hole : public PCBElement
     {
       coordinates holeCoordinates;
       double holeDiameter;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     /**
@@ -141,10 +163,10 @@
      */
     struct PCB_Via : public PCB_Hole
     {
-      coordinates viaCoordinates;
       string netName;
       double viaDiameter; //The outer diameter of the copper ring
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     /**
@@ -152,12 +174,13 @@
      * Note: for PCBs, solid regions will be converted into solid flood fills if no compatibility switches
      *       are set, with a warning message prompted.
      */
-    struct PCB_SolidRegion : public PCBElements
+    struct PCB_SolidRegion : public PCBElement
     {
       coordslist fillAreaPolygonPoints;
       string netName;
       int layerKiCad;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     /**
@@ -168,25 +191,29 @@
     struct PCB_FloodFill : public PCB_SolidRegion
     {
       floodFillStyle fillStyle;
+      int layerKiCad;
       double spokeWidth, clearanceWidth;
       bool isPreservingIslands, isSpokeConnection;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
         
     //CIRCLEs on non copper layers.
-    struct PCB_GraphicalCircle : public PCBElements
+    struct PCB_GraphicalCircle : public PCBElement
     {
       coordinates center;
       int layerKiCad;
       double width, radius;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //CIRCLEs on copper layers.
     struct PCB_CopperCircle : public PCB_GraphicalCircle
     {
       string netName;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     /**
@@ -196,28 +223,36 @@
      * 
      * Ahhh, EasyEDA traditions. I h8 it. -Rigo
      */
-    struct PCB_Rect : public PCBElements
+    struct PCB_Rect : public PCBElement
     {
       coordinates topLeftPos;
       sizeXY size;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      int layerKiCad;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //ARCs on non copper layers. Derived from PCB_Arc.
-    struct PCB_GraphicalArc : public PCBElements
+    struct PCB_GraphicalArc : public PCBElement
     {
       coordinates center;
       //For default, use right deirection as 0 deg point. Use degrees not radians.
       double beginAngle, endAngle, width;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      int layerKiCad;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     //ARCs on copper layers.
     struct PCB_CopperArc : public PCB_GraphicalArc
     {
       string netName;
-      //string* parseSelf(EDAInternalDeserializer& deserializer); const;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
+    //PROTRACTORs.
+
+    //SHEETs.
+
   }
-#endif

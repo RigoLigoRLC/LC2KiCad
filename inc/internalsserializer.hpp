@@ -21,24 +21,34 @@
   #define LC2KICAD_LCSTRINGPARSER
 
   #include <string>
+  #include "includes.hpp"
   #include "edaclasses.hpp"
+
+  using namespace lc2kicad;
 
   namespace lc2kicad
   {
-    class LCJSONSerializerMk1
+    class LCJSONSerializer
     {
       public:
-        int setCompatibilitySwitches(const str_dbl_pairlist) const;
-        PCB_Pad* parsePadString(const string&, const coordinates&) const;
-        PCB_Via* parseViaString(const string&, const coordinates&) const;
-        PCB_CopperTrack* parseTrackString(const string&, const coordinates&) const;
-        PCB_GraphicalTrack* parseGraphicalLineString(const string&, const coordinates&) const;
-        PCB_FloodFill* parseFloodFillString(const string&, const coordinates&) const;
-        PCB_CopperCircle* parseCircleString(const string&, const coordinates&) const;
-        PCB_GraphicalCircle* parseGraphicalCircleString(const string&, const coordinates&) const;
+        void setCompatibilitySwitches(const str_dbl_map&);
+        void initWorkingDocument(EDADocument*);
+        void deinitWorkingDocument();
+        
+        virtual void parsePCBLibDocument();
+
+        virtual void parsePadString(const std::string&) const;
+        virtual void parseViaString(const std::string&) const;
+        virtual void parseCopperTrackString(const std::string&) const;
+        virtual void parseGraphicalTrackString(const std::string&) const;
+        virtual void parseFloodFillString(const std::string&) const;
+        virtual void parseCopperCircleString(const std::string&) const;
+        virtual void parseGraphicalCircleString(const std::string&) const;
+
         bool judgeIsOnCopperLayer(const int layerKiCad) const;
       private:
-        str_dbl_pairlist internalCompatibilitySwitches;
+        str_dbl_map internalCompatibilitySwitches;
+        EDADocument *workingDocument = nullptr;
     };
   }
 

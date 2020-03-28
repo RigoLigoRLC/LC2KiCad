@@ -20,89 +20,28 @@
 #ifndef LC2KICADCORE_HPP_
   #define LC2KICADCORE_HPP_
 
-  #include <iostream>
-  #include <string>
-  #include <vector>
-  
-  #include "rapidjson.hpp"
-
   #include "includes.hpp"
+  #include "internalsserializer.hpp"
+  #include "internalsdeserializer.hpp"
   #include "edaclasses.hpp"
-
-  using std::cout;
-  using std::endl;
-  using std::fstream;
-  using std::string;
-  using std::vector;
-  using std::stof;
-  using std::stoi;
-  using std::to_string;
-  using rapidjson::FileReadStream;
-  using rapidjson::Document;
-  using rapidjson::Value;
 
   namespace lc2kicad
   {
     class LC2KiCadCore
     {
       public:
-        EDADocument* autoParseLCFile(string& filePath)
-        {
-          //First, the program has to identify what the file type EasyEDA document is.
-          //Determine if it's JSON file. So use RapidJSON read the file first.
-          char readBuffer[BUFSIZ]; //Create the buffer for RapidJSON to read the file
-          std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
-          FileReadStream fileReader(parseTarget, readBuffer, BUFSIZ);
-          Document parseTargetDoc;
-          parseTargetDoc.ParseStream(fileReader);
-          std::fclose(parseTarget);
-          
-          //EasyEDA files are now only in JSON. If fail to detect a valid JSON file, throw an exception.
-          assertThrow(!parseTargetDoc.HasParseError(),
-                      string("Error occured while parsing a file:\n") + "Error when parsing file \"" + filePath + "\":\n" +
-                      "\tError code " + to_string(parseTargetDoc.GetParseError()) + " at offset " + 
-                      to_string(parseTargetDoc.GetErrorOffset()) + ".\n"
-                      );
+        EDADocument* autoParseLCFile(string& filePath);
 
-          //If this file is a valid JSON file, continue parsing.
-          int documentType = -1;
-          string filename = base_name(string(filePath)), editorVer = "";
+        void deserializeFile(EDADocument*, std::string*);
 
-          //Judge the document type and do tasks accordingly.
-          if(parseTargetDoc.HasMember("head"))
-          {
-            Value& head = parseTargetDoc["head"];
-            assertThrow(head.IsObject(), "Invalid \"head\" type.");
-            assertThrow(head.HasMember("docType"), "\"docType\" not found.");
-            documentType = stoi(head["docType"].GetString());
-            if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
-              editorVer = head["editorVersion"].GetString();
-          }
-          else
-          {
-            assertThrow(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
-            assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
-            documentType = stoi(parseTargetDoc["docType"].GetString());
-            if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
-              editorVer = parseTargetDoc["editorVersion"].GetString();
-          }
-          assertThrow(!(documentType >= 1 && documentType <= 7), "Not supported document type.");
-          cout << "\tThis document is a " << documentTypeName[documentType] << " file";
-          if(editorVer != "")
-            cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
-          else
-            cout << ". Unknown EasyEDA Editor version.\n";
-          
-          //Now decide what are we going to parse, whether schematics or PCB, anything else.
-          switch(documentType)
-          {
-            case 4:
-              doPCBLibParseJob(parseTargetDoc, filename, 1);
-              break;
-            default:
-              assertThrow(false, "This kind of document type is not supported yet.");
-          }
-        }
+        KiCad_5_Deserializer* getDeserializer() { return internalDeserializer; };
+        LCJSONSerializer* getSerializer() { return internalSerializer; };
+
+        LC2KiCadCore(str_dbl_map&);
+        ~LC2KiCadCore();
+      private:
+        KiCad_5_Deserializer* internalDeserializer;
+        LCJSONSerializer* internalSerializer;
     };
   }
 

@@ -21,24 +21,52 @@
 #include <vector>
 #include <fstream>
 
-#include <includes.hpp>
-#include <lc2kicad.hpp>
+#include "includes.hpp"
+#include "lc2kicad.hpp"
+#include "edaclasses.hpp"
+//#include "lc2kicadcore.hpp"
 
 using std::cout;
+using std::cerr;
 using std::endl;
+using std::vector;
 using namespace lc2kicad;
 
-void lc2kicad::displayUsage();
-void lc2kicad::displayAbout();
+namespace lc2kicad
+{
+  void displayAbout();
+  void displayUsage();
+}
 
 int main(int argc, const char** argv)
 {
   auto argParseResult = programArgumentParser(argc, argv);
-  /**/ if(argParseResult.invokeHelp)
+
+  if(argParseResult.invokeHelp) // Show help or version info then exit
+  {
     lc2kicad::displayUsage();
+    exit(0);
+  }
   else if(argParseResult.invokeVersionInfo)
+  {
     lc2kicad::displayAbout();
-  else if(argParseResult.useCompatibilitySwitches);
+    exit(0);
+  }
+
+//  LC2KiCadCore core(argParseResult.compatibilityOptions); //Initialize Core Program
+  vector<EDADocument*> documentCacheList;
+
+  if(argParseResult.convertAsProject)
+  {
+    cerr << "Error: converting as project is not supported yet.";
+    exit(1);
+  }
+  else
+  {
+    for(auto &i : argParseResult.filenames);
+//      documentCacheList.push_back(core.autoParseLCFile(i));
+    for(auto &i : documentCacheList);
+  }
 
   return 0;
 }
@@ -58,7 +86,8 @@ namespace lc2kicad
 
   void displayAbout()
   {
-    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl << endl
+    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl 
+          << "Compiled from " << gitCommitHash << endl
           << "This program is an utility that allows you to convert your EasyEDA documents\n"
           << "into the KiCad 5 version document, so that you will be able to move your\n"
           << "designs in EasyEDA to KiCad for any legit purpose.\n\n"

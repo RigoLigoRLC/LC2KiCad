@@ -2,8 +2,9 @@
 BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x10\x00L\x00C\x002\x00K\x00i\x00C\x00a\x00d)
 
 [CMake]
-Build Directory Count=1
+Build Directory Count=2
 Current Build Directory Index-Host System=0
+Current Build Directory Index-主机系统=1
 
 [CMake][CMake Build Directory 0]
 Build Directory Path=/home/rigoligo/Documents/C++ Projects/LC2KiCad/LC2KiCad/build
@@ -14,6 +15,16 @@ Environment Profile=
 Extra Arguments=
 Install Directory=
 Runtime=Host System
+
+[CMake][CMake Build Directory 1]
+Build Directory Path=/run/media/rigoligo/storage/C++ Projects/0001 LC2KiCad/lc2kicad/build
+Build Type=Debug\n
+CMake Binary=/usr/bin/cmake
+CMake Executable=/usr/bin/cmake
+Environment Profile=
+Extra Arguments=
+Install Directory=/usr/local
+Runtime=主机系统
 
 [Launch]
 Launch Configurations=Launch Configuration 0
