@@ -22,11 +22,8 @@
 
   namespace lc2kicad
   {
-    #define READ_BUFFER_SIZE 65536
-    #define SOFTWARE_VERSION "version alpha-0.1.3"
-
-    #define ERROR_EXIT
-  //#define ERROR_ABORT
+    #define SOFTWARE_VERSION "version alpha-0.1.99"
+    extern const char gitCommitHash[];
 
     const double tenmils_to_mm_coefficient = 0.254;
 
@@ -35,7 +32,6 @@
     extern const char *KiCadLayerNameLUT[];
     extern const char *padTypeKiCad[];
     extern const char *padShapeKiCad[];
-    
   }
 
 #endif // !LC2KICAD_CONSTS

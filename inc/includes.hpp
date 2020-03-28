@@ -56,8 +56,10 @@
     typedef std::vector<std::string> stringlist;
     typedef std::vector<coordinates> coordslist;
     typedef std::pair<std::string, double> str_dbl_pair;
+    typedef std::pair<std::string, std::string> str_str_pair;
     typedef std::map<std::string, double> str_dbl_map;
-    typedef std::vector<str_dbl_pair> str_dbl_pairlist;
+    //typedef std::vector<str_dbl_pair> str_dbl_pairlist;
+    typedef std::map<std::string, std::string> str_str_map;
     
     enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
 
@@ -80,7 +82,8 @@
 
     coordslist* simpleLCSVGSegmentizer(const std::string&, int);
     stringlist splitString(std::string sourceString, char delimeter);
-    std::string base_name(const std::string& path)
+    std::string base_name(const std::string& path);
+    std::string decToHex(const long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     
   }

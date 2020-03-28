@@ -17,18 +17,45 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-/*
-    
-*/
+#ifndef INTN_DESERIALIZER_HPP_
+  #define INTN_DESERIALIZER_HPP_
 
-#include <vector>
-#include <string>
-#include "includes.hpp"
+  #include <string>
+  #include "includes.hpp"
+  #include "edaclasses.hpp"
 
-namespace lc2kicad
-{
-  class deserializerKiCad5_Mk1
+  using namespace lc2kicad;
+  
+  namespace lc2kicad
   {
+    class KiCad_5_Deserializer
+    {
+      public:
+        void initWorkingDocument(EDADocument* targetDoc);
+        void deinitWorkingDocument();
+        void setCompatibilitySwitches(const str_dbl_map &_compatibSw);
 
-  };
-}
+        virtual std::string* outputFileHeader();
+        virtual std::string* outputFileEnding();
+  
+        virtual std::string* outputModule(const PCB_Module&);
+        virtual std::string* outputPad(const PCB_Pad&) const;
+        virtual std::string* outputVia(const PCB_Via&) const;
+        virtual std::string* outputGraphicalTrack(const PCB_GraphicalTrack&) const;
+        virtual std::string* outputCopperTrack(const PCB_CopperTrack&) const;
+        virtual std::string* outputHole(const PCB_Hole&) const;
+        virtual std::string* outputSolidRegion(const PCB_SolidRegion&) const;
+        virtual std::string* outputFloodFill(const PCB_FloodFill&) const;
+        virtual std::string* outputGraphicalCircle(const PCB_GraphicalCircle&) const;
+        virtual std::string* outputCopperCircle(const PCB_CopperCircle&) const;
+        virtual std::string* outputGraphicalArc(const PCB_GraphicalArc&) const;
+        virtual std::string* outputCopperArc(const PCB_CopperArc&) const;
+        virtual std::string* outputRect(const PCB_Rect&) const;
+
+      private:
+        EDADocument *workingDocument = nullptr;
+        str_dbl_map internalCompatibilitySwitches; //3-Character version copy of compatibility switches.
+        std::string indent;
+    };
+  }
+#endif
