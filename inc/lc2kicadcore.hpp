@@ -30,15 +30,16 @@
     class LC2KiCadCore
     {
       public:
+        LC2KiCadCore(str_dbl_map&);
+        ~LC2KiCadCore();
+
         EDADocument* autoParseLCFile(string& filePath);
 
         void deserializeFile(EDADocument*, std::string*);
 
         KiCad_5_Deserializer* getDeserializer() { return internalDeserializer; };
         LCJSONSerializer* getSerializer() { return internalSerializer; };
-
-        LC2KiCadCore(str_dbl_map&);
-        ~LC2KiCadCore();
+        
       private:
         KiCad_5_Deserializer* internalDeserializer;
         LCJSONSerializer* internalSerializer;

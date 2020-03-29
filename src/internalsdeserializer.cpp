@@ -37,20 +37,24 @@ using std::to_string;
 
 namespace lc2kicad
 {
+  void KiCad_5_Deserializer::initWorkingDocument(EDADocument *_workingDocument) { indent = "  "; workingDocument = _workingDocument; }
+  void KiCad_5_Deserializer::deinitWorkingDocument() { indent = ""; workingDocument = nullptr; }
+  void KiCad_5_Deserializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw) { internalCompatibilitySwitches = _compatibSw; }
+
+
   string* KiCad_5_Deserializer::outputFileHeader()
   {
     string timestamp = decToHex(time(nullptr)),
           *ret = new string();
+    workingDocument->docInfo["timestamp"] = timestamp;
     switch(workingDocument->docType)
     {
       case documentTypes::pcb_lib:
-        *ret += "(module " + workingDocument->docInfo["documentname"] + " (tedit " + timestamp + "\n"
-              + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)\n"
-                "    (effects (font (size 1 1) (thickness 0.15)))\n"
-                "  }"
-                "  (fp_text value " + workingDocument->docInfo["documentname"] + " (at 0 0) (layer F.Fab)\n"
-                "    (effects (font (size 1 1) (thickness 0.15)))\n"
-                "  )\n";
+        *ret += "(module " + workingDocument->docInfo["documentname"] + " (tedit " + timestamp + ")\n"
+              + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
+                " (effects (font (size 1 1) (thickness 0.15))))\n"
+                "  (fp_text value " + workingDocument->docInfo["documentname"] + " (at 0 0) (layer F.Fab)"
+                " (effects (font (size 1 1) (thickness 0.15))))\n\n";
         indent += "";
         break;
       default:
@@ -91,8 +95,8 @@ namespace lc2kicad
     *ret += indent;
     *ret += "(pad \"" + target.pinNumber + "\" " + padTypeKiCad[static_cast<int>(target.padType)] + ' '
           + padShapeKiCad[static_cast<int>(target.padShape)] + " (at " + to_string(target.padCoordinates.X)
-          + ' ' + to_string(target.padCoordinates.Y) + ") (size " + to_string(target.padSize.X) + ' '
-          + to_string(target.padSize.Y);
+          + ' ' + to_string(target.padCoordinates.Y) + (target.orientation ? " " + to_string(target.orientation) : "")
+          + ") (size " + to_string(target.padSize.X) + ' '+ to_string(target.padSize.Y);
     if(target.padType == PCBPadType::through || target.padType == PCBPadType::noplating)
     {
       *ret += ") (drill";
@@ -121,8 +125,9 @@ namespace lc2kicad
       *ret += ')';
     else
     {
-      *ret += string("\n") + indent + string("  (zone_connect 2)") + '\n' + indent + "  (options (clearance outline) (anchor circle))\n"
-           + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
+      *ret += string("\n") + indent + string("  (zone_connect 2)") + '\n' + indent +
+              "  (options (clearance outline) (anchor circle))\n"
+            + indent + "  (primitives\n" + indent + "    (gr_poly (pts\n      " + indent;
       for(coordinates i : target.shapePolygonPoints)
         *ret += " (xy " + to_string(i.X) + ' ' + to_string(i.Y) + ')';
       *ret += string(") (width 0))\n") + indent + "  ))";
@@ -165,12 +170,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputGraphicalTrack(const PCB_GraphicalTrack& target) const
   {
     string *ret = new string();
-    bool isInFootprint;
-    
-    if(target.parent->module) // Determine if this graphical line is used in footprint
-      isInFootprint = true;
-    else
-      isInFootprint = false;                     // If not in a footprint, use gr_line. Else, use fp_line
+    bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
       
 
     for(int i = 0; i < target.trackPoints.size() - 1; i++)
@@ -179,7 +179,7 @@ namespace lc2kicad
            + to_string(target.trackPoints[i + 1].Y) + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width "
            + to_string(target.width) + "))\n";
 
-    ret[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
+    (*ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
     return ret;
   }
@@ -240,6 +240,75 @@ namespace lc2kicad
 
     ret[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
+    return ret;
+  }
+
+  string* KiCad_5_Deserializer::outputHole(const PCB_Hole& target) const
+  {
+    string *ret = new string();
+
+    if(target.parent->module)
+      *ret += indent + 
+              "(pad \"\" np_thru_hole circle (at " + to_string(target.holeCoordinates.X) + " " + to_string(target.holeCoordinates.Y) + ") "
+              "(size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
+              "(drill " + to_string(target.holeDiameter) + ") (layers *.Cu *.Mask))";
+    else
+      *ret += "  (module MountingHole_NonPlated_Converted (layer F.Cu)\n"
+              "    (at " + to_string(target.holeCoordinates.X) + " " + to_string(target.holeCoordinates.Y) + ")\n"
+              "    (descr MountingHold_NonPlated_Converted)\n"
+              "    (pad \"\" np_thru_hole circle (at 0 0) (size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
+              "   (drill " + to_string(target.holeDiameter) + ") (layers *.Cu *.Mask))\n"
+              "  )";
+    return ret;
+  }
+
+  string* KiCad_5_Deserializer::outputRect(const PCB_Rect& target) const
+  {
+    string  *ret = new string(),
+            x1 = to_string(target.topLeftPos.X),
+            y1 = to_string(target.topLeftPos.Y),
+            x2 = to_string(target.topLeftPos.X + target.size.X),
+            y2 = to_string(target.topLeftPos.Y + target.size.Y),
+            w = to_string(target.strokeWidth);
+
+    if(target.parent->module)
+    {
+      
+      *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+                     + ") (width " + w + "))\n";
+      *ret += indent + "(fp_line (start " + x2 + " " + y1 + ") (end " + x2 + " " + y2 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+                     + ") (width " + w + "))\n";
+      *ret += indent + "(fp_line (start " + x2 + " " + y2 + ") (end " + x1 + " " + y2 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+                     + ") (width " + w + "))\n";
+      *ret += indent + "(fp_line (start " + x1 + " " + y2 + ") (end " + x1 + " " + y1 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+                     + ") (width " + w + "))\n";
+    }
+    else
+    {
+      *ret += "  (gr_poly (pts (xy " + x1 + " " + y1 + ") (xy " + x1 + " " + y2 + ") (xy " + x2 + ' ' + y2 + ") (xy " + x1 + ' ' + y2 + ")) "
+              "(layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + w + "))";
+    }
+
+    return ret;
+  }
+
+  string* KiCad_5_Deserializer::outputSolidRegion(const PCB_SolidRegion& target) const
+  {
+    string *ret = new string("");
+    std::cerr << "KiCad_5_Deserializer::outputSolidRegion stub. " << target.id << "is ignored.\n";
+    return ret;
+  }
+  string* KiCad_5_Deserializer::outputGraphicalArc(const PCB_GraphicalArc& target) const
+  {
+    string *ret = new string("");
+    std::cerr << "KiCad_5_Deserializer::outputGraphicalArc stub. " << target.id << "is ignored.\n";
+    return ret;
+  }
+
+  string* KiCad_5_Deserializer::outputCopperArc(const PCB_CopperArc& target) const
+  {
+    string *ret = new string("");
+    std::cerr << "KiCad_5_Deserializer::outputCopperArc stub. " << target.id << "is ignored.\n";
     return ret;
   }
 }

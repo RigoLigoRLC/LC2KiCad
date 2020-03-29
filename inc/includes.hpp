@@ -65,7 +65,7 @@
 
     struct programArgumentParseResult
     {
-      bool invokeHelp = true, invokeVersionInfo = false;
+      bool invokeHelp = false, invokeVersionInfo = false;
       bool convertAsProject = false;
       bool useCompatibilitySwitches = false;
       str_dbl_map compatibilityOptions;
