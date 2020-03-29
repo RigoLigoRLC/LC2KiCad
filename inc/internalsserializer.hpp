@@ -38,12 +38,15 @@
         virtual void parsePCBLibDocument();
 
         virtual void parsePadString(const std::string&) const;
+        virtual void parseHoleString(const std::string&) const;
         virtual void parseViaString(const std::string&) const;
         virtual void parseCopperTrackString(const std::string&) const;
         virtual void parseGraphicalTrackString(const std::string&) const;
         virtual void parseFloodFillString(const std::string&) const;
         virtual void parseCopperCircleString(const std::string&) const;
         virtual void parseGraphicalCircleString(const std::string&) const;
+        virtual void parseRectString(const std::string&) const;
+
 
         bool judgeIsOnCopperLayer(const int layerKiCad) const;
       private:

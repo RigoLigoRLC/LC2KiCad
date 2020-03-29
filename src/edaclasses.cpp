@@ -34,16 +34,29 @@ using std::string;
 
 namespace lc2kicad
 {
-  EDADocument::EDADocument(bool useJSONStorage)
+  EDADocument::EDADocument()
+  {
+    jsonParseResult = std::make_shared<rapidjson::Document>();
+  }
+
+  EDADocument::~EDADocument()
+  {
+
+  };
+
+  EDADocument::EDADocument(const bool useJSONStorage)
   {
     if(useJSONStorage)
       jsonParseResult = std::make_shared<rapidjson::Document>();
   }
 
-  PCBDocument::PCBDocument(const EDADocument& a)
+  string* EDADocument::deserializeSelf() const { return nullptr; }
+
+  PCBDocument::PCBDocument(const EDADocument& a)// : EDADocument::EDADocument(true)
   {
     pathToFile = a.pathToFile;
     docInfo = a.docInfo;
+    module = a.module;
     jsonParseResult = a.jsonParseResult;
   }
 

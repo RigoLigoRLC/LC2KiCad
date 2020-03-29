@@ -22,6 +22,7 @@
 #include <fstream>
 #include <ctime>
 
+#include "consts.hpp"
 #include "includes.hpp"
 #include "rapidjson.hpp"
 #include "edaclasses.hpp"
@@ -77,7 +78,7 @@ namespace lc2kicad
     // Determine if it's JSON file. So use RapidJSON read the file first.
 
     // Create an internal class object.
-    EDADocument targetInternalDoc;
+    EDADocument targetInternalDoc(true);
     targetInternalDoc.pathToFile = filePath; //Just for storage; not being used now.
     targetInternalDoc.parent = this; // Set parent. Currently used for deserializer referencing.
 
@@ -120,7 +121,7 @@ namespace lc2kicad
       if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
         editorVer = parseTargetDoc["editorVersion"].GetString();
     }
-    assertThrow(!(documentType >= 1 && documentType <= 7), "Not supported document type.");
+    assertThrow((documentType >= 1 && documentType <= 7), "Not supported document type.");
     cout << "\tThis document is a " << documentTypeName[documentType] << " file";
     if(editorVer != "")
       cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
@@ -160,12 +161,13 @@ namespace lc2kicad
 
   void LC2KiCadCore::deserializeFile(EDADocument* target, string* path)
   {
-    cout << "Create output file for " << target->docInfo["documentname"] << " for output";
+    cout  << "Create output file for " << target->docInfo["documentname"] << documentExtensionName[target->docType]
+          << " for output.\n";
 
     std::ofstream outputfile;
     std::ostream *outputStream = &cout;
     string* tempResult;
-    outputfile.open(*path + target->docInfo["documentname"], std::ios::out);
+    outputfile.open(*path + target->docInfo["documentname"] + documentExtensionName[target->docType], std::ios::out);
 
     if(outputfile.fail())
       cerr << "Error: Cannot create file for this document. File content would be written into"
@@ -174,11 +176,17 @@ namespace lc2kicad
       outputStream = &outputfile;
     
     internalDeserializer->initWorkingDocument(target);
+
+    *outputStream << *internalDeserializer->outputFileHeader();
     for(auto &i : target->containedElements)
     {
       tempResult = i->deserializeSelf(*internalDeserializer);
       *outputStream << *tempResult << endl;
       delete tempResult;
     }
+    *outputStream << *internalDeserializer->outputFileEnding();
+
+    if(!outputfile.fail())
+      outputfile.close();
   }
 }

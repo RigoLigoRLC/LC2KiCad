@@ -24,7 +24,7 @@
 #include "includes.hpp"
 #include "lc2kicad.hpp"
 #include "edaclasses.hpp"
-//#include "lc2kicadcore.hpp"
+#include "lc2kicadcore.hpp"
 
 using std::cout;
 using std::cerr;
@@ -53,8 +53,10 @@ int main(int argc, const char** argv)
     exit(0);
   }
 
-//  LC2KiCadCore core(argParseResult.compatibilityOptions); //Initialize Core Program
+  LC2KiCadCore core = LC2KiCadCore(argParseResult.compatibilityOptions); //Initialize Core Program
   vector<EDADocument*> documentCacheList;
+
+  string path = "";
 
   if(argParseResult.convertAsProject)
   {
@@ -63,9 +65,10 @@ int main(int argc, const char** argv)
   }
   else
   {
-    for(auto &i : argParseResult.filenames);
-//      documentCacheList.push_back(core.autoParseLCFile(i));
-    for(auto &i : documentCacheList);
+    for(auto &i : argParseResult.filenames)
+      documentCacheList.push_back(core.autoParseLCFile(i));
+    for(auto &i : documentCacheList)
+      core.deserializeFile(i, &path);
   }
 
   return 0;

@@ -67,17 +67,18 @@
       std::vector<EDAElement*> containedElements;
 
       LC2KiCadCore *parent = nullptr;
-      virtual string* deserializeSelf() const;
-      virtual string* deserializeSelf(str_dbl_pair deserializerSwitch);
+      virtual string* deserializeSelf() const ;
+      //virtual string* deserializeSelf(str_dbl_pair deserializerSwitch);
       //string* deserializeSelf(KiCad_5_Deserializer&)
 
-      EDADocument(bool useJSONStorage = true);
+      EDADocument();
+      EDADocument(const bool useJSONStorage);
       ~EDADocument();
     };
 
     struct PCBDocument : public EDADocument
     {
-      PCBDocument(const EDADocument& a);
+      PCBDocument(const EDADocument&);
       ~PCBDocument();
     };
     
@@ -85,6 +86,7 @@
     {
       bool visibility = true, locked = false;
       EDADocument *parent = nullptr;
+      string id;
 
       virtual string* deserializeSelf() const = 0;
       virtual string* deserializeSelf(KiCad_5_Deserializer&) const = 0;
@@ -228,6 +230,7 @@
       coordinates topLeftPos;
       sizeXY size;
       int layerKiCad;
+      double strokeWidth;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
     };

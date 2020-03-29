@@ -14,7 +14,7 @@
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
+    along with LC2KiCad. If not, see <https:// www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -32,7 +32,7 @@ using std::endl;
 using std::fstream;
 using std::string;
 using std::vector;
-using std::stof;
+using std::stod;
 using std::stoi;
 using std::to_string;
 using rapidjson::FileReadStream;
@@ -47,7 +47,7 @@ namespace lc2kicad
 
   void LCJSONSerializer::parsePCBLibDocument()
   {
-    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
+    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
     workingDocument->docType = documentTypes::pcb_lib;
 
     fstream outputFile;
@@ -65,9 +65,9 @@ namespace lc2kicad
     canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
     coordinates origin = workingDocument->origin;
-    workingDocument->origin.X = stof(canvasPropertyList[16]);
-    workingDocument->origin.Y = stof(canvasPropertyList[17]);
-    workingDocument->gridSize = stof(canvasPropertyList[6]);
+    workingDocument->origin.X = stod(canvasPropertyList[16]);
+    workingDocument->origin.Y = stod(canvasPropertyList[17]);
+    workingDocument->gridSize = stod(canvasPropertyList[6]);
 
     // Write Prefix and contributor
     Value &head = parseTarget["head"];
@@ -77,7 +77,7 @@ namespace lc2kicad
     contributor = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
 
     // TODO: Make layer info useful information
-    //Value layer = parseTarget["layers"].GetArray();
+    // Value layer = parseTarget["layers"].GetArray();
 
     assertThrow(parseTarget["shape"].IsArray(), "Not an array.");
     Value shape = parseTarget["shape"].GetArray();
@@ -131,7 +131,7 @@ namespace lc2kicad
           }
           break;
         case 'R': // Rect
-          // TODO: Parse Rect
+          parseRectString(i);
           break;
         case 'A': // Arc
           break;
@@ -139,7 +139,7 @@ namespace lc2kicad
           parseViaString(i);
           break;
         case 'H': // Hole
-          // TODO: Parse holes
+          parseHoleString(i);
           break; 
         case 'D': // Dimension
           break; 
@@ -148,6 +148,7 @@ namespace lc2kicad
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
+      workingDocument->containedElements.back()->parent = workingDocument;
     }
     
     std::ofstream writer;
@@ -171,19 +172,21 @@ namespace lc2kicad
     PCB_Pad *result = new PCB_Pad();
     stringlist paramList = splitString(LCJSONString, '~');
 
-    //Resolve pad shape
+    result->id = paramList[12]; // GGE ID.
+
+    // Resolve pad shape
     switch (paramList[1][0])
     {
-    case 'E': //ELLIPSE, ROUND
+    case 'E': // ELLIPSE, ROUND
       result->padShape = PCBPadShape::circle;
       break;
-    case 'O': //OVAL
+    case 'O': // OVAL
       result->padShape = PCBPadShape::oval;
       break;
-    case 'R': //RECT
+    case 'R': // RECT
       result->padShape = PCBPadShape::rectangle;
       break;
-    case 'P': //POLYGON
+    case 'P': // POLYGON
       result->padShape = PCBPadShape::polygon;
       break;
     default:
@@ -191,43 +194,43 @@ namespace lc2kicad
       break;
     }
 
-    //Resolve pad coordinates
-    coordinates _rawCoords = { static_cast<float>(atof(paramList[2].c_str())), static_cast<float>(atof(paramList[3].c_str())) };
-    result->padCoordinates.X = (atof(paramList[2].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->padCoordinates.Y = (atof(paramList[3].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->orientation = static_cast<int>(atof(paramList[12].c_str()));
+    // Resolve pad coordinates
+    coordinates _rawCoords = { static_cast<float>(stod(paramList[2].c_str())), static_cast<float>(stod(paramList[3].c_str())) };
+    result->padCoordinates.X = (stod(paramList[2].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->padCoordinates.Y = (stod(paramList[3].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->orientation = static_cast<int>(stod(paramList[11].c_str()));
 
-    //Resolve hole shape size
+    // Resolve hole shape size
     if(result->holeShape == PCBHoleShape::slot)
     {
-      result->holeSize.X = atof(paramList[13].c_str()) * tenmils_to_mm_coefficient;
-      result->holeSize.Y = atof(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+      result->holeSize.X = stod(paramList[13].c_str()) * tenmils_to_mm_coefficient;
+      result->holeSize.Y = stod(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
     }
     else
-      result->holeSize.X = result->holeSize.Y = atof(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+      result->holeSize.X = result->holeSize.Y = stod(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
     
-    //Resolve pad shape and size
+    // Resolve pad shape and size
     if(result->padShape == PCBPadShape::oval || result->padShape == PCBPadShape::rectangle)
     {
-      result->padSize.X = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-      result->padSize.Y = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient;
+      result->padSize.X = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+      result->padSize.Y = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient;
     }
     else if(result->padShape == PCBPadShape::circle)
-      result->padSize.X = result->padSize.Y = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-    else //polygon
+      result->padSize.X = result->padSize.Y = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+    else // polygon
     {
       result->padSize.X = result->padSize.Y = result->holeSize.Y;
       vector<string> polygonCoordinates = splitString(paramList[10], ' ');
       coordinates polygonPointTemp = { 0.0, 0.0 };
       for(int i = 0; i < polygonCoordinates.size(); i += 2)
       {
-        polygonPointTemp.X = (atof(polygonCoordinates[  i  ].c_str()) - _rawCoords.X) * tenmils_to_mm_coefficient;
-        polygonPointTemp.Y = (atof(polygonCoordinates[i + 1].c_str()) - _rawCoords.Y) * tenmils_to_mm_coefficient;
+        polygonPointTemp.X = (stod(polygonCoordinates[  i  ].c_str()) - _rawCoords.X) * tenmils_to_mm_coefficient;
+        polygonPointTemp.Y = (stod(polygonCoordinates[i + 1].c_str()) - _rawCoords.Y) * tenmils_to_mm_coefficient;
         result->shapePolygonPoints.push_back(polygonPointTemp);
       }
     }
 
-    //Resolve pad type
+    // Resolve pad type
     int padTypeTemp = atoi(paramList[6].c_str());
     if(padTypeTemp == 11)
       if(paramList[15] == "Y")
@@ -239,9 +242,23 @@ namespace lc2kicad
         result->padType = PCBPadType::top;
       else if(padTypeTemp == 2)
         result->padType = PCBPadType::bottom;
-    //store net name
+    // store net name
     result->netName = paramList[7];
     result->pinNumber = paramList[8];
+
+    workingDocument->containedElements.push_back(result);
+  }
+
+  void LCJSONSerializer::parseHoleString(const string &LCJSONString) const
+  {
+    PCB_Hole *result = new PCB_Hole();
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[4]; // GGE ID.
+
+    result->holeCoordinates.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->holeCoordinates.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->holeDiameter = stod(paramList[3]) * 2 * tenmils_to_mm_coefficient;
 
     workingDocument->containedElements.push_back(result);
   }
@@ -251,12 +268,14 @@ namespace lc2kicad
     PCB_Via *result = new PCB_Via();
     stringlist paramList = splitString(LCJSONString, '~');
 
-    //Resolving the via coordinates
-    result->holeCoordinates.X = (atof(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->holeCoordinates.Y = (atof(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    //Resolve via diameter (size)
-    result->viaDiameter = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->holeDiameter = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient;
+    result->id = paramList[6]; // GGE ID.
+
+    // Resolving the via coordinates
+    result->holeCoordinates.X = (stod(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->holeCoordinates.Y = (stod(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    // Resolve via diameter (size)
+    result->viaDiameter = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    result->holeDiameter = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient;
 
     result->netName = paramList[4];
 
@@ -268,20 +287,22 @@ namespace lc2kicad
     PCB_CopperTrack *result = new PCB_CopperTrack();
     stringlist paramList = splitString(LCJSONString, '~');
 
-    //Resolve track width
-    result->width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    result->id = paramList[5];
 
-    //Resolve track layer
-    result->layerKiCad = LCtoKiCadLayerLUT[int (atof(paramList[2].c_str()))];
+    // Resolve track width
+    result->width = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+
+    // Resolve track layer
+    result->layerKiCad = LCtoKiCadLayerLUT[int (stod(paramList[2].c_str()))];
     assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
 
-    //Resolve track points
+    // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (atof(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (atof(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->trackPoints.push_back(tempCoord);
     }
 
@@ -293,20 +314,22 @@ namespace lc2kicad
     PCB_GraphicalTrack *result = new PCB_GraphicalTrack();
     stringlist paramList = splitString(LCJSONString, '~');
 
-    //Resolve track width
-    result->width = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    result->id = paramList[5]; // GGE ID.
 
-    //Resolve track layer
+    // Resolve track width
+    result->width = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+
+    // Resolve track layer
     result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[2].c_str()));
     assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
 
-    //Resolve track points
+    // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (atof(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (atof(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->trackPoints.push_back(tempCoord);
     }
 
@@ -318,28 +341,30 @@ namespace lc2kicad
     PCB_FloodFill *result = new PCB_FloodFill();
     stringlist paramList = splitString(LCJSONString, '~');
 
-    //Resolve layer ID and net name
+    result->id = paramList[7]; // GGE ID.
+
+    // Resolve layer ID and net name
     result->netName = paramList[3].c_str();
-    result->layerKiCad = LCLayerToKiCadLayer(atof(paramList[2].c_str()));
-    //Throw error with gge ID if layer is invalid
+    result->layerKiCad = LCLayerToKiCadLayer(stod(paramList[2].c_str()));
+    // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
 
-    //Resolve track points
+    // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (atof(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (atof(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->fillAreaPolygonPoints.push_back(tempCoord);
     }
 
 
-    result->clearanceWidth = atof(paramList[5].c_str()) * tenmils_to_mm_coefficient; //Resolve clearance width
+    result->clearanceWidth = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient; // Resolve clearance width
     result->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
-      //Resolve fill style
-    result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); //Resolve connection type
-    result->isPreservingIslands = (paramList[9] == "yes" ? true : false); //Resolve island keep
+      // Resolve fill style
+    result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
+    result->isPreservingIslands = (paramList[9] == "yes" ? true : false); // Resolve island keep
 
     workingDocument->containedElements.push_back(result);
   }
@@ -348,11 +373,13 @@ namespace lc2kicad
   {
     PCB_CopperCircle *result = new PCB_CopperCircle();
     stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[6]; // GGE ID.
     
-    result->center.X = atof(paramList[1].c_str()) * tenmils_to_mm_coefficient;
-    result->center.Y = atof(paramList[2].c_str()) * tenmils_to_mm_coefficient;
-    result->radius = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->width = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+    result->center.X = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    result->center.Y = stod(paramList[2].c_str()) * tenmils_to_mm_coefficient;
+    result->radius = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
     result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
     result->netName = paramList[8];
     
@@ -363,17 +390,37 @@ namespace lc2kicad
   {
     PCB_GraphicalCircle *result = new PCB_GraphicalCircle();
     stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[6]; // GGE ID.
     
-    result->center.X = (atof(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->center.Y = (atof(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->radius = atof(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->width = atof(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+    result->center.X = (stod(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->center.Y = (stod(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->radius = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
     result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
     
     workingDocument->containedElements.push_back(result);
   }
 
-  //Judgement member function of parsers
+  void LCJSONSerializer::parseRectString(const string &LCJSONString) const
+  {
+    PCB_Rect *result = new PCB_Rect();
+    stringlist paramlist = splitString(LCJSONString, '~');
+
+    result->id = paramlist[6]; // GGE ID.
+
+    result->topLeftPos.X = (stod(paramlist[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->topLeftPos.Y = (stof(paramlist[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->size.X = (stod(paramlist[3]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->size.Y = (stod(paramlist[4]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramlist[5])];
+    result->strokeWidth = stod(paramlist[8]) * tenmils_to_mm_coefficient;
+
+    workingDocument->containedElements.push_back(result);
+  }
+
+  
+  // Judgement member function of parsers
 
   bool LCJSONSerializer::judgeIsOnCopperLayer(const int layerKiCad) const
   {

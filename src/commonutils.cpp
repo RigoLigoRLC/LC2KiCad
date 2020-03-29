@@ -32,8 +32,6 @@ namespace lc2kicad
   void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
   void assertThrow(const bool statement, const std::string &message) {if(!statement){throw std::runtime_error(message.c_str());}}
 
-  const char gitCommitHash[] = "@GIT_SHA1@";
-
   std::vector<std::string> splitString(std::string sourceString, char delimeter)
   {
     std::stringstream ss(sourceString);
