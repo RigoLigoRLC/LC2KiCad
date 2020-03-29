@@ -17,32 +17,33 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <includes.hpp>
-#include <rapidjson.hpp>
+#ifndef LC2KICADCORE_HPP_
+  #define LC2KICADCORE_HPP_
 
-#ifndef lc2kicad_
-
-  #define lc2kicad_
+  #include "includes.hpp"
+  #include "internalsserializer.hpp"
+  #include "internalsdeserializer.hpp"
+  #include "edaclasses.hpp"
 
   namespace lc2kicad
   {
-    //Definitions here.
-    #define ENABLE_EXCEPTION_TESTER
+    class LC2KiCadCore
+    {
+      public:
+        LC2KiCadCore(str_dbl_map&);
+        ~LC2KiCadCore();
 
-    //Function Prototypes here.
-    void parseDocumentList(int fileCount, char *args[]);
-    void parseDocuments(int fileCount, char *args[]);
-    void parseDocument(char *filePath, char *bufferField);
+        EDADocument* autoParseLCFile(string& filePath);
 
-    void assertThrow(bool statement, const char *message);
+        void deserializeFile(EDADocument*, std::string*);
 
-    int  layerMap(std::string &layerString);
-    void docPCBLibParser(rapidjson::Document &parseTarget, std::string &filename);
-
-    //Variables for global uses here.
-
-    //Global functions here.
-    
+        KiCad_5_Deserializer* getDeserializer() { return internalDeserializer; };
+        LCJSONSerializer* getSerializer() { return internalSerializer; };
+        
+      private:
+        KiCad_5_Deserializer* internalDeserializer;
+        LCJSONSerializer* internalSerializer;
+    };
   }
 
 #endif
