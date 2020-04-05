@@ -122,13 +122,14 @@ namespace lc2kicad
         editorVer = parseTargetDoc["editorVersion"].GetString();
     }
     assertThrow((documentType >= 1 && documentType <= 7), "Not supported document type.");
-    cout << "\tThis document is a " << documentTypeName[documentType] << " file";
+    cout << "This document is a " << documentTypeName[documentType] << " file";
     if(editorVer != "")
       cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
     else
       cout << ". Unknown EasyEDA Editor version.\n";
 
     targetInternalDoc.docInfo["filename"] = filename;
+    targetInternalDoc.docInfo["documentname"] = filename;
     targetInternalDoc.docInfo["editorversion"] = editorVer;
     
     // Now decide what are we going to parse, whether schematics or PCB, anything else.
@@ -141,20 +142,28 @@ namespace lc2kicad
 
           internalSerializer->initWorkingDocument(targetDocument);
           try
-            { internalSerializer->parsePCBLibDocument(); }
+          { internalSerializer->parsePCBLibDocument(); }
           catch(runtime_error &e)
-            {
-              cerr << "Error: " << e.what() << endl;
-              delete targetDocument; // Anything wrong happened, release memory
-              targetDocument = nullptr;
-            }
+          {
+            cerr << "Error: " << e.what() << endl;
+            delete targetDocument; // Anything wrong happened, release memory
+            targetDocument = nullptr;
+          }
+          catch(...)
+          {
+            cerr << "Error: Unhandled exception while processing \"" << filename << "\".\n"
+                    "       Operation terminated.\n";
+            delete targetDocument;
+            targetDocument = nullptr;
+          }
           internalSerializer->deinitWorkingDocument();
           
           return targetDocument; // Remember to manage dynamic memory and check if it's valid!
         }
         break;
       default:
-        assertThrow(false, "This kind of document type is not supported yet.");
+        cerr << "Error: Cannot process file \"" << filename << "\".\n"
+                "       This kind of document type is not supported yet.";
     }
     return nullptr;
   }

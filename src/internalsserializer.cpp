@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <math.h>
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
@@ -85,7 +86,8 @@ namespace lc2kicad
     vector<PCBElement*> elementsList;
     for(int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
-    workingDocument->docInfo["documentname"] = packageName;
+    if(packageName.size() != 0)
+      workingDocument->docInfo["documentname"] = packageName;
     workingDocument->docInfo["contributor"] = contributor;
 
     for(auto &i : shapesList)
@@ -171,6 +173,7 @@ namespace lc2kicad
   {
     PCB_Pad *result = new PCB_Pad();
     stringlist paramList = splitString(LCJSONString, '~');
+    stringlist polygonDrillCoordsString;
 
     result->id = paramList[12]; // GGE ID.
 
@@ -195,43 +198,53 @@ namespace lc2kicad
     }
 
     // Resolve pad coordinates
-    coordinates _rawCoords = { static_cast<float>(stod(paramList[2].c_str())), static_cast<float>(stod(paramList[3].c_str())) };
-    result->padCoordinates.X = (stod(paramList[2].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->padCoordinates.Y = (stod(paramList[3].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->orientation = static_cast<int>(stod(paramList[11].c_str()));
-
-    // Resolve hole shape size
-    if(result->holeShape == PCBHoleShape::slot)
+    if(result->padShape == PCBPadShape::polygon)
     {
-      result->holeSize.X = stod(paramList[13].c_str()) * tenmils_to_mm_coefficient;
-      result->holeSize.Y = stod(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+      polygonDrillCoordsString = splitString(paramList[19], ',');
+      result->padCoordinates.X = (stod(polygonDrillCoordsString[0]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      result->padCoordinates.Y = (stod(polygonDrillCoordsString[1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      result->orientation = 0;
     }
     else
-      result->holeSize.X = result->holeSize.Y = stod(paramList[9].c_str()) * 2 * tenmils_to_mm_coefficient;
+    {
+      result->padCoordinates.X = (stod(paramList[2]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      result->padCoordinates.Y = (stod(paramList[3]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      result->orientation = (stod(paramList[11]));
+    }
+
+    // Resolve hole shape size
+    result->holeSize.X = stod(paramList[13]) * tenmils_to_mm_coefficient;
+    result->holeSize.Y = (stod(paramList[9]) * 2 * tenmils_to_mm_coefficient);
+    result->holeSize.X == 0.0f ? result->holeSize.X = result->holeSize.Y, result->holeShape = PCBHoleShape::circle : result->holeShape = PCBHoleShape::slot; 
     
     // Resolve pad shape and size
     if(result->padShape == PCBPadShape::oval || result->padShape == PCBPadShape::rectangle)
     {
-      result->padSize.X = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-      result->padSize.Y = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient;
+      result->padSize.X = stod(paramList[4]) * tenmils_to_mm_coefficient;
+      result->padSize.Y = stod(paramList[5]) * tenmils_to_mm_coefficient;
     }
     else if(result->padShape == PCBPadShape::circle)
-      result->padSize.X = result->padSize.Y = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
+      result->padSize.X = result->padSize.Y = stod(paramList[4]) * tenmils_to_mm_coefficient;
     else // polygon
     {
       result->padSize.X = result->padSize.Y = result->holeSize.Y;
       vector<string> polygonCoordinates = splitString(paramList[10], ' ');
       coordinates polygonPointTemp = { 0.0, 0.0 };
+      /**
+       * EasyEDA rotate their polygon pads at the "pad center" where the drill has its own coordinates,
+       * while KiCad rotate the polygon pads at the drill center since the drill is the pad origin.
+       * Here we need to manipulate the pad a little bit so it would not cause problems.
+       */
       for(int i = 0; i < polygonCoordinates.size(); i += 2)
       {
-        polygonPointTemp.X = (stod(polygonCoordinates[  i  ].c_str()) - _rawCoords.X) * tenmils_to_mm_coefficient;
-        polygonPointTemp.Y = (stod(polygonCoordinates[i + 1].c_str()) - _rawCoords.Y) * tenmils_to_mm_coefficient;
+        polygonPointTemp.X = (stod(polygonCoordinates[  i  ]) - stod(polygonDrillCoordsString[0])) * tenmils_to_mm_coefficient;
+        polygonPointTemp.Y = (stod(polygonCoordinates[i + 1]) - stod(polygonDrillCoordsString[1])) * tenmils_to_mm_coefficient;
         result->shapePolygonPoints.push_back(polygonPointTemp);
       }
     }
 
     // Resolve pad type
-    int padTypeTemp = atoi(paramList[6].c_str());
+    int padTypeTemp = stoi(paramList[6]);
     if(padTypeTemp == 11)
       if(paramList[15] == "Y")
         result->padType = PCBPadType::through;
@@ -271,11 +284,11 @@ namespace lc2kicad
     result->id = paramList[6]; // GGE ID.
 
     // Resolving the via coordinates
-    result->holeCoordinates.X = (stod(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->holeCoordinates.Y = (stod(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->holeCoordinates.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->holeCoordinates.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     // Resolve via diameter (size)
-    result->viaDiameter = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->holeDiameter = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient;
+    result->viaDiameter = stod(paramList[3]) * tenmils_to_mm_coefficient;
+    result->holeDiameter = stod(paramList[5]) * tenmils_to_mm_coefficient;
 
     result->netName = paramList[4];
 
@@ -290,19 +303,19 @@ namespace lc2kicad
     result->id = paramList[5];
 
     // Resolve track width
-    result->width = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track layer
-    result->layerKiCad = LCtoKiCadLayerLUT[int (stod(paramList[2].c_str()))];
-    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
+    result->layerKiCad = LCtoKiCadLayerLUT[int (stod(paramList[2]))];
+    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]));
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->trackPoints.push_back(tempCoord);
     }
 
@@ -317,19 +330,19 @@ namespace lc2kicad
     result->id = paramList[5]; // GGE ID.
 
     // Resolve track width
-    result->width = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track layer
-    result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[2].c_str()));
-    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]).c_str());
+    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[2]));
+    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + result->id));
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->trackPoints.push_back(tempCoord);
     }
 
@@ -344,8 +357,8 @@ namespace lc2kicad
     result->id = paramList[7]; // GGE ID.
 
     // Resolve layer ID and net name
-    result->netName = paramList[3].c_str();
-    result->layerKiCad = LCLayerToKiCadLayer(stod(paramList[2].c_str()));
+    result->netName = paramList[3];
+    result->layerKiCad = LCLayerToKiCadLayer(stod(paramList[2]));
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
 
@@ -354,13 +367,13 @@ namespace lc2kicad
     coordinates tempCoord;
     for(int i = 0; i < pointsStrList.size(); i += 2)
     {
-      tempCoord.X = (stod(pointsStrList[i].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 1].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->fillAreaPolygonPoints.push_back(tempCoord);
     }
 
 
-    result->clearanceWidth = stod(paramList[5].c_str()) * tenmils_to_mm_coefficient; // Resolve clearance width
+    result->clearanceWidth = stod(paramList[5]) * tenmils_to_mm_coefficient; // Resolve clearance width
     result->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
       // Resolve fill style
     result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
@@ -376,11 +389,11 @@ namespace lc2kicad
 
     result->id = paramList[6]; // GGE ID.
     
-    result->center.X = stod(paramList[1].c_str()) * tenmils_to_mm_coefficient;
-    result->center.Y = stod(paramList[2].c_str()) * tenmils_to_mm_coefficient;
-    result->radius = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->width = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
+    result->center.X = stod(paramList[1]) * tenmils_to_mm_coefficient;
+    result->center.Y = stod(paramList[2]) * tenmils_to_mm_coefficient;
+    result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
+    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     result->netName = paramList[8];
     
     workingDocument->containedElements.push_back(result);
@@ -393,11 +406,11 @@ namespace lc2kicad
 
     result->id = paramList[6]; // GGE ID.
     
-    result->center.X = (stod(paramList[1].c_str()) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->center.Y = (stod(paramList[2].c_str()) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->radius = stod(paramList[3].c_str()) * tenmils_to_mm_coefficient;
-    result->width = stod(paramList[4].c_str()) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCLayerToKiCadLayer(atoi(paramList[5].c_str()));
+    result->center.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->center.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
+    result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
+    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     
     workingDocument->containedElements.push_back(result);
   }
@@ -411,15 +424,14 @@ namespace lc2kicad
 
     result->topLeftPos.X = (stod(paramlist[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
     result->topLeftPos.Y = (stof(paramlist[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->size.X = (stod(paramlist[3]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->size.Y = (stod(paramlist[4]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->size.X = stod(paramlist[3]) * tenmils_to_mm_coefficient;
+    result->size.Y = stod(paramlist[4]) * tenmils_to_mm_coefficient;
     result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramlist[5])];
     result->strokeWidth = stod(paramlist[8]) * tenmils_to_mm_coefficient;
 
     workingDocument->containedElements.push_back(result);
   }
-
-  
+    
   // Judgement member function of parsers
 
   bool LCJSONSerializer::judgeIsOnCopperLayer(const int layerKiCad) const

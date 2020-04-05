@@ -47,7 +47,6 @@
         virtual void parseGraphicalCircleString(const std::string&) const;
         virtual void parseRectString(const std::string&) const;
 
-
         bool judgeIsOnCopperLayer(const int layerKiCad) const;
       private:
         str_dbl_map internalCompatibilitySwitches;
