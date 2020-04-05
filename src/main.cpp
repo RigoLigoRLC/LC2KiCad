@@ -90,7 +90,7 @@ namespace lc2kicad
   void displayAbout()
   {
     cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl 
-          << "Compiled from " << gitCommitHash << endl
+          //<< "Compiled from " << gitCommitHash << endl
           << "This program is an utility that allows you to convert your EasyEDA documents\n"
           << "into the KiCad 5 version document, so that you will be able to move your\n"
           << "designs in EasyEDA to KiCad for any legit purpose.\n\n"

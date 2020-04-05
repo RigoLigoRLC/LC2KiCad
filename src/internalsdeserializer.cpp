@@ -155,9 +155,13 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputCopperTrack(const PCB_CopperTrack& target) const
   {
     string *ret = new string();
+    bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
+
+    if(isInFootprint)
+      std::cerr << "Warning: Copper track " << target.id << " on footprint. This is not recommended.\n";
 
     for(int i = 0; i < target.trackPoints.size() - 1; i++)
-      *ret += indent + string("(segment (start ") + to_string(target.trackPoints[i].X) + ' '
+      *ret += indent + string(isInFootprint? "(segment (start " : "(gr_line  (start ") + to_string(target.trackPoints[i].X) + ' '
            + to_string(target.trackPoints[i].Y) + ") (end " + to_string(target.trackPoints[i + 1].X) + ' '
            + to_string(target.trackPoints[i + 1].Y) + ") (width " + to_string(target.width) + ") (layer "
            + KiCadLayerNameLUT[target.layerKiCad] + ") (net " + target.netName + "))\n";
@@ -236,9 +240,7 @@ namespace lc2kicad
       
     *ret += indent + string(isInFootprint ? "(fp_circle (center " : "(gr_circle (center ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.center.X) + ' ' + to_string(target.center.Y + target.radius)
-          + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + to_string(target.width) + "))\n";
-
-    ret[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
+          + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + to_string(target.width) + "))";
     
     return ret;
   }
