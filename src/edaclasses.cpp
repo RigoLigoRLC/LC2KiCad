@@ -51,6 +51,11 @@ namespace lc2kicad
   }
 
   string* EDADocument::deserializeSelf() const { return nullptr; }
+  
+  EDAElement::~EDAElement()
+  {
+    
+  }
 
   PCBDocument::PCBDocument(const EDADocument& a)// : EDADocument::EDADocument(true)
   {
@@ -68,39 +73,39 @@ namespace lc2kicad
           delete i;
   }
 
-  string* PCB_Pad::deserializeSelf() const { return parent->parent->getDeserializer()->outputPad(*this); };
-  string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPad(*this); };
+  string* PCB_Pad::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBPad(*this); };
+  string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); };
 
-  string* PCB_GraphicalTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputGraphicalTrack(*this); };
-  string* PCB_GraphicalTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputGraphicalTrack(*this); };
+  string* PCB_GraphicalTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalTrack(*this); };
+  string* PCB_GraphicalTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalTrack(*this); };
 
-  string* PCB_CopperTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputCopperTrack(*this); };
-  string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputCopperTrack(*this); };
+  string* PCB_CopperTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperTrack(*this); };
+  string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperTrack(*this); };
 
-  string* PCB_Hole::deserializeSelf() const { return parent->parent->getDeserializer()->outputHole(*this); };
-  string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputHole(*this); };
+  string* PCB_Hole::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBHole(*this); };
+  string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBHole(*this); };
 
-  string* PCB_Via::deserializeSelf() const { return parent->parent->getDeserializer()->outputVia(*this); };
-  string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputVia(*this); };
+  string* PCB_Via::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBVia(*this); };
+  string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBVia(*this); };
 
-  string* PCB_SolidRegion::deserializeSelf() const { return parent->parent->getDeserializer()->outputSolidRegion(*this); };
-  string* PCB_SolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSolidRegion(*this); };
+  string* PCB_SolidRegion::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBSolidRegion(*this); };
+  string* PCB_SolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); };
   
-  string* PCB_FloodFill::deserializeSelf() const { return parent->parent->getDeserializer()->outputFloodFill(*this); };
-  string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputFloodFill(*this); };
+  string* PCB_FloodFill::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBFloodFill(*this); };
+  string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); };
 
-  string* PCB_GraphicalCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputGraphicalCircle(*this); };
-  string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputGraphicalCircle(*this); };
+  string* PCB_GraphicalCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalCircle(*this); };
+  string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); };
 
-  string* PCB_CopperCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputCopperCircle(*this); };
-  string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputCopperCircle(*this); };
+  string* PCB_CopperCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperCircle(*this); };
+  string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); };
 
-  string* PCB_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputRect(*this); };
-  string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputRect(*this); };
+  string* PCB_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBRect(*this); };
+  string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBRect(*this); };
 
-  string* PCB_GraphicalArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputGraphicalArc(*this); };
-  string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputGraphicalArc(*this); };
+  string* PCB_GraphicalArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalArc(*this); };
+  string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalArc(*this); };
 
-  string* PCB_CopperArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputCopperArc(*this); };
-  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputCopperArc(*this); };
+  string* PCB_CopperArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperArc(*this); };
+  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); };
 }

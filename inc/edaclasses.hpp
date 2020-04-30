@@ -73,7 +73,7 @@
 
       EDADocument();
       EDADocument(const bool useJSONStorage);
-      ~EDADocument();
+      virtual ~EDADocument();
     };
 
     struct PCBDocument : public EDADocument
@@ -90,6 +90,8 @@
 
       virtual string* deserializeSelf() const = 0;
       virtual string* deserializeSelf(KiCad_5_Deserializer&) const = 0;
+      
+      ~EDAElement();
     };
     /**
      * This section is dedicated for elements on the PCBs and footprints.
@@ -257,5 +259,72 @@
     //PROTRACTORs.
 
     //SHEETs.
-
+    
+    /**
+     * Schematic elements part
+     */
+    struct Schematic_Element : public EDAElement { } ;
+    
+    struct Schematic_Pin : public Schematic_Element
+    {
+      string pinName, pinNumber;
+      double pinLength;
+      int fontSize; //Font size is a fixed-point number, divided by 10 before use
+      bool inverted, clock; //In EasyEDA a pin has a property "Dot" which means "Inverted" in KiCad
+      enum pinOrientation { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 };
+      /**
+       * Coordinates should be inverted in the serialization process:
+       * EasyEDA use up and right as positive, while KiCad use down and left.
+       */
+      coordinates pinCoord;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
+    
+    struct Schematic_Polyline : public Schematic_Element
+    {
+      vector<coordinates> polylinePoints;
+      bool isFilled; //Fill color is not supported, but if EasyEDA document has a non-white fill color, then fill it
+      double lineWidth;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
+    
+    //struct SchematicArc : public SchematicElement
+    
+    struct Schematic_Text : public Schematic_Element
+    {
+      string text;
+      int fontSize; //Font size is a fixed-point number, divide by 10 before use
+      bool italic, bold;
+      coordinates position; //Text coordinate defined as the bottom left corner (when 0 deg rotation)
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
+    
+    //Schematic rectangle. KiCad doesn't support round corner rectangles.
+    struct Schematic_Rect : public Schematic_Element
+    {
+      coordinates position;
+      sizeXY size;
+      double width;
+      bool isFilled;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
+    
+    struct Schematic_Polygon : public Schematic_Polyline
+    {
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
+    
+    struct Schematic_Image : public Schematic_Element
+    {
+      coordinates position;
+      string content;
+      bool isBase64Image;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
   }

@@ -35,17 +35,26 @@
         void initWorkingDocument(EDADocument*);
         void deinitWorkingDocument();
         
+        virtual ~LCJSONSerializer();
+        
         virtual void parsePCBLibDocument();
 
-        virtual void parsePadString(const std::string&) const;
-        virtual void parseHoleString(const std::string&) const;
-        virtual void parseViaString(const std::string&) const;
-        virtual void parseCopperTrackString(const std::string&) const;
-        virtual void parseGraphicalTrackString(const std::string&) const;
-        virtual void parseFloodFillString(const std::string&) const;
-        virtual void parseCopperCircleString(const std::string&) const;
-        virtual void parseGraphicalCircleString(const std::string&) const;
-        virtual void parseRectString(const std::string&) const;
+        virtual void parsePCBPadString(const std::string&) const;
+        virtual void parsePCBHoleString(const std::string&) const;
+        virtual void parsePCBViaString(const std::string&) const;
+        virtual void parsePCBCopperTrackString(const std::string&) const;
+        virtual void parsePCBGraphicalTrackString(const std::string&) const;
+        virtual void parsePCBFloodFillString(const std::string&) const;
+        virtual void parsePCBCopperCircleString(const std::string&) const;
+        virtual void parsePCBGraphicalCircleString(const std::string&) const;
+        virtual void parsePCBRectString(const std::string&) const;
+        
+        virtual void parseSchPin(const std::string&) const;
+        virtual void parseSchPolyline(const std::string&) const;
+        virtual void parseSchText(const std::string&) const;
+        virtual void parseSchRect(const std::string&) const;
+        virtual void parseSchPolygon(const std::string&) const;
+        virtual void parseSchImage(const std::string&) const;
 
         bool judgeIsOnCopperLayer(const int layerKiCad) const;
       private:

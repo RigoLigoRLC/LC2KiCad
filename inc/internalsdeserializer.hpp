@@ -34,23 +34,34 @@
         void initWorkingDocument(EDADocument* targetDoc);
         void deinitWorkingDocument();
         void setCompatibilitySwitches(const str_dbl_map &_compatibSw);
+        
+        virtual ~KiCad_5_Deserializer();
 
         virtual std::string* outputFileHeader();
         virtual std::string* outputFileEnding();
   
-        virtual std::string* outputModule(const PCB_Module&);
-        virtual std::string* outputPad(const PCB_Pad&) const;
-        virtual std::string* outputVia(const PCB_Via&) const;
-        virtual std::string* outputGraphicalTrack(const PCB_GraphicalTrack&) const;
-        virtual std::string* outputCopperTrack(const PCB_CopperTrack&) const;
-        virtual std::string* outputHole(const PCB_Hole&) const;
-        virtual std::string* outputSolidRegion(const PCB_SolidRegion&) const;
-        virtual std::string* outputFloodFill(const PCB_FloodFill&) const;
-        virtual std::string* outputGraphicalCircle(const PCB_GraphicalCircle&) const;
-        virtual std::string* outputCopperCircle(const PCB_CopperCircle&) const;
-        virtual std::string* outputGraphicalArc(const PCB_GraphicalArc&) const;
-        virtual std::string* outputCopperArc(const PCB_CopperArc&) const;
-        virtual std::string* outputRect(const PCB_Rect&) const;
+        virtual std::string* outputPCBModule(const PCB_Module&);
+        virtual std::string* outputPCBPad(const PCB_Pad&) const;
+        virtual std::string* outputPCBVia(const PCB_Via&) const;
+        virtual std::string* outputPCBGraphicalTrack(const PCB_GraphicalTrack&) const;
+        virtual std::string* outputPCBCopperTrack(const PCB_CopperTrack&) const;
+        virtual std::string* outputPCBHole(const PCB_Hole&) const;
+        virtual std::string* outputPCBSolidRegion(const PCB_SolidRegion&) const;
+        virtual std::string* outputPCBFloodFill(const PCB_FloodFill&) const;
+        virtual std::string* outputPCBGraphicalCircle(const PCB_GraphicalCircle&) const;
+        virtual std::string* outputPCBCopperCircle(const PCB_CopperCircle&) const;
+        virtual std::string* outputPCBGraphicalArc(const PCB_GraphicalArc&) const;
+        virtual std::string* outputPCBCopperArc(const PCB_CopperArc&) const;
+        virtual std::string* outputPCBRect(const PCB_Rect&) const;
+        
+        /*
+        virtual std::string* outputSchPin(const Schematic_Pin&) const;
+        virtual std::string* outputSchPolyline(const Schematic_Polyline&) const;
+        virtual std::string* outputSchText(const Schematic_Text&) const;
+        virtual std::string* outputSchRect(const Schematic_Rect&) const;
+        virtual std::string* outputSchPolygon(const Schematic_Polygon&) const;
+        virtual std::string* outputSchImage(const Schematic_Image) const;
+        */
 
       private:
         EDADocument *workingDocument = nullptr;

@@ -45,6 +45,8 @@ namespace lc2kicad
   void LCJSONSerializer::initWorkingDocument(EDADocument *_workingDocument) { workingDocument = _workingDocument; }
   void LCJSONSerializer::deinitWorkingDocument() { workingDocument = nullptr; }
   void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw) { internalCompatibilitySwitches = _compatibSw; }
+  
+  LCJSONSerializer::~LCJSONSerializer() { };
 
   void LCJSONSerializer::parsePCBLibDocument()
   {
@@ -99,7 +101,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              parsePadString(i);
+              parsePCBPadString(i);
               break;
             case 'R': // Protractor
               break;
@@ -112,9 +114,9 @@ namespace lc2kicad
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[2])]))
-                parseCopperTrackString(i);
+                parsePCBCopperTrackString(i);
               else
-                parseGraphicalTrackString(i);
+                parsePCBGraphicalTrackString(i);
               break;
           }
           break;
@@ -126,22 +128,22 @@ namespace lc2kicad
             case 'I': // Circle
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[5])]))
-                parseCopperCircleString(i);
+                parsePCBCopperCircleString(i);
               else
-                parseGraphicalCircleString(i);
+                parsePCBGraphicalCircleString(i);
               break;
           }
           break;
         case 'R': // Rect
-          parseRectString(i);
+          parsePCBRectString(i);
           break;
         case 'A': // Arc
           break;
         case 'V': // Via
-          parseViaString(i);
+          parsePCBViaString(i);
           break;
         case 'H': // Hole
-          parseHoleString(i);
+          parsePCBHoleString(i);
           break; 
         case 'D': // Dimension
           break; 
@@ -169,7 +171,7 @@ namespace lc2kicad
    * The below section is for PCB elements serializing.
    */
 
-  void LCJSONSerializer::parsePadString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBPadString(const string &LCJSONString) const
   {
     PCB_Pad *result = new PCB_Pad();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -262,7 +264,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
 
-  void LCJSONSerializer::parseHoleString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBHoleString(const string &LCJSONString) const
   {
     PCB_Hole *result = new PCB_Hole();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -276,7 +278,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
 
-  void LCJSONSerializer::parseViaString(const string &LCJSONString) const 
+  void LCJSONSerializer::parsePCBViaString(const string &LCJSONString) const 
   {
     PCB_Via *result = new PCB_Via();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -295,7 +297,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
   
-  void LCJSONSerializer::parseCopperTrackString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString) const
   {
     PCB_CopperTrack *result = new PCB_CopperTrack();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -322,7 +324,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
 
-  void LCJSONSerializer::parseGraphicalTrackString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString) const
   {
     PCB_GraphicalTrack *result = new PCB_GraphicalTrack();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -349,7 +351,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
 
-  void LCJSONSerializer::parseFloodFillString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString) const
   {
     PCB_FloodFill *result = new PCB_FloodFill();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -382,7 +384,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
   
-  void LCJSONSerializer::parseCopperCircleString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString) const
   {
     PCB_CopperCircle *result = new PCB_CopperCircle();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -399,7 +401,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
   
-  void LCJSONSerializer::parseGraphicalCircleString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString) const
   {
     PCB_GraphicalCircle *result = new PCB_GraphicalCircle();
     stringlist paramList = splitString(LCJSONString, '~');
@@ -415,7 +417,7 @@ namespace lc2kicad
     workingDocument->containedElements.push_back(result);
   }
 
-  void LCJSONSerializer::parseRectString(const string &LCJSONString) const
+  void LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
   {
     PCB_Rect *result = new PCB_Rect();
     stringlist paramlist = splitString(LCJSONString, '~');
@@ -438,5 +440,11 @@ namespace lc2kicad
   {
     return layerKiCad >= 0 && layerKiCad <= 31;
   }
+  
+  /**
+   * This part is for schematic elements serializing.
+   */
+  
+  
   
 }
