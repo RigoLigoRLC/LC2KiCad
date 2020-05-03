@@ -45,8 +45,8 @@ namespace lc2kicad
 
   string* KiCad_5_Deserializer::outputFileHeader()
   {
-    string timestamp = decToHex(time(nullptr)),
-          *ret = new string();
+    RAIIC<string> ret;
+    string timestamp = decToHex(time(nullptr));
     workingDocument->docInfo["timestamp"] = timestamp;
     switch(workingDocument->docType)
     {
@@ -61,12 +61,12 @@ namespace lc2kicad
       default:
         assertThrow(false, "Not implemented function: PCB deserializing not supported.");
     }
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputFileEnding()
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     switch(workingDocument->docType)
     {
       case documentTypes::pcb:
@@ -74,27 +74,27 @@ namespace lc2kicad
         *ret += ")";
         break;
       default:
-        0;
+        break;
     }
     indent = "";
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBModule(const PCB_Module& target)
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     indent += "  ";
 
     for(auto &i : target.containedElements)
       *ret += *i->deserializeSelf(*this) + "\n";
 
     indent.erase(0, 2);
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBPad(const PCB_Pad& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     *ret += indent;
     *ret += "(pad \"" + target.pinNumber + "\" " + padTypeKiCad[static_cast<int>(target.padType)] + ' '
           + padShapeKiCad[static_cast<int>(target.padShape)] + " (at " + to_string(target.padCoordinates.X)
@@ -135,12 +135,12 @@ namespace lc2kicad
         *ret += " (xy " + to_string(i.X) + ' ' + to_string(i.Y) + ')';
       *ret += string(") (width 0))\n") + indent + "  ))";
     }
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBVia(const PCB_Via& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
 
     *ret += indent;
     *ret += "(via (at " + to_string(target.holeCoordinates.X) + ' ' + to_string(target.holeCoordinates.Y) + ") (size "
@@ -152,12 +152,12 @@ namespace lc2kicad
     *ret += "F.Cu B.Cu";
 
     *ret += ") (net " + target.netName + "))";
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBCopperTrack(const PCB_CopperTrack& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
 
     if(isInFootprint)
@@ -169,14 +169,14 @@ namespace lc2kicad
            + to_string(target.trackPoints[i + 1].Y) + ") (width " + to_string(target.width) + ") (layer "
            + KiCadLayerNameLUT[target.layerKiCad] + ") (net " + target.netName + "))\n";
 
-    ret[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
+    (!ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBGraphicalTrack(const PCB_GraphicalTrack& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
       
 
@@ -188,13 +188,13 @@ namespace lc2kicad
 
     (*ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBFloodFill(const PCB_FloodFill& target) const
   {
     // untested
-    string *ret = new string();
+    RAIIC<string> ret;
 
     *ret += indent + string("(zone (net ") + target.netName + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
         + ") (tstamp 0) (hatch edge 0.508)\n" + indent + "  (connect_pads " + (target.isSpokeConnection ? "" : "yes")
@@ -208,12 +208,12 @@ namespace lc2kicad
 
     *ret += indent + string("    )\n") + indent + "  )\n" + indent + ")";
 
-    return ret;
+    return !++ret;
   }
   
   string* KiCad_5_Deserializer::outputPCBCopperCircle(const PCB_CopperCircle& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     
     // Notice: PCB circle involves compatibility issues. We need to implement compatibility settings first
     //         before we can start working on PCB circle outputPCB.
@@ -228,12 +228,12 @@ namespace lc2kicad
     ret[ret.size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     */
     
-    return ret;
+    return !++ret;
   }
   
   string* KiCad_5_Deserializer::outputPCBGraphicalCircle(const PCB_GraphicalCircle& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
     bool isInFootprint;
     
     if(target.parent->module) // Determine if this graphical line is used in footprint
@@ -245,12 +245,12 @@ namespace lc2kicad
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.center.X) + ' ' + to_string(target.center.Y + target.radius)
           + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + to_string(target.width) + "))";
     
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBHole(const PCB_Hole& target) const
   {
-    string *ret = new string();
+    RAIIC<string> ret;
 
     if(target.parent->module)
       *ret += indent + 
@@ -264,17 +264,17 @@ namespace lc2kicad
               "    (pad \"\" np_thru_hole circle (at 0 0) (size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
               "   (drill " + to_string(target.holeDiameter) + ") (layers *.Cu *.Mask))\n"
               "  )";
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBRect(const PCB_Rect& target) const
   {
-    string  *ret = new string(),
-            x1 = to_string(target.topLeftPos.X),
-            y1 = to_string(target.topLeftPos.Y),
-            x2 = to_string(target.topLeftPos.X + target.size.X),
-            y2 = to_string(target.topLeftPos.Y + target.size.Y),
-            w = to_string(target.strokeWidth);
+    RAIIC<string> ret;
+    string x1 = to_string(target.topLeftPos.X),
+           y1 = to_string(target.topLeftPos.Y),
+           x2 = to_string(target.topLeftPos.X + target.size.X),
+           y2 = to_string(target.topLeftPos.Y + target.size.Y),
+           w = to_string(target.strokeWidth);
 
     if(target.parent->module)
     {
@@ -294,27 +294,27 @@ namespace lc2kicad
               "(layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + w + "))";
     }
 
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_SolidRegion& target) const
   {
-    string *ret = new string("");
+    RAIIC<string> ret;
     std::cerr << "KiCad_5_Deserializer::outputPCBSolidRegion stub. " << target.id << "is ignored.\n";
-    return ret;
+    return !++ret;
   }
   string* KiCad_5_Deserializer::outputPCBGraphicalArc(const PCB_GraphicalArc& target) const
   {
-    string *ret = new string("");
+    RAIIC<string> ret;
     std::cerr << "KiCad_5_Deserializer::outputPCBGraphicalArc stub. " << target.id << "is ignored.\n";
-    return ret;
+    return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBCopperArc(const PCB_CopperArc& target) const
   {
-    string *ret = new string("");
+    RAIIC<string> ret;
     std::cerr << "KiCad_5_Deserializer::outputPCBCopperArc stub. " << target.id << "is ignored.\n";
-    return ret;
+    return !++ret;
   }
 
 }

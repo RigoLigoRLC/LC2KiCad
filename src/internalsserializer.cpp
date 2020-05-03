@@ -173,7 +173,7 @@ namespace lc2kicad
 
   void LCJSONSerializer::parsePCBPadString(const string &LCJSONString) const
   {
-    PCB_Pad *result = new PCB_Pad();
+    RAIIC<PCB_Pad> result;
     stringlist paramList = splitString(LCJSONString, '~');
     stringlist polygonDrillCoordsString;
 
@@ -261,12 +261,12 @@ namespace lc2kicad
     result->netName = paramList[7];
     result->pinNumber = paramList[8];
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
 
   void LCJSONSerializer::parsePCBHoleString(const string &LCJSONString) const
   {
-    PCB_Hole *result = new PCB_Hole();
+    RAIIC<PCB_Hole> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[4]; // GGE ID.
@@ -275,12 +275,12 @@ namespace lc2kicad
     result->holeCoordinates.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     result->holeDiameter = stod(paramList[3]) * 2 * tenmils_to_mm_coefficient;
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
 
   void LCJSONSerializer::parsePCBViaString(const string &LCJSONString) const 
   {
-    PCB_Via *result = new PCB_Via();
+    RAIIC<PCB_Via> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
@@ -294,12 +294,12 @@ namespace lc2kicad
 
     result->netName = paramList[4];
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
   
   void LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString) const
   {
-    PCB_CopperTrack *result = new PCB_CopperTrack();
+    RAIIC<PCB_CopperTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[5];
@@ -321,12 +321,12 @@ namespace lc2kicad
       result->trackPoints.push_back(tempCoord);
     }
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
 
   void LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString) const
   {
-    PCB_GraphicalTrack *result = new PCB_GraphicalTrack();
+    RAIIC<PCB_GraphicalTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[5]; // GGE ID.
@@ -348,12 +348,12 @@ namespace lc2kicad
       result->trackPoints.push_back(tempCoord);
     }
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
 
   void LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString) const
   {
-    PCB_FloodFill *result = new PCB_FloodFill();
+    RAIIC<PCB_FloodFill> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[7]; // GGE ID.
@@ -381,12 +381,12 @@ namespace lc2kicad
     result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
     result->isPreservingIslands = (paramList[9] == "yes" ? true : false); // Resolve island keep
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
   
   void LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString) const
   {
-    PCB_CopperCircle *result = new PCB_CopperCircle();
+    RAIIC<PCB_CopperCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
@@ -398,12 +398,12 @@ namespace lc2kicad
     result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     result->netName = paramList[8];
     
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
   
   void LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString) const
   {
-    PCB_GraphicalCircle *result = new PCB_GraphicalCircle();
+    RAIIC<PCB_GraphicalCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
@@ -414,12 +414,12 @@ namespace lc2kicad
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
     result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
 
   void LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
   {
-    PCB_Rect *result = new PCB_Rect();
+    RAIIC<PCB_Rect> result;
     stringlist paramlist = splitString(LCJSONString, '~');
 
     result->id = paramlist[6]; // GGE ID.
@@ -431,7 +431,7 @@ namespace lc2kicad
     result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramlist[5])];
     result->strokeWidth = stod(paramlist[8]) * tenmils_to_mm_coefficient;
 
-    workingDocument->containedElements.push_back(result);
+    workingDocument->containedElements.push_back(!++result);
   }
     
   // Judgement member function of parsers

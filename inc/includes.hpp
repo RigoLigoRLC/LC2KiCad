@@ -32,6 +32,26 @@
   
   namespace lc2kicad
   {
+    template <typename T> class RAIIC
+    {
+      public:
+        RAIIC()
+          { resource = new T; }
+        ~RAIIC()
+          { if(!isProtected) delete resource; }
+        RAIIC& operator++()
+          { isProtected = true; return *this; }
+        T& operator*()
+          { return *resource; }
+        T* operator->()
+          { return resource; }
+        T* operator!()
+          { return resource; }
+      private:
+        T* resource;
+        bool isProtected = false;
+    };
+    
     class coordinates
     {
       public:
