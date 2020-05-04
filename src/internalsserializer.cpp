@@ -420,16 +420,16 @@ namespace lc2kicad
   void LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
   {
     RAIIC<PCB_Rect> result;
-    stringlist paramlist = splitString(LCJSONString, '~');
+    stringlist paramList = splitString(LCJSONString, '~');
 
-    result->id = paramlist[6]; // GGE ID.
+    result->id = paramList[6]; // GGE ID.
 
-    result->topLeftPos.X = (stod(paramlist[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-    result->topLeftPos.Y = (stof(paramlist[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-    result->size.X = stod(paramlist[3]) * tenmils_to_mm_coefficient;
-    result->size.Y = stod(paramlist[4]) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramlist[5])];
-    result->strokeWidth = stod(paramlist[8]) * tenmils_to_mm_coefficient;
+    result->topLeftPos.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+    result->topLeftPos.Y = (stof(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+    result->size.X = stod(paramList[3]) * tenmils_to_mm_coefficient;
+    result->size.Y = stod(paramList[4]) * tenmils_to_mm_coefficient;
+    result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramList[5])];
+    result->strokeWidth = stod(paramList[8]) * tenmils_to_mm_coefficient;
 
     workingDocument->containedElements.push_back(!++result);
   }
@@ -445,6 +445,43 @@ namespace lc2kicad
    * This part is for schematic elements serializing.
    */
   
-  
+  void LCJSONSerializer::parseSchPin(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Pin> result;
+    string pinString = LCJSONString;
+    findAndReplaceString(pinString, "^^", "~"); //Double circumflex is bad design for us. We simply replace them
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    result->id = paramList[7]; //GGE ID.
+    result->pinCoord = {stod(paramList[4]) * 10, stod(paramList[5]) * 10}; //KiCad schematics uses mils for now. S-expression versions might take metric units.
+    
+    //Resolve pin rotation
+    if(paramList[6] == "")
+      result->pinRotation = Schematic_Pin::pinRotations::Deg0;
+    else
+      switch(paramList[6][0])
+      {
+        case '1':
+          result->pinRotation = Schematic_Pin::pinRotations::Deg180; break;
+        case '2':
+          result->pinRotation = Schematic_Pin::pinRotations::Deg270; break;
+        case '9':
+          result->pinRotation = Schematic_Pin::pinRotations::Deg90; break;
+        default:
+        case '0':
+          result->pinRotation = Schematic_Pin::pinRotations::Deg0; break;
+      }
+    
+    result->pinName = paramList[17];
+    result->pinNumber = paramList[27];
+    
+    result->clock = paramList[34][0] == '1' ? true : false ;
+    result->inverted = paramList[31][0] == '1' ? true : false ;
+    
+    auto pinLengthTemp = splitString(paramList[11], ' ');
+    result->pinLength = stod(pinLengthTemp[4]) * 10;
+    
+    workingDocument->containedElements.push_back(!++result);
+  }
   
 }

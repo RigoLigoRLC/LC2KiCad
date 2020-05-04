@@ -91,7 +91,7 @@
       virtual string* deserializeSelf() const = 0;
       virtual string* deserializeSelf(KiCad_5_Deserializer&) const = 0;
       
-      ~EDAElement();
+      virtual ~EDAElement();
     };
     /**
      * This section is dedicated for elements on the PCBs and footprints.
@@ -271,7 +271,7 @@
       double pinLength;
       int fontSize; //Font size is a fixed-point number, divided by 10 before use
       bool inverted, clock; //In EasyEDA a pin has a property "Dot" which means "Inverted" in KiCad
-      enum pinOrientation { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 };
+      enum class pinRotations : int { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 } pinRotation;
       /**
        * Coordinates should be inverted in the serialization process:
        * EasyEDA use up and right as positive, while KiCad use down and left.

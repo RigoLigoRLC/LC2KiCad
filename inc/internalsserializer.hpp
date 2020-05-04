@@ -49,8 +49,9 @@
         virtual void parsePCBGraphicalCircleString(const std::string&) const;
         virtual void parsePCBRectString(const std::string&) const;
         
-        /*
+        
         virtual void parseSchPin(const std::string&) const;
+        /*
         virtual void parseSchPolyline(const std::string&) const;
         virtual void parseSchText(const std::string&) const;
         virtual void parseSchRect(const std::string&) const;
