@@ -457,7 +457,7 @@ namespace lc2kicad
     
     //KiCad schematics uses mils for now. S-expression versions might take metric units.
     //EasyEDA uses the inversed direction in schematics against KiCad.
-    result->pinCoord = { stod(paramList[4]) * - * sch_convert_coefficient, stod(paramList[5]) * -1 * sch_convert_coefficient };
+    result->pinCoord = { stod(paramList[4]) * sch_convert_coefficient, stod(paramList[5]) * -1 * sch_convert_coefficient };
     
     //Resolve pin rotation
     if(paramList[6] == "")
@@ -506,14 +506,60 @@ namespace lc2kicad
     auto pointTemp = splitString(paramList[1], ' ');
     for(int i = 0; i < pointTemp.size(); i += 2)
       result->polylinePoints.push_back(coordinates(stod(pointTemp[i]), stod(pointTemp[i + 1])));
-    if(paramList[5] == "none")
-      result->isFilled = false;
-    else
-      result->isFilled = true;
     
+    result->isFilled = paramList[5] == "none" ? false : true;
     result->lineWidth = stod(paramList[3]) * 2 * sch_convert_coefficient;
     
     return !++result;
   }
   
+  Schematic_Polygon* LCJSONSerializer::parseSchPolygon(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Polygon> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    result->id = paramList[6];
+    
+    auto pointTemp = splitString(paramList[1], ' ');
+    for(int i = 0; i < pointTemp.size(); i += 2)
+      result->polylinePoints.push_back(coordinates(stod(pointTemp[i]), stod(pointTemp[i + 1])));
+    
+    result->isFilled = paramList[5] == "none" ? false : true;
+    result->lineWidth = stod(paramList[3]) * 2 * sch_convert_coefficient;
+    
+    return !++result;
+  }
+  
+  Schematic_Text* LCJSONSerializer::parseSchText(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Text> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    result->id = paramList[15];
+    
+    result->text = paramList[12];
+    result->bold = paramList[9] == "normal" | paramList[9] == "" ? false : true;
+    result->italic = paramList[10] == "normal" | paramList[10] == "" ? false : true;
+    
+    paramList[7].erase(paramList[7].end() - 2); //Remove "pt" characters
+    result->fontSize = stod(paramList[7]);
+    
+    result->position = { stod(paramList[2]) * sch_convert_coefficient, //We output the file as left justified, so this is fine.
+                        (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * sch_convert_coefficient };
+
+    return !++result;
+  }
+  
+  Schematic_Rect* LCJSONSerializer::parseSchRect(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Rect> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    result->position = { stod(paramList[1]) * sch_convert_coefficient, stod(paramList[2]) * sch_convert_coefficient * -1 };
+    result->size = { stod(paramList[3]) * sch_convert_coefficient, stod(paramList[4]) * sch_convert_coefficient };
+    result->isFilled = paramList[10] == "none" ? false : true;
+    result->width = stod(paramList[8]) * 2 * sch_convert_coefficient;
+    
+    return !++result;
+  }
 }

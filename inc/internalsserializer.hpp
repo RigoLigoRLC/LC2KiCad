@@ -52,10 +52,10 @@
         
         Schematic_Pin* parseSchPin(const std::string&) const;
         Schematic_Polyline* parseSchPolyline(const std::string&) const;
+        Schematic_Polygon* parseSchPolygon(const std::string&) const;
+        Schematic_Text* parseSchText(const std::string&) const;
+        Schematic_Rect* parseSchRect(const std::string&) const;
         /*
-        void parseSchText(const std::string&) const;
-        void parseSchRect(const std::string&) const;
-        void parseSchPolygon(const std::string&) const;
         void parseSchImage(const std::string&) const;
         */
         
