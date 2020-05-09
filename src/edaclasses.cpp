@@ -38,6 +38,8 @@ namespace lc2kicad
   {
     jsonParseResult = std::make_shared<rapidjson::Document>();
   }
+  
+  void EDADocument::addElement(EDAElement*) {}; //I wished it to be a pure virtual function but can't do it. UHHH
 
   EDADocument::~EDADocument()
   {
@@ -64,6 +66,15 @@ namespace lc2kicad
     module = a.module;
     jsonParseResult = a.jsonParseResult;
   }
+  
+  void PCBDocument::addElement(EDAElement* element)
+  {
+    element->parent = this;
+    if(this->module)
+      static_cast<PCB_Module*>(this->containedElements[0])->containedElements.push_back(static_cast<PCBElement*>(element));
+    else
+      this->containedElements.push_back(static_cast<PCBElement*>(element));
+  }
 
   PCBDocument::~PCBDocument() //Destructor
   {
@@ -72,6 +83,25 @@ namespace lc2kicad
         if(!i) //If it's not a NULL or nullptr
           delete i;
   }
+  
+  SchematicDocument::SchematicDocument(const EDADocument& a)// : EDADocument::EDADocument(true)
+  {
+    pathToFile = a.pathToFile;
+    docInfo = a.docInfo;
+    module = a.module;
+    jsonParseResult = a.jsonParseResult;
+  }
+
+  SchematicDocument::~SchematicDocument() //Destructor
+  {
+    if(containedElements.size() != 0) //Free memory taken up by elements contained in the document
+      for(auto i : containedElements) //Iterate through the vector
+        if(!i) //If it's not a NULL or nullptr
+          delete i;
+  }
+  
+  string* PCB_Module::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBModule(*this); };
+  string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); };
 
   string* PCB_Pad::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBPad(*this); };
   string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); };
@@ -108,4 +138,7 @@ namespace lc2kicad
 
   string* PCB_CopperArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperArc(*this); };
   string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); };
+
+  string* Schematic_Pin::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPin(*this); };
+  string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); };
 }

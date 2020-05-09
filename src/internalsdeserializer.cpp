@@ -37,7 +37,12 @@ using std::to_string;
 
 namespace lc2kicad
 {
-  void KiCad_5_Deserializer::initWorkingDocument(EDADocument *_workingDocument) { indent = "  "; workingDocument = _workingDocument; }
+  void KiCad_5_Deserializer::initWorkingDocument(EDADocument *_workingDocument) 
+  { 
+    indent = "  "; 
+    workingDocument = _workingDocument;
+    //TODO: Evaluate the flood fill region priorities
+  }
   void KiCad_5_Deserializer::deinitWorkingDocument() { indent = ""; workingDocument = nullptr; }
   void KiCad_5_Deserializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw) { internalCompatibilitySwitches = _compatibSw; }
   
@@ -83,12 +88,15 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBModule(const PCB_Module& target)
   {
     RAIIC<string> ret;
-    indent += "  ";
+    
+    if(!target.parent->module)
+      indent = "  ";
 
     for(auto &i : target.containedElements)
       *ret += *i->deserializeSelf(*this) + "\n";
 
-    indent.erase(0, 2);
+    indent = "";
+    
     return !++ret;
   }
 
@@ -316,5 +324,28 @@ namespace lc2kicad
     std::cerr << "KiCad_5_Deserializer::outputPCBCopperArc stub. " << target.id << "is ignored.\n";
     return !++ret;
   }
-
+  
+  string* KiCad_5_Deserializer::outputSchPin(const Schematic_Pin& target) const
+  {
+    RAIIC<string> ret;
+    *ret += string("X ") + target.pinName + " " + target.pinNumber + " " + to_string(target.pinCoord.X) + " " + to_string(target.pinCoord.Y)
+          + " " + to_string(target.pinLength) + " ";
+    switch(target.pinRotation)
+    {
+      default:
+      case Schematic_Pin::pinRotations::Deg0:
+        *ret += "L "; break;
+      case Schematic_Pin::pinRotations::Deg90:
+        *ret += "D "; break;
+      case Schematic_Pin::pinRotations::Deg180:
+        *ret += "R "; break;
+      case Schematic_Pin::pinRotations::Deg270:
+        *ret += "U "; break;
+    }
+    *ret += to_string(target.fontSize) + " " + to_string(target.fontSize) + " ";
+    *ret += "U "; //Electrical property. Not implemented yet
+    *ret += target.clock ? target.inverted ? "IC" : "C" : target.inverted ? "I" : ""; //Either clock, or target. Or both, or none.
+    
+    return !++ret;
+  }
 }

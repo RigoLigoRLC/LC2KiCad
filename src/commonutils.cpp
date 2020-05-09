@@ -17,10 +17,12 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include <string>
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "consts.hpp"
 #include "includes.hpp"
@@ -83,16 +85,33 @@ namespace lc2kicad
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
   {
-    coordslist *ret = new coordslist;
+    RAIIC<coordslist> ret;
+    std::string workingPath = SVGPath; //Duplicate the original path
     size_t indexer = 0;
     coordinates subpathHead {0, 0}, penLocation {0, 0};
     bool relative = false;
     
     arcResolution < 2 ? arcResolution = 2 : 0;
     
-    while(indexer < SVGPath.size())
+    //Pre-processing for convenience
+    //Add white space for the commands if needed. Also replace commas with white spaces.
+    for(std::string::iterator it = workingPath.begin(); it != workingPath.end(); it++)
     {
-      switch(SVGPath[indexer])
+      if(*it == ',')
+        *it = ' ';
+      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
+      {
+        it++;
+        it = workingPath.insert(it, ' ');
+      }
+    }
+    
+    std::cout << workingPath << std::endl;
+    
+    
+    while(indexer < workingPath.size())
+    {
+      switch(workingPath[indexer])
       {
         case ' ': //Blank space, fetch next character
           indexer++;
@@ -103,11 +122,11 @@ namespace lc2kicad
         case 'M': //Move to, absolute
         {
           coordinates moveTo {0, 0};
-          size_t xbegin = SVGPath.find_first_not_of(' ', indexer), xend = SVGPath.find_first_of(' ', xbegin) - 1;
-          size_t ybegin = SVGPath.find_first_not_of(' ', xend), yend = SVGPath.find_first_of(' ', ybegin) - 1;
+          size_t xbegin = workingPath.find_first_not_of(' ', indexer), xend = workingPath.find_first_of(' ', xbegin) - 1;
+          size_t ybegin = workingPath.find_first_not_of(' ', xend), yend = workingPath.find_first_of(' ', ybegin) - 1;
           indexer = yend + 1;
-          moveTo.X = atof(SVGPath.substr(xbegin, xend - xbegin + 1).c_str());
-          moveTo.Y = atof(SVGPath.substr(ybegin, yend - ybegin + 1).c_str());
+          moveTo.X = atof(workingPath.substr(xbegin, xend - xbegin + 1).c_str());
+          moveTo.Y = atof(workingPath.substr(ybegin, yend - ybegin + 1).c_str());
           subpathHead = penLocation = (relative ? penLocation + moveTo : moveTo);
           break;
         }
@@ -119,14 +138,14 @@ namespace lc2kicad
         }
         default: //Unknown situation
           std::cout << ">>> Warning: error executing SVG path graph conversion, offset " << std::to_string(indexer)
-                    << " of path \"" << SVGPath << "\". This may cause problem.";
+                    << " of path \"" << workingPath << "\". This may cause problem.";
           indexer++;
           break;
         relative = false;
       }
     }
     
-    return ret;
+    return !++ret;
   }
 
 }

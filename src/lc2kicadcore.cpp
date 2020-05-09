@@ -84,6 +84,7 @@ namespace lc2kicad
 
     char readBuffer[BUFSIZ]; // Create the buffer for RapidJSON to read the file
     std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
+    assertThrow(parseTarget != 0, "Error: File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
     FileReadStream fileReader(parseTarget, readBuffer, BUFSIZ);
     targetInternalDoc.jsonParseResult->ParseStream(fileReader); // Let RapidJSON parse JSON file
     std::fclose(parseTarget);
@@ -133,32 +134,20 @@ namespace lc2kicad
     targetInternalDoc.docInfo["editorversion"] = editorVer;
     
     // Now decide what are we going to parse, whether schematics or PCB, anything else.
+    PCBDocument* targetDoc = new PCBDocument(targetInternalDoc);
+    RAIIC<PCBDocument> targetDocument(targetDoc);
     switch(documentType)
     {
       case 4:
         {
-          targetInternalDoc.module = true;
-          PCBDocument* targetDocument = new PCBDocument(targetInternalDoc);
+          targetDocument->module = true;
+          targetDocument->containedElements.push_back(new PCB_Module);
 
-          internalSerializer->initWorkingDocument(targetDocument);
-          try
-          { internalSerializer->parsePCBLibDocument(); }
-          catch(runtime_error &e)
-          {
-            cerr << "Error: " << e.what() << endl;
-            delete targetDocument; // Anything wrong happened, release memory
-            targetDocument = nullptr;
-          }
-          catch(...)
-          {
-            cerr << "Error: Unhandled exception while processing \"" << filename << "\".\n"
-                    "       Operation terminated.\n";
-            delete targetDocument;
-            targetDocument = nullptr;
-          }
+          internalSerializer->initWorkingDocument(!targetDocument);
+          internalSerializer->parsePCBLibDocument(); //Exceptions will be thrown out of the function. Dynamic memory will be released by RAIIC
           internalSerializer->deinitWorkingDocument();
           
-          return targetDocument; // Remember to manage dynamic memory and check if it's valid!
+          return !++targetDocument; // Remember to manage dynamic memory and check if it's valid!
         }
         break;
       default:

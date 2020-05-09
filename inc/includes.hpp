@@ -18,10 +18,10 @@
 */
 
 
-
-
 #ifndef GLOBAL_FUNCS
   #define GLOBAL_FUNCS
+  
+  //#define MAKE_CUSTOM_TEST_OF_FUNCS
   
   #include "consts.hpp"
   
@@ -37,6 +37,8 @@
       public:
         RAIIC()
           { resource = new T; }
+        RAIIC(T* ptr)
+          { resource = ptr; }
         ~RAIIC()
           { if(!isProtected) delete resource; }
         RAIIC& operator++()
@@ -57,7 +59,10 @@
       public:
         double X;
         double Y;
-
+        
+        coordinates() {}
+        coordinates(double _X, double _Y)
+          { X = _X, Y = _Y; }
         coordinates operator+(coordinates coord)
           { coordinates ret; ret.X = this->X + coord.X; ret.Y = this->Y + coord.Y; return ret; }
         coordinates operator-(coordinates coord)

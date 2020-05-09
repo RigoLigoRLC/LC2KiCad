@@ -27,6 +27,7 @@
   #include "includes.hpp"
   #include "consts.hpp"
   #include "rapidjson.hpp"
+#include "edaclasses.hpp"
   
   using std::vector;
   using std::fstream;
@@ -52,6 +53,7 @@
     class KiCad_5_Deserializer;
 
     struct EDAElement;
+    struct PCBElement;
     //Referencing each other, must declare one first.
 
     struct EDADocument
@@ -67,6 +69,8 @@
       std::vector<EDAElement*> containedElements;
 
       LC2KiCadCore *parent = nullptr;
+      
+      virtual void addElement(EDAElement*);
       virtual string* deserializeSelf() const ;
       //virtual string* deserializeSelf(str_dbl_pair deserializerSwitch);
       //string* deserializeSelf(KiCad_5_Deserializer&)
@@ -79,7 +83,15 @@
     struct PCBDocument : public EDADocument
     {
       PCBDocument(const EDADocument&);
+      void addElement(EDAElement*) override;
       ~PCBDocument();
+    };
+    
+    struct SchematicDocument : public EDADocument
+    {
+      SchematicDocument(const EDADocument&);
+      //void addElement(const EDAElement*) override;
+      ~SchematicDocument();
     };
     
     struct EDAElement
@@ -113,11 +125,13 @@
       double orientation;
       bool topLayer = true;
       string reference, value;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
     };
 
     /**
      * PADs as said. Soldering pads.
-     * Fixme: Orphaned PADs on PCBs should be converted inside a MODULE, then placed onto PCB.
+     * Fixme: Orphaned PADs on PCBs should be converted as a nested PAD in MODULE, then placed onto PCB.
      */
     struct PCB_Pad : public PCBElement
     {

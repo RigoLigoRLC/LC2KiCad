@@ -39,24 +39,24 @@
         
         virtual void parsePCBLibDocument();
 
-        virtual void parsePCBPadString(const std::string&) const;
-        virtual void parsePCBHoleString(const std::string&) const;
-        virtual void parsePCBViaString(const std::string&) const;
-        virtual void parsePCBCopperTrackString(const std::string&) const;
-        virtual void parsePCBGraphicalTrackString(const std::string&) const;
-        virtual void parsePCBFloodFillString(const std::string&) const;
-        virtual void parsePCBCopperCircleString(const std::string&) const;
-        virtual void parsePCBGraphicalCircleString(const std::string&) const;
-        virtual void parsePCBRectString(const std::string&) const;
+        PCB_Pad* parsePCBPadString(const std::string&) const;
+        PCB_Hole* parsePCBHoleString(const std::string&) const;
+        PCB_Via* parsePCBViaString(const std::string&) const;
+        PCB_CopperTrack* parsePCBCopperTrackString(const std::string&) const;
+        PCB_GraphicalTrack* parsePCBGraphicalTrackString(const std::string&) const;
+        PCB_FloodFill* parsePCBFloodFillString(const std::string&) const;
+        PCB_CopperCircle* parsePCBCopperCircleString(const std::string&) const;
+        PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&) const;
+        PCB_Rect* parsePCBRectString(const std::string&) const;
         
         
-        virtual void parseSchPin(const std::string&) const;
+        Schematic_Pin* parseSchPin(const std::string&) const;
+        Schematic_Polyline* parseSchPolyline(const std::string&) const;
         /*
-        virtual void parseSchPolyline(const std::string&) const;
-        virtual void parseSchText(const std::string&) const;
-        virtual void parseSchRect(const std::string&) const;
-        virtual void parseSchPolygon(const std::string&) const;
-        virtual void parseSchImage(const std::string&) const;
+        void parseSchText(const std::string&) const;
+        void parseSchRect(const std::string&) const;
+        void parseSchPolygon(const std::string&) const;
+        void parseSchImage(const std::string&) const;
         */
         
         bool judgeIsOnCopperLayer(const int layerKiCad) const;

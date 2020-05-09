@@ -101,7 +101,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              parsePCBPadString(i);
+              workingDocument->addElement(parsePCBPadString(i));
               break;
             case 'R': // Protractor
               break;
@@ -114,9 +114,9 @@ namespace lc2kicad
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[2])]))
-                parsePCBCopperTrackString(i);
+                workingDocument->addElement(parsePCBCopperTrackString(i));
               else
-                parsePCBGraphicalTrackString(i);
+                workingDocument->addElement(parsePCBGraphicalTrackString(i));
               break;
           }
           break;
@@ -128,22 +128,22 @@ namespace lc2kicad
             case 'I': // Circle
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[5])]))
-                parsePCBCopperCircleString(i);
+                workingDocument->addElement(parsePCBCopperCircleString(i));
               else
-                parsePCBGraphicalCircleString(i);
+                workingDocument->addElement(parsePCBGraphicalCircleString(i));
               break;
           }
           break;
         case 'R': // Rect
-          parsePCBRectString(i);
+          workingDocument->addElement(parsePCBRectString(i));
           break;
         case 'A': // Arc
           break;
         case 'V': // Via
-          parsePCBViaString(i);
+          workingDocument->addElement(parsePCBViaString(i));
           break;
         case 'H': // Hole
-          parsePCBHoleString(i);
+          workingDocument->addElement(parsePCBHoleString(i));
           break; 
         case 'D': // Dimension
           break; 
@@ -171,7 +171,7 @@ namespace lc2kicad
    * The below section is for PCB elements serializing.
    */
 
-  void LCJSONSerializer::parsePCBPadString(const string &LCJSONString) const
+  PCB_Pad* LCJSONSerializer::parsePCBPadString(const string &LCJSONString) const
   {
     RAIIC<PCB_Pad> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -261,10 +261,11 @@ namespace lc2kicad
     result->netName = paramList[7];
     result->pinNumber = paramList[8];
 
-    workingDocument->containedElements.push_back(!++result);
+    //workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
 
-  void LCJSONSerializer::parsePCBHoleString(const string &LCJSONString) const
+  PCB_Hole* LCJSONSerializer::parsePCBHoleString(const string &LCJSONString) const
   {
     RAIIC<PCB_Hole> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -275,10 +276,10 @@ namespace lc2kicad
     result->holeCoordinates.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     result->holeDiameter = stod(paramList[3]) * 2 * tenmils_to_mm_coefficient;
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
 
-  void LCJSONSerializer::parsePCBViaString(const string &LCJSONString) const 
+  PCB_Via* LCJSONSerializer::parsePCBViaString(const string &LCJSONString) const 
   {
     RAIIC<PCB_Via> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -294,10 +295,10 @@ namespace lc2kicad
 
     result->netName = paramList[4];
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
   
-  void LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString) const
+  PCB_CopperTrack* LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString) const
   {
     RAIIC<PCB_CopperTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -321,10 +322,10 @@ namespace lc2kicad
       result->trackPoints.push_back(tempCoord);
     }
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
 
-  void LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString) const
+  PCB_GraphicalTrack* LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString) const
   {
     RAIIC<PCB_GraphicalTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -348,10 +349,10 @@ namespace lc2kicad
       result->trackPoints.push_back(tempCoord);
     }
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
 
-  void LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString) const
+  PCB_FloodFill* LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString) const
   {
     RAIIC<PCB_FloodFill> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -381,10 +382,10 @@ namespace lc2kicad
     result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
     result->isPreservingIslands = (paramList[9] == "yes" ? true : false); // Resolve island keep
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
   
-  void LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString) const
+  PCB_CopperCircle* LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString) const
   {
     RAIIC<PCB_CopperCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -398,10 +399,10 @@ namespace lc2kicad
     result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     result->netName = paramList[8];
     
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
   
-  void LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString) const
+  PCB_GraphicalCircle* LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString) const
   {
     RAIIC<PCB_GraphicalCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -414,10 +415,10 @@ namespace lc2kicad
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
     result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
     
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
 
-  void LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
+  PCB_Rect* LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
   {
     RAIIC<PCB_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -431,7 +432,7 @@ namespace lc2kicad
     result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramList[5])];
     result->strokeWidth = stod(paramList[8]) * tenmils_to_mm_coefficient;
 
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
   }
     
   // Judgement member function of parsers
@@ -445,7 +446,7 @@ namespace lc2kicad
    * This part is for schematic elements serializing.
    */
   
-  void LCJSONSerializer::parseSchPin(const string &LCJSONString) const
+  Schematic_Pin* LCJSONSerializer::parseSchPin(const string &LCJSONString) const
   {
     RAIIC<Schematic_Pin> result;
     string pinString = LCJSONString;
@@ -453,7 +454,10 @@ namespace lc2kicad
     stringlist paramList = splitString(LCJSONString, '~');
     
     result->id = paramList[7]; //GGE ID.
-    result->pinCoord = {stod(paramList[4]) * 10, stod(paramList[5]) * 10}; //KiCad schematics uses mils for now. S-expression versions might take metric units.
+    
+    //KiCad schematics uses mils for now. S-expression versions might take metric units.
+    //EasyEDA uses the inversed direction in schematics against KiCad.
+    result->pinCoord = { stod(paramList[4]) * - * sch_convert_coefficient, stod(paramList[5]) * -1 * sch_convert_coefficient };
     
     //Resolve pin rotation
     if(paramList[6] == "")
@@ -478,10 +482,38 @@ namespace lc2kicad
     result->clock = paramList[34][0] == '1' ? true : false ;
     result->inverted = paramList[31][0] == '1' ? true : false ;
     
+    if(paramList[20] != "")
+      result->fontSize = 50;
+    else
+    {
+      findAndReplaceString(paramList[20], "pt", "");
+      result->fontSize = stod(paramList[20]) * (50.0f / 7.0f);
+    }
+    
     auto pinLengthTemp = splitString(paramList[11], ' ');
     result->pinLength = stod(pinLengthTemp[4]) * 10;
     
-    workingDocument->containedElements.push_back(!++result);
+    return !++result;
+  }
+  
+  Schematic_Polyline* LCJSONSerializer::parseSchPolyline(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Polyline> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+    
+    result->id = paramList[6];
+    
+    auto pointTemp = splitString(paramList[1], ' ');
+    for(int i = 0; i < pointTemp.size(); i += 2)
+      result->polylinePoints.push_back(coordinates(stod(pointTemp[i]), stod(pointTemp[i + 1])));
+    if(paramList[5] == "none")
+      result->isFilled = false;
+    else
+      result->isFilled = true;
+    
+    result->lineWidth = stod(paramList[3]) * 2 * sch_convert_coefficient;
+    
+    return !++result;
   }
   
 }

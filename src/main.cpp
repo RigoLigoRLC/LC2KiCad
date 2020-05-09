@@ -40,6 +40,16 @@ namespace lc2kicad
 
 int main(int argc, const char** argv)
 {
+  
+#ifdef MAKE_CUSTOM_TEST_OF_FUNCS
+  //Macro above is defined in includes.cpp.
+  //test anything here
+  
+  
+  //test end here
+  return 0;
+#endif
+  
   auto argParseResult = programArgumentParser(argc, argv);
 
   if(argParseResult.invokeHelp) // Show help or version info then exit
@@ -66,7 +76,14 @@ int main(int argc, const char** argv)
   else
   {
     for(auto &i : argParseResult.filenames)
-      documentCacheList.push_back(core.autoParseLCFile(i));
+      try
+      {
+        documentCacheList.push_back(core.autoParseLCFile(i));
+      }
+      catch(std::runtime_error &e)
+      {
+        std::cerr << e.what() << std::endl;
+      }
     for(auto &i : documentCacheList)
       core.deserializeFile(i, &path);
   }
