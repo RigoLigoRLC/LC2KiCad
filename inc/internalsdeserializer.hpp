@@ -55,11 +55,11 @@
         std::string* outputPCBRect(const PCB_Rect&) const;
         
         std::string* outputSchPin(const Schematic_Pin&) const;
-        /*
         std::string* outputSchPolyline(const Schematic_Polyline&) const;
         std::string* outputSchText(const Schematic_Text&) const;
         std::string* outputSchRect(const Schematic_Rect&) const;
         std::string* outputSchPolygon(const Schematic_Polygon&) const;
+        /*
         std::string* outputSchImage(const Schematic_Image) const;
         */
 

@@ -141,4 +141,16 @@ namespace lc2kicad
 
   string* Schematic_Pin::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPin(*this); };
   string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); };
+  
+  string* Schematic_Polyline::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolyline(*this); };
+  string* Schematic_Polyline::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolyline(*this); };
+  
+  string* Schematic_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchRect(*this); };
+  string* Schematic_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchRect(*this); };
+  
+  string* Schematic_Polygon::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolygon(*this); };
+  string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); };
+  
+  string* Schematic_Text::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchText(*this); };
+  string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); };
 }

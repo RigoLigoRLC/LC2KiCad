@@ -325,6 +325,7 @@ namespace lc2kicad
     return !++ret;
   }
   
+  // KiCad schematic pin output, legacy format.
   string* KiCad_5_Deserializer::outputSchPin(const Schematic_Pin& target) const
   {
     RAIIC<string> ret;
@@ -346,6 +347,34 @@ namespace lc2kicad
     *ret += "U "; //Electrical property. Not implemented yet
     *ret += target.clock ? target.inverted ? "IC" : "C" : target.inverted ? "I" : ""; //Either clock, or target. Or both, or none.
     
+    return !++ret;
+  }
+  
+  string* KiCad_5_Deserializer::outputSchPolyline(const Schematic_Polyline& target) const
+  {
+    RAIIC<string> ret;
+    std::cerr << "KiCad_5_Deserializer::outputSchPolyline stub. " << target.id << "is ignored.\n";
+    return !++ret;
+  }
+  
+  string* KiCad_5_Deserializer::outputSchRect(const Schematic_Rect& target) const
+  {
+    RAIIC<string> ret;
+    std::cerr << "KiCad_5_Deserializer::outputSchRect stub. " << target.id << "is ignored.\n";
+    return !++ret;
+  }
+  
+  string* KiCad_5_Deserializer::outputSchPolygon(const Schematic_Polygon& target) const
+  {
+    RAIIC<string> ret;
+    std::cerr << "KiCad_5_Deserializer::outputSchPolygon stub. " << target.id << "is ignored.\n";
+    return !++ret;
+  }
+  
+  string* KiCad_5_Deserializer::outputSchText(const Schematic_Text& target) const
+  {
+    RAIIC<string> ret;
+    std::cerr << "KiCad_5_Deserializer::outputSchText stub. " << target.id << "is ignored.\n";
     return !++ret;
   }
 }

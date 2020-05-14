@@ -75,6 +75,7 @@
           { coordinates ret; ret.X = this->X + n; ret.Y = this->Y + n; return ret; }
         coordinates operator*(double n)
           { coordinates ret; ret.X = this->X * n; ret.Y = this->Y * n; return ret; }
+        void swapXY() { double t; t = X; X = Y; Y = t; }
     };
 
     typedef coordinates sizeXY;
