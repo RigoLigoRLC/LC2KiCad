@@ -63,7 +63,7 @@ int main(int argc, const char** argv)
     exit(0);
   }
 
-  LC2KiCadCore core = LC2KiCadCore(argParseResult.compatibilityOptions); //Initialize Core Program
+  LC2KiCadCore core = LC2KiCadCore(argParseResult.parserArguments); //Initialize Core Program
   vector<EDADocument*> documentCacheList;
 
   string path = "";
@@ -73,20 +73,20 @@ int main(int argc, const char** argv)
     cerr << "Error: converting as project is not supported yet.";
     exit(1);
   }
-  else
-  {
-    for(auto &i : argParseResult.filenames)
-      try
-      {
-        documentCacheList.push_back(core.autoParseLCFile(i));
-      }
-      catch(std::runtime_error &e)
-      {
-        std::cerr << e.what() << std::endl;
-      }
-    for(auto &i : documentCacheList)
-      core.deserializeFile(i, &path);
-  }
+  
+  for(auto &i : argParseResult.filenames)
+    try
+    {
+      documentCacheList.push_back(core.autoParseLCFile(i));
+    }
+    catch(std::runtime_error &e)
+    {
+      std::cerr << e.what() << std::endl;
+    }
+
+  for(auto &i : documentCacheList)
+    core.deserializeFile(i, &path);
+
 
   return 0;
 }

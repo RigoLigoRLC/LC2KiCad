@@ -94,7 +94,9 @@
       bool invokeHelp = false, invokeVersionInfo = false;
       bool convertAsProject = false;
       bool useCompatibilitySwitches = false;
-      str_dbl_map compatibilityOptions;
+      std::string configFile,
+                  outputDirectory;
+      str_dbl_map parserArguments;
       stringlist filenames;
     };
 
