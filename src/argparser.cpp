@@ -29,9 +29,16 @@ namespace lc2kicad
   programArgumentParseResult programArgumentParser(const int &argc, const char** &argv)
   {
     int endpos = -1, remainingArgs = 0;
-    bool warnCompatibility = false, noDoubleDash = true;
+    bool noDoubleDash = true;
+    char currentShortSwitch;
     programArgumentParseResult ret;
     enum { none, configFile, outputDirectory, parserArgument } status = none;
+
+    if(argc == 1)
+    {
+      ret.invokeHelp = true;
+      return ret;
+    }
 
     for(int i = 0; i < argc; i++)
     {
@@ -46,10 +53,12 @@ namespace lc2kicad
     
     for(int i = 1; i < endpos; i++)
     {
-      if(strlen(argv[i]) == 2 && argv[i][0] == '-') // Short argument
+      if(strlen(argv[i]) == 2 && argv[i][0] == '-') // Short argument gets detected.
       {
-        if(remainingArgs != 0)
+        if(remainingArgs != 0) // If system expects arugments for a switch parsed earlier, throw exception.
           assertThrow(false, string("Error: too few arguments for switch \"") + argv[i - 1] + "\"");
+
+        currentShortSwitch = argv[i][1];
 
         switch (argv[i][1])
         {
@@ -72,54 +81,65 @@ namespace lc2kicad
           remainingArgs = 1;
           break;
         default:
-          assertThrow(false, string("Error: unrecognized switch \"") + argv[i] + "\"");
+          assertThrow(false, string("Error: unrecognized switch \"-") + currentShortSwitch + "\"");
           break;
         }
       }
-      else
-        if(!strcmp(argv[i], "--help"))
+      else // Long arguments get detected.
+
+        if(!strcmp(argv[i], "--help")) // Long switches detection.
           ret.invokeHelp = true;
         else if(!strcmp(argv[i], "--version"))
           ret.invokeVersionInfo = true;
-      else if(remainingArgs > 0)
-      {
-        std::string parserArgumentCache;
-        stringlist  discreteArgs, splitArgKeyCache;
-        str_dbl_map parserArguments;
 
-        switch (status)
+        else if(remainingArgs > 0) // Not long switches, then it could only be arguments for a switch.
         {
-        case configFile:
-          ret.configFile = argv[i];
-          break;
-        case outputDirectory:
-          ret.outputDirectory = argv[i];
-          break;
-        case parserArgument:
-          parserArgumentCache = argv[i];
-          for(auto i : discreteArgs)
+          std::string parserArgumentCache;
+          stringlist  discreteArgs, splitArgKeyCache;
+          str_dbl_map parserArguments;
+
+          switch (status)
           {
+          case configFile:
+            ret.configFile = argv[i];
+            break;
+          case outputDirectory:
+            ret.outputDirectory = argv[i];
+            break;
+          case parserArgument:
+            parserArgumentCache = argv[i];
             discreteArgs = splitString(parserArgumentCache, ',');
-            splitArgKeyCache = splitString(i, ':');
+            for(auto i : discreteArgs)
+            {
+              splitArgKeyCache = splitString(i, ':');
 
-            try { parserArguments[splitArgKeyCache[0]] = std::stod(splitArgKeyCache[1]); }
-            catch(...) { assertThrow(false, "Error: Failed to parse parser argument \"" + i + "\""); }
+              try { parserArguments[splitArgKeyCache[0]] = std::stod(splitArgKeyCache[1]); }
+              catch(...) { assertThrow(false, "Error: Failed to parse parser argument \"" + i + "\""); }
+            }
+            ret.parserArguments = parserArguments;
+            break;
+          default:
+            break;
           }
-          ret.parserArguments = parserArguments;
-          break;
-        default:
-          break;
+          remainingArgs--;
+          if(remainingArgs == 0) // After processing all required arguments, reset status.
+            status = none;
         }
-
-        if(remainingArgs == 1)
-          status = none;
-      }
-      else if(remainingArgs == 0)
-        if(noDoubleDash)
-          ret.filenames.push_back(argv[i]);
-        else
-          assertThrow(false, string("Error: unrecognized switch \"") + argv[i] + "\"");
+        else if(remainingArgs == 0) // The one argument being read now is not related to switches and their arguments.
+        {
+          if(noDoubleDash)
+            ret.filenames.push_back(argv[i]); // If no double dash, it is a filename.
+          else // If has double dash, then we're parsing switches, and met an invalid one.
+            assertThrow(false, string("Error: unrecognized switch \"") + argv[i] + "\"");
+        }
     }
+
+    // If even after parsing all the arguments the system still expects argument, then error out.
+    assertThrow(!remainingArgs, string("Error: too few arguments for switch \"-") + currentShortSwitch + "\"");
+
+    if(!noDoubleDash)
+      for(int i = endpos + 1; i < argc; i++)
+        ret.filenames.push_back(argv[i]); // If we got double dash, parse all args after the double dash as filenames.
 
     return ret;
   }

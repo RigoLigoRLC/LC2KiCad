@@ -15,3 +15,6 @@ include_directories(inc)
 file(GLOB SOURCES src/*.cpp icon/*.rc)
 
 add_executable(${EXEC} ${SOURCES})
+
+install(TARGETS lc2kicad DESTINATION ${CMAKE_INSTALL_PREFIX})
+

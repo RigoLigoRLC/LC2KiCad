@@ -26,6 +26,8 @@
 #include "edaclasses.hpp"
 #include "lc2kicadcore.hpp"
 
+#define MAKE_CUSTOM_TEST_OF_FUNCS
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -45,12 +47,11 @@ int main(int argc, const char** argv)
   //Macro above is defined in includes.cpp.
   //test anything here
   
-  
-  //test end here
-  return 0;
 #endif
-  
-  auto argParseResult = programArgumentParser(argc, argv);
+  programArgumentParseResult argParseResult;
+
+  try { argParseResult = programArgumentParser(argc, argv);}
+  catch (std::exception &e) { cout << e.what(); };
 
   if(argParseResult.invokeHelp) // Show help or version info then exit
   {
