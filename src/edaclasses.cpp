@@ -39,12 +39,12 @@ namespace lc2kicad
     jsonParseResult = std::make_shared<rapidjson::Document>();
   }
   
-  void EDADocument::addElement(EDAElement*) {}; //I wished it to be a pure virtual function but can't do it. UHHH
+  void EDADocument::addElement(EDAElement*) {} //I wished it to be a pure virtual function but can't do it. UHHH
 
   EDADocument::~EDADocument()
   {
 
-  };
+  }
 
   EDADocument::EDADocument(const bool useJSONStorage)
   {
@@ -100,57 +100,60 @@ namespace lc2kicad
           delete i;
   }
   
-  string* PCB_Module::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBModule(*this); };
-  string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); };
+  string* PCB_Module::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBModule(*this); }
+  string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); }
 
-  string* PCB_Pad::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBPad(*this); };
-  string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); };
+  string* PCB_Pad::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBPad(*this); }
+  string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); }
 
-  string* PCB_GraphicalTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalTrack(*this); };
-  string* PCB_GraphicalTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalTrack(*this); };
+  string* PCB_GraphicalTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalTrack(*this); }
+  string* PCB_GraphicalTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalTrack(*this); }
 
-  string* PCB_CopperTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperTrack(*this); };
-  string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperTrack(*this); };
+  string* PCB_CopperTrack::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperTrack(*this); }
+  string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperTrack(*this); }
 
-  string* PCB_Hole::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBHole(*this); };
-  string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBHole(*this); };
+  string* PCB_Hole::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBHole(*this); }
+  string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBHole(*this); }
 
-  string* PCB_Via::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBVia(*this); };
-  string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBVia(*this); };
+  string* PCB_Via::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBVia(*this); }
+  string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBVia(*this); }
 
-  string* PCB_SolidRegion::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBSolidRegion(*this); };
-  string* PCB_SolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); };
+  string* PCB_SolidRegion::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBSolidRegion(*this); }
+  string* PCB_SolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); }
   
-  string* PCB_FloodFill::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBFloodFill(*this); };
-  string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); };
+  string* PCB_FloodFill::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBFloodFill(*this); }
+  string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); }
 
-  string* PCB_GraphicalCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalCircle(*this); };
-  string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); };
+  string* PCB_GraphicalCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalCircle(*this); }
+  string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); }
 
-  string* PCB_CopperCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperCircle(*this); };
-  string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); };
+  string* PCB_CopperCircle::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperCircle(*this); }
+  string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); }
 
-  string* PCB_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBRect(*this); };
-  string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBRect(*this); };
+  string* PCB_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBRect(*this); }
+  string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBRect(*this); }
 
-  string* PCB_GraphicalArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalArc(*this); };
-  string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalArc(*this); };
+  string* PCB_GraphicalArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBGraphicalArc(*this); }
+  string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalArc(*this); }
 
-  string* PCB_CopperArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperArc(*this); };
-  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); };
+  string* PCB_CopperArc::deserializeSelf() const { return parent->parent->getDeserializer()->outputPCBCopperArc(*this); }
+  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); }
 
-  string* Schematic_Pin::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPin(*this); };
-  string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); };
+  string* Schematic_Module::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchModule(*this); }
+  string* Schematic_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchModule(*this); }
+
+  string* Schematic_Pin::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPin(*this); }
+  string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); }
   
-  string* Schematic_Polyline::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolyline(*this); };
-  string* Schematic_Polyline::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolyline(*this); };
+  string* Schematic_Polyline::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolyline(*this); }
+  string* Schematic_Polyline::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolyline(*this); }
   
-  string* Schematic_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchRect(*this); };
-  string* Schematic_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchRect(*this); };
+  string* Schematic_Rect::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchRect(*this); }
+  string* Schematic_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchRect(*this); }
   
-  string* Schematic_Polygon::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolygon(*this); };
-  string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); };
+  string* Schematic_Polygon::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchPolygon(*this); }
+  string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); }
   
-  string* Schematic_Text::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchText(*this); };
-  string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); };
+  string* Schematic_Text::deserializeSelf() const { return parent->parent->getDeserializer()->outputSchText(*this); }
+  string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); }
 }

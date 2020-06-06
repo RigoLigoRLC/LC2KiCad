@@ -63,7 +63,7 @@
       shared_ptr<rapidjson::Document> jsonParseResult; // For convenience. This is only one pointer and isn't gonna take much RAM
       str_str_map docInfo; // Due to compatibility concerns, use a map to store temporary info for use
       documentTypes docType;
-      coordinates origin;
+      coordinates origin {0, 0};
       double gridSize;
 
       std::vector<EDAElement*> containedElements;
@@ -277,7 +277,18 @@
     /**
      * Schematic elements part
      */
+    enum class SchematicRotations : int { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 };
+
     struct Schematic_Element : public EDAElement { } ;
+
+    struct Schematic_Module : public Schematic_Element
+    {
+      vector<Schematic_Element*> containedElements;
+      double orientation;
+      string reference, value;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+      string* deserializeSelf() const;
+    };
     
     struct Schematic_Pin : public Schematic_Element
     {
@@ -285,7 +296,7 @@
       double pinLength;
       int fontSize; //Font size is a fixed-point number, divided by 10 before use
       bool inverted, clock; //In EasyEDA a pin has a property "Dot" which means "Inverted" in KiCad
-      enum class pinRotations : int { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 } pinRotation;
+      SchematicRotations pinRotation;
       /**
        * Coordinates should be inverted in the serialization process:
        * EasyEDA use up and right as positive, while KiCad use down and left.

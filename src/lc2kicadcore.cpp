@@ -138,18 +138,30 @@ namespace lc2kicad
     RAIIC<PCBDocument> targetDocument(targetDoc);
     switch(documentType)
     {
-      case 4:
-        {
-          targetDocument->module = true;
-          targetDocument->containedElements.push_back(new PCB_Module);
+      case 2:
+      {
+        targetDocument->module = true;
+        targetDocument->containedElements.push_back(new Schematic_Module);
 
-          internalSerializer->initWorkingDocument(!targetDocument);
-          internalSerializer->parsePCBLibDocument(); //Exceptions will be thrown out of the function. Dynamic memory will be released by RAIIC
-          internalSerializer->deinitWorkingDocument();
-          
-          return !++targetDocument; // Remember to manage dynamic memory and check if it's valid!
-        }
+        internalSerializer->initWorkingDocument(!targetDocument);
+        internalSerializer->parseSchLibDocument();
+        internalSerializer->deinitWorkingDocument();
+
+        return !++targetDocument;
         break;
+      }
+      case 4:
+      {
+        targetDocument->module = true;
+        targetDocument->containedElements.push_back(new PCB_Module);
+
+        internalSerializer->initWorkingDocument(!targetDocument);
+        internalSerializer->parsePCBLibDocument(); //Exceptions will be thrown out of the function. Dynamic memory will be released by RAIIC
+        internalSerializer->deinitWorkingDocument();
+
+        return !++targetDocument; // Remember to manage dynamic memory and check if it's valid!
+        break;
+      }
       default:
         cerr << "Error: Cannot process file \"" << filename << "\".\n"
                 "       This kind of document type is not supported yet.";

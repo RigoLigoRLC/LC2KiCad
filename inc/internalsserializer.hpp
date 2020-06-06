@@ -37,6 +37,7 @@
         
         virtual ~LCJSONSerializer();
         
+        virtual void parseSchLibDocument();
         virtual void parsePCBLibDocument();
 
         PCB_Pad* parsePCBPadString(const std::string&) const;

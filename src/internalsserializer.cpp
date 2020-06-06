@@ -48,14 +48,123 @@ namespace lc2kicad
   
   LCJSONSerializer::~LCJSONSerializer() { };
 
+  void LCJSONSerializer::parseSchLibDocument()
+  {
+    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
+    workingDocument->docType = documentTypes::schematic_lib;
+
+    Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
+    string canvasPropertyString;
+    vector<string> canvasPropertyList;
+    vector<int> layerMapper;
+    string packageName, contributor, prefix;
+    str_str_map &docInfo = workingDocument->docInfo;
+
+    // Parse canvas properties
+    canvasPropertyString = parseTarget["canvas"].GetString();
+    canvasPropertyList = splitString(canvasPropertyString, '~');
+    // Write canvas properties like origin and gridsize
+    coordinates origin = workingDocument->origin;
+    workingDocument->origin.X = stod(canvasPropertyList[13]);
+    workingDocument->origin.Y = stod(canvasPropertyList[14]);
+    workingDocument->gridSize = stod(canvasPropertyList[6]);
+
+    // Write Prefix and contributor
+    Value &head = parseTarget["head"];
+    Value &headlist = head.GetObject()["c_para"];
+    packageName = headlist["name"].GetString();
+
+
+    // TODO: Make layer info useful information
+    // Value layer = parseTarget["layers"].GetArray();
+
+    assertThrow(parseTarget["shape"].IsArray(), "Not an array.");
+    Value shape = parseTarget["shape"].GetArray();
+    vector<string> shapesList;
+    vector<PCBElement*> elementsList;
+    for(unsigned int i = 0; i < shape.Size(); i++)
+      shapesList.push_back(shape[i].GetString());
+
+    if(packageName.size() != 0)
+      docInfo["documentname"] = packageName;
+    prefix = headlist["pre"].GetString();
+    prefix.pop_back();
+    docInfo["prefix"] = prefix;
+    docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
+
+    for(auto &i : shapesList)
+    {
+      // vector<string> parameters = splitString(shapesList[i], '~');
+      switch(i[0])
+      {
+        case 'P':
+          switch(i[1])
+          {
+            case 'G': // Polygon
+              break;
+            case 'I': // Pie
+              break;
+            case 'L': // Polyline
+              break;
+            case 'T': // Path
+              break;
+            default: // Pin
+              workingDocument->addElement(parseSchPin(i));
+              break;
+          }
+          break;
+        case 'R': // Rectangle
+          break;
+        case 'A':
+          switch(i[1])
+          {
+            case 'R': // Arrowhead
+              break;
+            default: // Arc
+              break;
+          }
+          break;
+        case 'B':
+          switch(i[1])
+          {
+            case 'E': // Bus Entry
+              break;
+            default: // Bus
+              break;
+          }
+          break;
+        case 'I': // Image
+          break;
+        case 'L': // Line
+          break;
+        case 'C': // Circle
+          break;
+        case 'E': // Ellipse
+          break;
+        case 'T': // Annotations
+          break;
+        case 'N': // Netlabels
+          break;
+        case 'F': // Netflags (Netports)
+          break;
+        case 'W': // Wire
+          break;
+        case 'J': // Junction
+          break;
+        case 'O': // No Connect Flag
+          break;
+        default:
+          assertThrow(false, "Invalid element of <<<" + i + ">>>.");
+      }
+      workingDocument->containedElements.back()->parent = workingDocument;
+    }
+  }
+
+
   void LCJSONSerializer::parsePCBLibDocument()
   {
     assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
     workingDocument->docType = documentTypes::pcb_lib;
-
-    fstream outputFile;
-    outputFile.open(workingDocument->docInfo["filename"] + ".pretty");
-    assertThrow(outputFile.fail(), "Cannot create the output file for file \"" + workingDocument->docInfo["filename"] + "\" .");
     
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
     string canvasPropertyString;
@@ -86,7 +195,7 @@ namespace lc2kicad
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
     vector<PCBElement*> elementsList;
-    for(int i = 0; i < shape.Size(); i++)
+    for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
     if(packageName.size() != 0)
       workingDocument->docInfo["documentname"] = packageName;
@@ -154,16 +263,6 @@ namespace lc2kicad
       }
       workingDocument->containedElements.back()->parent = workingDocument;
     }
-    
-    std::ofstream writer;
-    writer.open(packageName + ".kicad_mod", std::ios::out);
-    
-    std::ostream *outstream = &cout;
-    
-    if(writer.fail())
-      cout << "Error: Cannot create file. Will print the file content out.\n";
-    else
-      outstream = &writer;
   }
 
 
@@ -459,33 +558,34 @@ namespace lc2kicad
     RAIIC<Schematic_Pin> result;
     string pinString = LCJSONString;
     findAndReplaceString(pinString, "^^", "~"); //Double circumflex is bad design for us. We simply replace them
-    stringlist paramList = splitString(LCJSONString, '~');
+    stringlist paramList = splitString(pinString, '~');
     
     result->id = paramList[7]; //GGE ID.
     
     //KiCad schematics uses mils for now. S-expression versions might take metric units.
     //EasyEDA uses the inversed direction in schematics against KiCad.
-    result->pinCoord = { stod(paramList[4]) * sch_convert_coefficient, stod(paramList[5]) * -1 * sch_convert_coefficient };
+    result->pinCoord = { (stod(paramList[4]) - workingDocument->origin.X) * sch_convert_coefficient,
+                         (stod(paramList[5]) - workingDocument->origin.Y) * -1 * sch_convert_coefficient };
     
     //Resolve pin rotation
     if(paramList[6] == "")
-      result->pinRotation = Schematic_Pin::pinRotations::Deg0;
+      result->pinRotation = SchematicRotations::Deg0;
     else
       switch(paramList[6][0])
       {
         case '1':
-          result->pinRotation = Schematic_Pin::pinRotations::Deg180; break;
+          result->pinRotation = SchematicRotations::Deg180; break;
         case '2':
-          result->pinRotation = Schematic_Pin::pinRotations::Deg270; break;
+          result->pinRotation = SchematicRotations::Deg270; break;
         case '9':
-          result->pinRotation = Schematic_Pin::pinRotations::Deg90; break;
+          result->pinRotation = SchematicRotations::Deg90; break;
         default:
         case '0':
-          result->pinRotation = Schematic_Pin::pinRotations::Deg0; break;
+          result->pinRotation = SchematicRotations::Deg0; break;
       }
     
     result->pinName = paramList[17];
-    result->pinNumber = paramList[27];
+    result->pinNumber = paramList[26];
     
     result->clock = paramList[34][0] == '1' ? true : false ;
     result->inverted = paramList[31][0] == '1' ? true : false ;
@@ -495,11 +595,13 @@ namespace lc2kicad
     else
     {
       findAndReplaceString(paramList[20], "pt", "");
-      result->fontSize = stod(paramList[20]) * (50.0f / 7.0f);
+      result->fontSize = paramList[20] == "" ? 50 : (stod(paramList[20]) * (50.0f / 7.0f));
     }
     
-    auto pinLengthTemp = splitString(paramList[11], ' ');
-    result->pinLength = stod(pinLengthTemp[4]) * 10;
+    auto pinLengthTemp = splitString(paramList[11], 'h');
+    if(pinLengthTemp[1][0] == '-')
+      pinLengthTemp[1][0] = ' ';
+    result->pinLength = stod(pinLengthTemp[1]) * 10;
     
     return !++result;
   }

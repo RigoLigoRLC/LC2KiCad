@@ -52,14 +52,28 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
     string timestamp = decToHex(time(nullptr));
-    workingDocument->docInfo["timestamp"] = timestamp;
+    str_str_map &docInfo = workingDocument->docInfo;
+    docInfo["timestamp"] = timestamp;
     switch(workingDocument->docType)
     {
+      case documentTypes::schematic_lib:
+        *ret += "EESchema-LIBRARY Version 2.4\n"
+                "#encoding utf-8\n"
+                "#\n"
+                "# " + docInfo["documentname"] + "\n"
+                "#\n"
+                "DEF " + docInfo["documentname"] + " " + docInfo["prefix"] + " 0 40 Y Y 1 F N\n"
+                "F0 \"" + docInfo["prefix"] + "\" -300 300 50 H V C CNN\n"
+                "F1 \"" + docInfo["documentname"] + "\" -300 200 50 H V C CNN\n"
+                "F2 \"\" 0 0 50 H I C CNN\n"
+                "F3 \"\" 0 0 50 H I C CNN\n"
+                "DRAW\n";
+        break;
       case documentTypes::pcb_lib:
-        *ret += "(module " + workingDocument->docInfo["documentname"] + " (tedit " + timestamp + ")\n"
+        *ret += "(module " + docInfo["documentname"] + " (tedit " + timestamp + ")\n"
               + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
                 " (effects (font (size 1 1) (thickness 0.15))))\n"
-                "  (fp_text value " + workingDocument->docInfo["documentname"] + " (at 0 0) (layer F.Fab)"
+                "  (fp_text value " + docInfo["documentname"] + " (at 0 0) (layer F.Fab)"
                 " (effects (font (size 1 1) (thickness 0.15))))\n\n";
         indent += "";
         break;
@@ -74,6 +88,12 @@ namespace lc2kicad
     RAIIC<string> ret;
     switch(workingDocument->docType)
     {
+      case documentTypes::schematic_lib:
+        *ret += "ENDDRAW\n"
+                "ENDDEF\n"
+                "#\n"
+                "#End Library\n";
+        break;
       case documentTypes::pcb:
       case documentTypes::pcb_lib:
         *ret += ")";
@@ -88,12 +108,17 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBModule(const PCB_Module& target)
   {
     RAIIC<string> ret;
+    string* elementOutput;
     
     if(!target.parent->module)
       indent = "  ";
 
     for(auto &i : target.containedElements)
-      *ret += *i->deserializeSelf(*this) + "\n";
+    {
+      elementOutput = i->deserializeSelf(*this);
+      *ret += *elementOutput + "\n";
+      delete elementOutput;
+    }
 
     indent = "";
     
@@ -324,27 +349,44 @@ namespace lc2kicad
     std::cerr << "KiCad_5_Deserializer::outputPCBCopperArc stub. " << target.id << "is ignored.\n";
     return !++ret;
   }
+
+  string* KiCad_5_Deserializer::outputSchModule(const Schematic_Module& target)
+  {
+    RAIIC<string> ret;
+    if(workingDocument->module)
+    {
+      string* elementOutput;
+
+      for(auto &i : target.containedElements)
+      {
+        elementOutput = i->deserializeSelf(*this);
+        *ret += *elementOutput + "\n";
+        delete elementOutput;
+      }
+    }
+    return !++ret;
+  }
   
   // KiCad schematic pin output, legacy format.
   string* KiCad_5_Deserializer::outputSchPin(const Schematic_Pin& target) const
   {
     RAIIC<string> ret;
-    *ret += string("X ") + target.pinName + " " + target.pinNumber + " " + to_string(target.pinCoord.X) + " " + to_string(target.pinCoord.Y)
-          + " " + to_string(target.pinLength) + " ";
+    *ret += string("X ") + target.pinName + " " + target.pinNumber + " " + to_string(static_cast<int>(target.pinCoord.X)) + " "
+          + to_string(static_cast<int>(target.pinCoord.Y)) + " " + to_string(static_cast<int>(target.pinLength)) + " ";
     switch(target.pinRotation)
     {
       default:
-      case Schematic_Pin::pinRotations::Deg0:
+      case SchematicRotations::Deg0:
         *ret += "L "; break;
-      case Schematic_Pin::pinRotations::Deg90:
+      case SchematicRotations::Deg90:
         *ret += "D "; break;
-      case Schematic_Pin::pinRotations::Deg180:
+      case SchematicRotations::Deg180:
         *ret += "R "; break;
-      case Schematic_Pin::pinRotations::Deg270:
+      case SchematicRotations::Deg270:
         *ret += "U "; break;
     }
     *ret += to_string(target.fontSize) + " " + to_string(target.fontSize) + " ";
-    *ret += "U "; //Electrical property. Not implemented yet
+    *ret += "1 0 U "; //Electrical property. Not implemented yet
     *ret += target.clock ? target.inverted ? "IC" : "C" : target.inverted ? "I" : ""; //Either clock, or target. Or both, or none.
     
     return !++ret;

@@ -54,6 +54,7 @@
         std::string* outputPCBCopperArc(const PCB_CopperArc&) const;
         std::string* outputPCBRect(const PCB_Rect&) const;
         
+        std::string* outputSchModule(const Schematic_Module& target);
         std::string* outputSchPin(const Schematic_Pin&) const;
         std::string* outputSchPolyline(const Schematic_Polyline&) const;
         std::string* outputSchText(const Schematic_Text&) const;

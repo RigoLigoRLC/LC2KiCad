@@ -26,6 +26,8 @@
 #include "edaclasses.hpp"
 #include "lc2kicadcore.hpp"
 
+#include "floatint.hpp"
+
 #define MAKE_CUSTOM_TEST_OF_FUNCS
 
 using std::cout;
@@ -46,7 +48,7 @@ int main(int argc, const char** argv)
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
   //Macro above is defined in includes.cpp.
   //test anything here
-  
+
 #endif
   programArgumentParseResult argParseResult;
 
