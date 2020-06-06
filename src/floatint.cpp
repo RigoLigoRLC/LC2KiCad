@@ -23,8 +23,8 @@ namespace FloatInt
 {
   fpi32::fpi32(std::string str, int _digits)
   {
-    int decimalPointPos = -1;
-    for(unsigned int i = 0; i < str.length(); i++)
+    int decimalPointPos = -1, length = str.length();
+    for(unsigned int i = 0; i < length; i++)
       if(str[i] == '.')
       {
         if(decimalPointPos == -1)
@@ -37,10 +37,11 @@ namespace FloatInt
     if(decimalPointPos != -1) // Decimal point detected?
     {
       // Normalize
-      for(unsigned int i = 0; i < decimalPointPos + _digits + 2 - str.length(); i++)
+      for(int i = 0; i < decimalPointPos + _digits + 1 - length; i++)
         str.push_back('0'); // Add zeros if not enough
-      for(unsigned int i = 0; i < str.length() - decimalPointPos - _digits - 1; i++)
+      for(int i = 0; i < length - decimalPointPos - _digits - 1; i++)
         str.pop_back(); // Trim the end
+      str.erase(decimalPointPos, 1);
     }
     else
     {
@@ -48,9 +49,73 @@ namespace FloatInt
         str.push_back('0');
     }
 
-    str.erase(decimalPointPos, 1);
-
     data = std::stoi(str);
     digits = _digits;
+  }
+
+  std::string fpi32::str() const
+  {
+    std::string ret;
+
+    ret = std::to_string(data);
+    if(digits != 0)
+    {
+      while(ret.length() < digits + 1)
+      ret = '0' + ret;
+      ret.insert(ret.length() - digits, ".");
+    }
+
+    return ret;
+  }
+
+  fpi32 fpi32::operator+(fpi32 op)
+  {
+    int smallerdigit, _data, _ldata,
+        largerdigit = (unsigned int)op.getDigits() > digits ?
+                      (smallerdigit = digits, _data = data, _ldata = op.getData(), op.getDigits()) :
+                      (smallerdigit = op.getDigits(), _data = op.getData(), _ldata = data, digits),
+        _digits = largerdigit;
+
+    for(int i = 0; i < largerdigit - smallerdigit; i++)
+      _data *= 10;
+    _data += _ldata;
+
+    return fpi32(_data, _digits);
+  }
+
+  fpi32 fpi32::operator-(fpi32 op)
+  {
+    int smallerdigit, _data = data, _ldata = op.getData(), *mul,
+        largerdigit = (unsigned int)op.getDigits() > digits ?
+                      (smallerdigit = digits, mul = &_data, op.getDigits()) :
+                      (smallerdigit = op.getDigits(), mul = &_ldata, digits),
+        _digits = largerdigit;
+
+    for(int i = 0; i < largerdigit - smallerdigit; i++)
+      *mul *= 10;
+    _data -= _ldata;
+
+    return fpi32(_data, _digits);
+  }
+
+  fpi32 fpi32::operator*(fpi32 op)
+  {
+    return fpi32(data * op.getData(), digits + op.getDigits());
+  }
+
+  fpi32 fpi32::operator/(fpi32 op)
+  {
+    if(op.getData()==0) throw fpi32_except("FPI32 error: divided by zero.");
+    int smallerdigit, _data = data, _ldata = op.data,
+        largerdigit = (unsigned int)op.getDigits() > digits ?
+                      (smallerdigit = digits, op.getDigits()) :
+                      (smallerdigit = op.getDigits(), digits),
+        _digits = largerdigit;
+
+    for(int i = 0; i < largerdigit - smallerdigit; i++)
+      _data *= 10;
+    _data /= _ldata;
+
+    return fpi32(_data, _digits);
   }
 }
