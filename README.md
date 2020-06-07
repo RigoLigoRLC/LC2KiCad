@@ -35,15 +35,17 @@ The compiled executable is right in `lc2kicad/build/`.
 
 You need to get Git, CMake and Mingw working, and make sure all of them are available in PATH. The commands are virtually the same as Linux.
 
-```powershell
+```
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && mingw32-make
+cmake .. && mingw32-make -G "MinGW Makefiles"
 ```
+
+MSVC and Ninja are also supported. You may import the project into Visual Studio via CMakeLists.txt, or use cmake CLI directly.
 ### macOS
 
-No macOS compilation has been done.
+No macOS compilation has been done. But things should be similar to Linux environment. Install gcc, cmake with brew and try similar procedures.
 
 ---
 
@@ -53,17 +55,27 @@ No macOS compilation has been done.
 
 - **LC2KiCad is available only in CLI (command-line interface) by design, and the author has no plan of adding a GUI.**
 
-- **LC2KiCad command argument parser needs to be refactored, and everything listed here are subject to change. Program might not work as how this part described. NO WARRANTY IS GUARANTEED.**
+- **LC2KiCad is still working in progress, dleverything listed here are subject to change. Program might not work as how this part described. NO WARRANTY IS GUARANTEED.**
 
   
-
+### Usable commands
 - `lc2kicad`  Without an argument, the help message will be displayed.
 - `lc2kicad -h` or `lc2kicad --help` Display the help message.
 - `lc2kicad -V` or `lc2kicad --version` Display the version and about message.
 - `lc2kicad FILE1 [FILE2] ...` Convert the files specified.
-- **PLANNED BUT NOT IMPLEMENTED** *`lc2kicad -C[compatibility switches] FILE1 [FILE2] ...`* Convert the files with compatibility option(s). [Compatibility switches documentation](./docs/compatibility_switches.md)
 
-LC2KiCad will open each file and try to parse each of them. If the parsing succeeded , LC2KiCad will try to write the converted content to a new file, with the same name (but not same extension name). If LC2KiCad cannot open a new file to write into, it will write everything into the standard output stream.
+### Not implemented functions
+- `-o PATH` Specify output path.
+- `-f CONFIG_FILE` Specify a configuration file rather than using the standard ones. Configuration file contains default output path, default parser arguments and other things.
+- `-a PARSER_ARGS` Specify parser arguments. This is used for compatibility fixes, feature switches and other configurations for serializer and deserializer.
+
+### Functions planned
+- `--pipe` Read file from STDIN until an EOF flag, output will come out of STDOUT.
+- `-p ... FILE1 FILE2 [FILE3] ...` Convert all specified files as a project, output a standard KiCad project. Multiple schematics are supported, but only the last PCB in the file list will be treated as the PCB associated with the project.
+- `-S ... FILE1 FILE2 [FILE3] ...` Treat all the files as a separate part of a multi-part schematic symbol, output a multi-part symbol.
+
+
+If LC2KiCad cannot open a new file to write into, it will write everything into the standard output stream.
 
 **To be filled with other information**
 
