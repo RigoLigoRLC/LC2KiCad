@@ -101,10 +101,12 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'G': // Polygon
+              workingDocument->addElement(parseSchPolygon(i));
               break;
             case 'I': // Pie
               break;
             case 'L': // Polyline
+              workingDocument->addElement(parseSchPolyline(i));
               break;
             case 'T': // Path
               break;
@@ -114,6 +116,7 @@ namespace lc2kicad
           }
           break;
         case 'R': // Rectangle
+          workingDocument->addElement(parseSchRect(i));
           break;
         case 'A':
           switch(i[1])
@@ -598,10 +601,16 @@ namespace lc2kicad
       result->fontSize = paramList[20] == "" ? 50 : (stod(paramList[20]) * (50.0f / 7.0f));
     }
     
-    auto pinLengthTemp = splitString(paramList[11], 'h');
+    auto pinLengthTemp = splitString(paramList[11], 'h'); // h or v? I have to reimplement this later.
+    if(pinLengthTemp.size() == 1)
+      pinLengthTemp = splitString(paramList[11], 'v');
+
+    while(pinLengthTemp[1][0] == ' ') // Get rid of potential spaces ("v -10" or "v10" variation)
+      pinLengthTemp[1].erase(0, 1);
+
     if(pinLengthTemp[1][0] == '-')
       pinLengthTemp[1][0] = ' ';
-    result->pinLength = stod(pinLengthTemp[1]) * 10;
+    result->pinLength = stoi(pinLengthTemp[1]) * 10;
     
     return !++result;
   }
@@ -615,10 +624,12 @@ namespace lc2kicad
     
     auto pointTemp = splitString(paramList[1], ' ');
     for(int i = 0; i < pointTemp.size(); i += 2)
-      result->polylinePoints.push_back(coordinates(stod(pointTemp[i]), stod(pointTemp[i + 1])));
+      result->polylinePoints.push_back(
+            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * sch_convert_coefficient,
+                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * sch_convert_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stod(paramList[3]) * 2 * sch_convert_coefficient;
+    result->lineWidth = stoi(paramList[3]) * 2 * sch_convert_coefficient;
     
     return !++result;
   }
@@ -632,10 +643,12 @@ namespace lc2kicad
     
     auto pointTemp = splitString(paramList[1], ' ');
     for(int i = 0; i < pointTemp.size(); i += 2)
-      result->polylinePoints.push_back(coordinates(stod(pointTemp[i]), stod(pointTemp[i + 1])));
+      result->polylinePoints.push_back(
+            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * sch_convert_coefficient,
+                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * sch_convert_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stod(paramList[3]) * 2 * sch_convert_coefficient;
+    result->lineWidth = stoi(paramList[3]) * 2 * sch_convert_coefficient;
     
     return !++result;
   }
@@ -652,7 +665,7 @@ namespace lc2kicad
     result->italic = paramList[10] == "normal" | paramList[10] == "" ? false : true;
     
     paramList[7].erase(paramList[7].end() - 2); //Remove "pt" characters
-    result->fontSize = stod(paramList[7]);
+    result->fontSize = stoi(paramList[7]);
     
     result->position = { stod(paramList[2]) * sch_convert_coefficient, //We output the file as left justified, so this is fine.
                         (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * sch_convert_coefficient };
@@ -665,10 +678,11 @@ namespace lc2kicad
     RAIIC<Schematic_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
     
-    result->position = { stod(paramList[1]) * sch_convert_coefficient, stod(paramList[2]) * sch_convert_coefficient * -1 };
-    result->size = { stod(paramList[3]) * sch_convert_coefficient, stod(paramList[4]) * sch_convert_coefficient };
+    result->position = { (stoi(paramList[1]) - static_cast<int>(workingDocument->origin.X)) * sch_convert_coefficient,
+                         (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * sch_convert_coefficient * -1 };
+    result->size = { stoi(paramList[5]) * sch_convert_coefficient, stoi(paramList[6]) * sch_convert_coefficient };
     result->isFilled = paramList[10] == "none" ? false : true;
-    result->width = stod(paramList[8]) * 2 * sch_convert_coefficient;
+    result->width = stoi(paramList[8]) * 2 * sch_convert_coefficient;
     
     return !++result;
   }

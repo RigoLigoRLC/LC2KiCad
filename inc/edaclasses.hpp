@@ -293,7 +293,7 @@
     struct Schematic_Pin : public Schematic_Element
     {
       string pinName, pinNumber;
-      double pinLength;
+      int pinLength;
       int fontSize; //Font size is a fixed-point number, divided by 10 before use
       bool inverted, clock; //In EasyEDA a pin has a property "Dot" which means "Inverted" in KiCad
       SchematicRotations pinRotation;
@@ -310,7 +310,7 @@
     {
       vector<coordinates> polylinePoints;
       bool isFilled; //Fill color is not supported, but if EasyEDA document has a non-white fill color, then fill it
-      double lineWidth;
+      int lineWidth;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
     };
@@ -332,7 +332,7 @@
     {
       coordinates position;
       sizeXY size;
-      double width;
+      int width;
       bool isFilled;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;

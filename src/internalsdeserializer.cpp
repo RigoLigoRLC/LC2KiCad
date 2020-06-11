@@ -63,8 +63,8 @@ namespace lc2kicad
                 "# " + docInfo["documentname"] + "\n"
                 "#\n"
                 "DEF " + docInfo["documentname"] + " " + docInfo["prefix"] + " 0 40 Y Y 1 F N\n"
-                "F0 \"" + docInfo["prefix"] + "\" -300 300 50 H V C CNN\n"
-                "F1 \"" + docInfo["documentname"] + "\" -300 200 50 H V C CNN\n"
+                "F0 \"" + docInfo["prefix"] + "\" 0 50 50 H V C CNN\n"
+                "F1 \"" + docInfo["documentname"] + "\" 0 -50 50 H V C CNN\n"
                 "F2 \"\" 0 0 50 H I C CNN\n"
                 "F3 \"\" 0 0 50 H I C CNN\n"
                 "DRAW\n";
@@ -371,7 +371,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputSchPin(const Schematic_Pin& target) const
   {
     RAIIC<string> ret;
-    *ret += string("X ") + target.pinName + " " + target.pinNumber + " " + to_string(static_cast<int>(target.pinCoord.X)) + " "
+    *ret += "X " + target.pinName + " " + target.pinNumber + " " + to_string(static_cast<int>(target.pinCoord.X)) + " "
           + to_string(static_cast<int>(target.pinCoord.Y)) + " " + to_string(static_cast<int>(target.pinLength)) + " ";
     switch(target.pinRotation)
     {
@@ -395,21 +395,33 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputSchPolyline(const Schematic_Polyline& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputSchPolyline stub. " << target.id << "is ignored.\n";
+    *ret += "P " + to_string(target.polylinePoints.size()) + " 0 0 " + to_string(target.lineWidth) + " ";
+    for(auto &i : target.polylinePoints)
+      *ret += to_string(static_cast<int>(i.X)) + " " + to_string(static_cast<int>(i.Y)) + " ";
+    *ret += (target.isFilled ? "f" : "N");
     return !++ret;
   }
   
   string* KiCad_5_Deserializer::outputSchRect(const Schematic_Rect& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputSchRect stub. " << target.id << "is ignored.\n";
+    *ret += "S " + to_string(static_cast<int>(target.position.X)) + " " + to_string(static_cast<int>(target.position.Y)) + " "
+         + to_string(static_cast<int>(target.size.X + target.position.X)) + " "          // KiCad uses the top-left and bottom-right
+         + to_string(static_cast<int>(target.size.Y * -1 + target.position.Y)) + " 0 0 " // corner coordinates to determine a rectangle
+         + to_string(static_cast<int>(target.width)) + (target.isFilled ? " f" : " N");
     return !++ret;
   }
   
   string* KiCad_5_Deserializer::outputSchPolygon(const Schematic_Polygon& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputSchPolygon stub. " << target.id << "is ignored.\n";
+    *ret += "P " + to_string(target.polylinePoints.size() + 1) + " 0 0 " + to_string(target.lineWidth) + " ";
+    for(auto &i : target.polylinePoints)
+      *ret += to_string(static_cast<int>(i.X)) + " " + to_string(static_cast<int>(i.Y)) + " ";
+    // For polygons they are represented in "P" as well but the last point is the same as the first point.
+    // Point count is also incremented by 1.
+    *ret += to_string(static_cast<int>(target.polylinePoints[0].X)) + " " + to_string(static_cast<int>(target.polylinePoints[0].Y));
+    *ret += (target.isFilled ? " f" : " N");
     return !++ret;
   }
   
