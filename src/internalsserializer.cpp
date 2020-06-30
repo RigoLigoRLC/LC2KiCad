@@ -44,11 +44,24 @@ namespace lc2kicad
 {
   void LCJSONSerializer::initWorkingDocument(EDADocument *_workingDocument) { workingDocument = _workingDocument; }
   void LCJSONSerializer::deinitWorkingDocument() { workingDocument = nullptr; }
-  void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw) { internalCompatibilitySwitches = _compatibSw; }
+  void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw)
+  {
+    internalCompatibilitySwitches = _compatibSw;
+
+    // Set schematics coefficient
+    switch(static_cast<int>(internalCompatibilitySwitches["SDV"]))
+    {
+      case 0: // Default
+      case 1: // KiCad 5, imperial
+        schematic_unit_coefficient = 10; break;
+      case 2: // KiCad 6, metric
+        schematic_unit_coefficient = 25.4; break;
+    }
+  }
   
   LCJSONSerializer::~LCJSONSerializer() { };
 
-  void LCJSONSerializer::parseSchLibDocument()
+  void LCJSONSerializer::parseSchLibDocument() const
   {
     assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
     workingDocument->docType = documentTypes::schematic_lib;
@@ -92,6 +105,11 @@ namespace lc2kicad
     docInfo["prefix"] = prefix;
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
 
+    parseSchLibComponent(shapesList, *workingDocument);
+  }
+
+  void LCJSONSerializer::parseSchLibComponent(vector<string> &shapesList, EDADocument &targetDocument) const
+  {
     for(auto &i : shapesList)
     {
       // vector<string> parameters = splitString(shapesList[i], '~');
@@ -159,7 +177,7 @@ namespace lc2kicad
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
-      workingDocument->containedElements.back()->parent = workingDocument;
+      targetDocument.containedElements.back()->parent = workingDocument; //
     }
   }
 
@@ -204,6 +222,11 @@ namespace lc2kicad
       workingDocument->docInfo["documentname"] = packageName;
     workingDocument->docInfo["contributor"] = contributor;
 
+    parsePCBLibComponent(shapesList, *workingDocument);
+  }
+
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, EDADocument &targetDocument) const
+  {
     for(auto &i : shapesList)
     {
       // vector<string> parameters = splitString(shapesList[i], '~');
@@ -213,7 +236,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              workingDocument->addElement(parsePCBPadString(i));
+              targetDocument.addElement(parsePCBPadString(i));
               break;
             case 'R': // Protractor
               break;
@@ -226,9 +249,9 @@ namespace lc2kicad
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[2])]))
-                workingDocument->addElement(parsePCBCopperTrackString(i));
+                targetDocument.addElement(parsePCBCopperTrackString(i));
               else
-                workingDocument->addElement(parsePCBGraphicalTrackString(i));
+                targetDocument.addElement(parsePCBGraphicalTrackString(i));
               break;
           }
           break;
@@ -240,31 +263,31 @@ namespace lc2kicad
             case 'I': // Circle
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[5])]))
-                workingDocument->addElement(parsePCBCopperCircleString(i));
+                targetDocument.addElement(parsePCBCopperCircleString(i));
               else
-                workingDocument->addElement(parsePCBGraphicalCircleString(i));
+                targetDocument.addElement(parsePCBGraphicalCircleString(i));
               break;
           }
           break;
         case 'R': // Rect
-          workingDocument->addElement(parsePCBRectString(i));
+          targetDocument.addElement(parsePCBRectString(i));
           break;
         case 'A': // Arc
           break;
         case 'V': // Via
-          workingDocument->addElement(parsePCBViaString(i));
+          targetDocument.addElement(parsePCBViaString(i));
           break;
         case 'H': // Hole
-          workingDocument->addElement(parsePCBHoleString(i));
-          break; 
+          targetDocument.addElement(parsePCBHoleString(i));
+          break;
         case 'D': // Dimension
-          break; 
+          break;
         case 'S': // Solidregion
           break;
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
-      workingDocument->containedElements.back()->parent = workingDocument;
+      targetDocument.containedElements.back()->parent = workingDocument;
     }
   }
 
@@ -334,7 +357,7 @@ namespace lc2kicad
        * while KiCad rotate the polygon pads at the drill center since the drill is the pad origin.
        * Here we need to manipulate the pad a little bit so it would not cause problems.
        */
-      for(int i = 0; i < polygonCoordinates.size(); i += 2)
+      for(unsigned int i = 0; i < polygonCoordinates.size(); i += 2)
       {
         polygonPointTemp.X = (stod(polygonCoordinates[  i  ]) - stod(polygonDrillCoordsString[0])) * tenmils_to_mm_coefficient;
         polygonPointTemp.Y = (stod(polygonCoordinates[i + 1]) - stod(polygonDrillCoordsString[1])) * tenmils_to_mm_coefficient;
@@ -425,7 +448,7 @@ namespace lc2kicad
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
-    for(int i = 0; i < pointsStrList.size(); i += 2)
+    for(unsigned int i = 0; i < pointsStrList.size(); i += 2)
     {
       tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
       tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
@@ -452,7 +475,7 @@ namespace lc2kicad
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
-    for(int i = 0; i < pointsStrList.size(); i += 2)
+    for(unsigned int i = 0; i < pointsStrList.size(); i += 2)
     {
       tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
       tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
@@ -478,7 +501,7 @@ namespace lc2kicad
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
-    for(int i = 0; i < pointsStrList.size(); i += 2)
+    for(unsigned int i = 0; i < pointsStrList.size(); i += 2)
     {
       tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
       tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
@@ -567,8 +590,8 @@ namespace lc2kicad
     
     //KiCad schematics uses mils for now. S-expression versions might take metric units.
     //EasyEDA uses the inversed direction in schematics against KiCad.
-    result->pinCoord = { (stod(paramList[4]) - workingDocument->origin.X) * sch_convert_coefficient,
-                         (stod(paramList[5]) - workingDocument->origin.Y) * -1 * sch_convert_coefficient };
+    result->pinCoord = { (stod(paramList[4]) - workingDocument->origin.X) * schematic_unit_coefficient,
+                         (stod(paramList[5]) - workingDocument->origin.Y) * -1 * schematic_unit_coefficient };
     
     //Resolve pin rotation
     if(paramList[6] == "")
@@ -623,13 +646,13 @@ namespace lc2kicad
     result->id = paramList[6];
     
     auto pointTemp = splitString(paramList[1], ' ');
-    for(int i = 0; i < pointTemp.size(); i += 2)
+    for(unsigned int i = 0; i < pointTemp.size(); i += 2)
       result->polylinePoints.push_back(
-            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * sch_convert_coefficient,
-                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * sch_convert_coefficient * -1));
+            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
+                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stoi(paramList[3]) * 2 * sch_convert_coefficient;
+    result->lineWidth = stoi(paramList[3]) * 2 * schematic_unit_coefficient;
     
     return !++result;
   }
@@ -642,13 +665,13 @@ namespace lc2kicad
     result->id = paramList[6];
     
     auto pointTemp = splitString(paramList[1], ' ');
-    for(int i = 0; i < pointTemp.size(); i += 2)
+    for(unsigned int i = 0; i < pointTemp.size(); i += 2)
       result->polylinePoints.push_back(
-            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * sch_convert_coefficient,
-                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * sch_convert_coefficient * -1));
+            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
+                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stoi(paramList[3]) * 2 * sch_convert_coefficient;
+    result->lineWidth = stoi(paramList[3]) * 2 * schematic_unit_coefficient;
     
     return !++result;
   }
@@ -661,14 +684,14 @@ namespace lc2kicad
     result->id = paramList[15];
     
     result->text = paramList[12];
-    result->bold = paramList[9] == "normal" | paramList[9] == "" ? false : true;
-    result->italic = paramList[10] == "normal" | paramList[10] == "" ? false : true;
+    result->bold = (paramList[9] == "normal" | paramList[9] == "") ? false : true;
+    result->italic = (paramList[10] == "normal" | paramList[10] == "") ? false : true;
     
     paramList[7].erase(paramList[7].end() - 2); //Remove "pt" characters
     result->fontSize = stoi(paramList[7]);
     
-    result->position = { stod(paramList[2]) * sch_convert_coefficient, //We output the file as left justified, so this is fine.
-                        (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * sch_convert_coefficient };
+    result->position = { stod(paramList[2]) * schematic_unit_coefficient, //We output the file as left justified, so this is fine.
+                        (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * schematic_unit_coefficient };
 
     return !++result;
   }
@@ -678,11 +701,11 @@ namespace lc2kicad
     RAIIC<Schematic_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
     
-    result->position = { (stoi(paramList[1]) - static_cast<int>(workingDocument->origin.X)) * sch_convert_coefficient,
-                         (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * sch_convert_coefficient * -1 };
-    result->size = { stoi(paramList[5]) * sch_convert_coefficient, stoi(paramList[6]) * sch_convert_coefficient };
+    result->position = { (stoi(paramList[1]) - static_cast<int>(workingDocument->origin.X)) * schematic_unit_coefficient,
+                         (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
+    result->size = { stoi(paramList[5]) * schematic_unit_coefficient, stoi(paramList[6]) * schematic_unit_coefficient };
     result->isFilled = paramList[10] == "none" ? false : true;
-    result->width = stoi(paramList[8]) * 2 * sch_convert_coefficient;
+    result->width = stoi(paramList[8]) * 2 * schematic_unit_coefficient;
     
     return !++result;
   }

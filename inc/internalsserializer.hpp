@@ -37,8 +37,11 @@
         
         virtual ~LCJSONSerializer();
         
-        virtual void parseSchLibDocument();
+        virtual void parseSchLibDocument() const;
         virtual void parsePCBLibDocument();
+
+        virtual void parseSchLibComponent(std::vector<std::string>&, EDADocument&) const;
+        virtual void parsePCBLibComponent(std::vector<std::string>&, EDADocument&) const;
 
         PCB_Pad* parsePCBPadString(const std::string&) const;
         PCB_Hole* parsePCBHoleString(const std::string&) const;
@@ -64,6 +67,7 @@
       private:
         str_dbl_map internalCompatibilitySwitches;
         EDADocument *workingDocument = nullptr;
+        double schematic_unit_coefficient;
     };
   }
 

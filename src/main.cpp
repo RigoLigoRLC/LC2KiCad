@@ -80,16 +80,17 @@ int main(int argc, const char** argv)
   for(auto &i : argParseResult.filenames)
     try
     {
-      documentCacheList.push_back(core.autoParseLCFile(i));
-    }
+      auto docList = core.autoParseLCFile(i);
+      for(auto &j : docList)
+        documentCacheList.push_back(j);
+  }
     catch(std::runtime_error &e)
     {
       std::cerr << e.what() << std::endl;
     }
 
   for(auto &i : documentCacheList)
-    core.deserializeFile(i, &path);
-
+    core.deserializeFile(i, &path), delete i;
 
   return 0;
 }

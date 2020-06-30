@@ -80,6 +80,9 @@ namespace lc2kicad
           status = outputDirectory;
           remainingArgs = 1;
           break;
+        case 'l': // Export nested libraries
+          ret.exportNestedLibs = true;
+          break;
         default:
           assertThrow(false, string("Error: unrecognized switch \"-") + currentShortSwitch + "\"");
           break;
@@ -140,6 +143,9 @@ namespace lc2kicad
     if(!noDoubleDash)
       for(int i = endpos + 1; i < argc; i++)
         ret.filenames.push_back(argv[i]); // If we got double dash, parse all args after the double dash as filenames.
+
+    if(ret.exportNestedLibs)
+      ret.parserArguments["ENL"] = 1;
 
     return ret;
   }

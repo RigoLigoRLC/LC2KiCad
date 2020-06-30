@@ -33,7 +33,7 @@
         LC2KiCadCore(str_dbl_map&);
         ~LC2KiCadCore();
 
-        EDADocument* autoParseLCFile(string& filePath);
+        vector<EDADocument*> autoParseLCFile(string& filePath);
 
         void deserializeFile(EDADocument*, std::string*);
 
@@ -43,6 +43,7 @@
       private:
         KiCad_5_Deserializer* internalDeserializer;
         LCJSONSerializer* internalSerializer;
+        str_dbl_map coreParserArguments;
     };
   }
 

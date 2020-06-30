@@ -92,8 +92,9 @@
     struct programArgumentParseResult
     {
       bool invokeHelp = false, invokeVersionInfo = false;
-      bool convertAsProject = false;
-      bool useCompatibilitySwitches = false;
+      bool convertAsProject = false,
+           useCompatibilitySwitches = false,
+           exportNestedLibs = false;
       std::string configFile,
                   outputDirectory;
       str_dbl_map parserArguments;
