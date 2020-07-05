@@ -23,16 +23,17 @@
   #include <fstream>
   #include <string>
   #include <memory>
+  #include <map>
 
   #include "includes.hpp"
   #include "consts.hpp"
   #include "rapidjson.hpp"
-#include "edaclasses.hpp"
   
   using std::vector;
   using std::fstream;
   using std::string;
   using std::shared_ptr;
+  using std::map;
 
   /**
    * This section is dedicated for class definitions of EDA documents.
@@ -122,9 +123,13 @@
     struct PCB_Module : public PCBElement
     {
       vector<PCBElement*> containedElements;
+      coordinates moduleCoords;
       double orientation;
       bool topLayer = true;
-      string reference, value;
+      time_t updateTime;
+      KiCadLayerIndex layer;
+      map<string, string> cparaContent;
+      string reference, name, uuid;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
     };
@@ -150,7 +155,7 @@
     //TRACKs on non copper layers.
     struct PCB_GraphicalTrack : public PCBElement
     {
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       double width;
       coordslist trackPoints;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
@@ -196,7 +201,7 @@
     {
       coordslist fillAreaPolygonPoints;
       string netName;
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
     };
@@ -209,7 +214,7 @@
     struct PCB_FloodFill : public PCB_SolidRegion
     {
       floodFillStyle fillStyle;
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       double spokeWidth, clearanceWidth;
       bool isPreservingIslands, isSpokeConnection;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
@@ -220,7 +225,7 @@
     struct PCB_GraphicalCircle : public PCBElement
     {
       coordinates center;
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       double width, radius;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
@@ -245,7 +250,7 @@
     {
       coordinates topLeftPos;
       sizeXY size;
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       double strokeWidth;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
@@ -257,7 +262,7 @@
       coordinates center;
       //For default, use right deirection as 0 deg point. Use degrees not radians.
       double beginAngle, endAngle, width;
-      int layerKiCad;
+      enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
     };

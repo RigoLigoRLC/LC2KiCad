@@ -40,7 +40,7 @@
         RAIIC(T* ptr)
           { resource = ptr; }
         ~RAIIC()
-          { if(!isProtected) delete resource; }
+          { if(!--refs)if(!isProtected) delete resource; }
         RAIIC& operator++()
           { isProtected = true; return *this; }
         T& operator*()
@@ -49,8 +49,11 @@
           { return resource; }
         T* operator!()
           { return resource; }
+        RAIIC& operator--()
+          { refs++; return *this; }
       private:
         T* resource;
+        unsigned short int refs = 1;
         bool isProtected = false;
     };
     
@@ -71,6 +74,14 @@
           { coordinates ret; ret.X = this->X * coord.X; ret.Y = this->Y * coord.Y; return ret; }
         coordinates operator/(coordinates coord)
           { coordinates ret; ret.X = this->X / coord.X; ret.Y = this->Y / coord.Y; return ret; }
+        coordinates operator+=(coordinates coord)
+          { this->X += coord.X; this->Y += coord.Y; return *this; }
+        coordinates operator-=(coordinates coord)
+          { this->X -= coord.X; this->Y -= coord.Y; return *this; }
+        coordinates operator*=(coordinates coord)
+          { this->X *= coord.X; this->Y *= coord.Y; return *this; }
+        coordinates operator/=(coordinates coord)
+          { this->X /= coord.X; this->Y /= coord.Y; return *this; }
         coordinates operator+(double n)
           { coordinates ret; ret.X = this->X + n; ret.Y = this->Y + n; return ret; }
         coordinates operator*(double n)
@@ -106,7 +117,7 @@
     void assertThrow(const bool statement, const char* message);  
     void assertThrow(const bool statement, const std::string &message);
 
-    int LCLayerToKiCadLayer(const int&);
+    //int EasyEdaToKiCadLayerMap\[\];
     std::string LCLayerToKiCadName(const int&);
 
     coordslist* simpleLCSVGSegmentizer(const std::string&, int);
@@ -114,7 +125,7 @@
     std::string base_name(const std::string& path);
     std::string decToHex(const long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
-    
+    std::vector<std::string> splitByString(std::string&, std::string&&);
   }
 
 #endif

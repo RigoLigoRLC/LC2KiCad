@@ -44,6 +44,7 @@ namespace lc2kicad
 {
   void LCJSONSerializer::initWorkingDocument(EDADocument *_workingDocument) { workingDocument = _workingDocument; }
   void LCJSONSerializer::deinitWorkingDocument() { workingDocument = nullptr; }
+
   void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw)
   {
     internalCompatibilitySwitches = _compatibSw;
@@ -186,13 +187,13 @@ namespace lc2kicad
   {
     assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
     workingDocument->docType = documentTypes::pcb_lib;
-    
+
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
     string canvasPropertyString;
     vector<string> canvasPropertyList;
     vector<int> layerMapper;
     string packageName, contributor;
-    
+
     // Parse canvas properties
     canvasPropertyString = parseTarget["canvas"].GetString();
     canvasPropertyList = splitString(canvasPropertyString, '~');
@@ -206,7 +207,7 @@ namespace lc2kicad
     Value &head = parseTarget["head"];
     Value &headlist = head.GetObject()["c_para"];
     packageName = headlist["package"].GetString();
-    
+
     contributor = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
 
     // TODO: Make layer info useful information
@@ -222,10 +223,67 @@ namespace lc2kicad
       workingDocument->docInfo["documentname"] = packageName;
     workingDocument->docInfo["contributor"] = contributor;
 
-    parsePCBLibComponent(shapesList, *workingDocument);
+    parsePCBLibComponent(shapesList, *static_cast<PCB_Module*>(workingDocument->containedElements.back()), workingDocument);
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, EDADocument &targetDocument) const
+  vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
+  {
+    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"true\".");
+    workingDocument->docType = pcb;
+    map<string, RAIIC<EDADocument>> prepareList;
+    vector<EDADocument*> ret;
+
+    Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
+    Value shape = parseTarget["shape"].GetArray();
+
+    string canvasPropertyString = parseTarget["canvas"].GetString();
+    stringlist canvasPropertyList = splitString(canvasPropertyString, '~');
+    // Write canvas properties like origin and gridsize
+    workingDocument->origin.X = stod(canvasPropertyList[16]);
+    workingDocument->origin.Y = stod(canvasPropertyList[17]);
+    workingDocument->gridSize = stod(canvasPropertyList[6]);
+    coordinates origin = workingDocument->origin;
+
+    stringlist shapesList;
+    string shapeStringTmp;
+    for(unsigned int i = 0; i < shape.Size(); i++)
+    {
+      shapeStringTmp = shape[i].GetString();
+      if(shapeStringTmp.find("LIB~", 0, 4) == 0) // Get all shapes begin with "LIB~"
+        shapesList.push_back(shapeStringTmp);
+    }
+
+    for(auto &i : shapesList)
+    {
+      RAIIC<EDADocument> t;
+      t->origin = origin;
+      RAIIC<PCB_Module> m = parsePCBModuleString(i, !t, &prepareList); // Try parse module without knowing if identical ones were processed
+      if(!m) // If there is an identical one then m is nullptr and both RAIIC managed memory blocks will be cleared out.
+      {
+        t->containedElements.push_back(!++m); // Protect the module and push it back into Document
+        prepareList[static_cast<PCB_Module*>((!t)->containedElements.back())->uuid] = --t;
+      }
+    }
+
+    // When we got errors of any kind, RAIIC will handle the dynamic memory. Now we're not errored out,
+    // so we move everything into a retval vector and process misc stuff.
+    for(auto &i : prepareList)
+    {
+      ret.push_back(!++(i.second));
+      EDADocument *doc = ret.back();
+      map<string, string> &cpara = static_cast<PCB_Module*>(doc->containedElements.back())->cparaContent;
+      static_cast<PCB_Module*>(doc->containedElements.back())->parent = doc;
+      doc->docInfo["documentname"] = cpara["package"];
+      doc->docInfo["contributor"] = cpara["contributor"];
+      doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
+      doc->docType = pcb_lib;
+      doc->module = true;
+    }
+
+    return ret;
+  }
+
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, PCB_Module &targetModule, EDADocument *parent)
   {
     for(auto &i : shapesList)
     {
@@ -236,11 +294,12 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              targetDocument.addElement(parsePCBPadString(i));
+              targetModule.containedElements.push_back(parsePCBPadString(i));
               break;
             case 'R': // Protractor
               break;
           }
+          break;
         case 'T':
           switch(i[1])
           {
@@ -248,10 +307,10 @@ namespace lc2kicad
               break;
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
-              if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[2])]))
-                targetDocument.addElement(parsePCBCopperTrackString(i));
+              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[2])]))
+                targetModule.containedElements.push_back(parsePCBCopperTrackString(i));
               else
-                targetDocument.addElement(parsePCBGraphicalTrackString(i));
+                targetModule.containedElements.push_back(parsePCBGraphicalTrackString(i));
               break;
           }
           break;
@@ -262,23 +321,23 @@ namespace lc2kicad
               break;
             case 'I': // Circle
               stringlist tmp = splitString(i, '~');
-              if(judgeIsOnCopperLayer(LCtoKiCadLayerLUT[stoi(tmp[5])]))
-                targetDocument.addElement(parsePCBCopperCircleString(i));
+              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[5])]))
+                targetModule.containedElements.push_back(parsePCBCopperCircleString(i));
               else
-                targetDocument.addElement(parsePCBGraphicalCircleString(i));
+                targetModule.containedElements.push_back(parsePCBGraphicalCircleString(i));
               break;
           }
           break;
         case 'R': // Rect
-          targetDocument.addElement(parsePCBRectString(i));
+          targetModule.containedElements.push_back(parsePCBRectString(i));
           break;
         case 'A': // Arc
           break;
         case 'V': // Via
-          targetDocument.addElement(parsePCBViaString(i));
+          targetModule.containedElements.push_back(parsePCBViaString(i));
           break;
         case 'H': // Hole
-          targetDocument.addElement(parsePCBHoleString(i));
+          targetModule.containedElements.push_back(parsePCBHoleString(i));
           break;
         case 'D': // Dimension
           break;
@@ -287,7 +346,8 @@ namespace lc2kicad
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
-      targetDocument.containedElements.back()->parent = workingDocument;
+      if(targetModule.containedElements.size()) //
+        targetModule.containedElements.back()->parent = parent;
     }
   }
 
@@ -296,7 +356,7 @@ namespace lc2kicad
    * The below section is for PCB elements serializing.
    */
 
-  PCB_Pad* LCJSONSerializer::parsePCBPadString(const string &LCJSONString) const
+  PCB_Pad* LCJSONSerializer::parsePCBPadString(const string &LCJSONString)
   {
     RAIIC<PCB_Pad> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -338,7 +398,7 @@ namespace lc2kicad
       result->padCoordinates.Y = (stod(paramList[3]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->orientation = (stod(paramList[11]));
     }
-    
+
     // Resolve pad shape and size
     if(result->padShape == PCBPadShape::oval || result->padShape == PCBPadShape::rectangle)
     {
@@ -368,7 +428,7 @@ namespace lc2kicad
     // Resolve hole shape size
     result->holeSize.X = stod(paramList[13]) * tenmils_to_mm_coefficient;
     result->holeSize.Y = (stod(paramList[9]) * 2 * tenmils_to_mm_coefficient);
-    result->holeSize.X == 0.0f ? result->holeSize.X = result->holeSize.Y, result->holeShape = PCBHoleShape::circle : result->holeShape = PCBHoleShape::slot; 
+    result->holeSize.X == 0.0f ? result->holeSize.X = result->holeSize.Y, result->holeShape = PCBHoleShape::circle : result->holeShape = PCBHoleShape::slot;
     /**
      * Fix: EasyEDA determines the slot direction by pad size.
      * When rotation is 0 degrees and the pad has a circular/polygonal shape, slot drill is horizontal.
@@ -385,7 +445,7 @@ namespace lc2kicad
         result->padType = PCBPadType::through;
       else
         result->padType = PCBPadType::noplating;
-    else 
+    else
       if(padTypeTemp == 1)
         result->padType = PCBPadType::top;
       else if(padTypeTemp == 2)
@@ -398,7 +458,7 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_Hole* LCJSONSerializer::parsePCBHoleString(const string &LCJSONString) const
+  PCB_Hole* LCJSONSerializer::parsePCBHoleString(const string &LCJSONString)
   {
     RAIIC<PCB_Hole> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -412,7 +472,7 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_Via* LCJSONSerializer::parsePCBViaString(const string &LCJSONString) const 
+  PCB_Via* LCJSONSerializer::parsePCBViaString(const string &LCJSONString)
   {
     RAIIC<PCB_Via> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -430,8 +490,8 @@ namespace lc2kicad
 
     return !++result;
   }
-  
-  PCB_CopperTrack* LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString) const
+
+  PCB_CopperTrack* LCJSONSerializer::parsePCBCopperTrackString(const string &LCJSONString)
   {
     RAIIC<PCB_CopperTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -442,7 +502,7 @@ namespace lc2kicad
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track layer
-    result->layerKiCad = LCtoKiCadLayerLUT[int (stod(paramList[2]))];
+    EasyEdaToKiCadLayerMap[1];
     assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]));
 
     // Resolve track points
@@ -458,7 +518,7 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_GraphicalTrack* LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString) const
+  PCB_GraphicalTrack* LCJSONSerializer::parsePCBGraphicalTrackString(const string &LCJSONString)
   {
     RAIIC<PCB_GraphicalTrack> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -469,7 +529,7 @@ namespace lc2kicad
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track layer
-    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[2]));
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + result->id));
 
     // Resolve track points
@@ -485,7 +545,7 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_FloodFill* LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString) const
+  PCB_FloodFill* LCJSONSerializer::parsePCBFloodFillString(const string &LCJSONString)
   {
     RAIIC<PCB_FloodFill> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -494,7 +554,7 @@ namespace lc2kicad
 
     // Resolve layer ID and net name
     result->netName = paramList[3];
-    result->layerKiCad = LCLayerToKiCadLayer(stod(paramList[2]));
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stod(paramList[2])];
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
 
@@ -517,41 +577,41 @@ namespace lc2kicad
 
     return !++result;
   }
-  
-  PCB_CopperCircle* LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString) const
+
+  PCB_CopperCircle* LCJSONSerializer::parsePCBCopperCircleString(const string &LCJSONString)
   {
     RAIIC<PCB_CopperCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
-    
+
     result->center.X = stod(paramList[1]) * tenmils_to_mm_coefficient;
     result->center.Y = stod(paramList[2]) * tenmils_to_mm_coefficient;
     result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
     result->netName = paramList[8];
-    
+
     return !++result;
   }
-  
-  PCB_GraphicalCircle* LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString) const
+
+  PCB_GraphicalCircle* LCJSONSerializer::parsePCBGraphicalCircleString(const string &LCJSONString)
   {
     RAIIC<PCB_GraphicalCircle> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
-    
+
     result->center.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
     result->center.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCLayerToKiCadLayer(stoi(paramList[5]));
-    
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
+
     return !++result;
   }
 
-  PCB_Rect* LCJSONSerializer::parsePCBRectString(const string &LCJSONString) const
+  PCB_Rect* LCJSONSerializer::parsePCBRectString(const string &LCJSONString)
   {
     RAIIC<PCB_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -562,19 +622,74 @@ namespace lc2kicad
     result->topLeftPos.Y = (stof(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     result->size.X = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->size.Y = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->layerKiCad = LCtoKiCadLayerLUT[stoi(paramList[5])];
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
     result->strokeWidth = stod(paramList[8]) * tenmils_to_mm_coefficient;
 
     return !++result;
   }
-    
+
+  PCB_Module* LCJSONSerializer::parsePCBModuleString(const string &LCJSONString, EDADocument *parent = nullptr,
+                                                     map<string, RAIIC<EDADocument>> *exportedList = nullptr)
+  {
+    RAIIC<PCB_Module> result;
+    string copyJSONString = string(LCJSONString);
+    stringlist shapesList = splitByString(copyJSONString, string("#@$")),
+        moduleHeader = splitString(shapesList[0], '~'),
+        cparaTmp = splitString(moduleHeader[3], '`');
+
+    shapesList.erase(shapesList.begin()); // Purge the header string
+
+    result->id = moduleHeader[6]; // GGE ID.
+    result->uuid = moduleHeader[8]; // UUID; only for modules.
+
+    for(unsigned int i = 0; i < cparaTmp.size(); i += 2)
+      result->cparaContent[cparaTmp[i]] = cparaTmp[i + 1]; // Transfer c_para content
+
+    result->name = result->cparaContent["package"]; // Set package(aka footprint) name
+
+    // Only for nested library use. If you pass an std::map here, UUID will be checked and make sure
+    // extra efforts were not wasted on an already-parsed component.
+    if(exportedList) // Only do following when we *are* actually dealing with export nested libs
+      for(auto i = exportedList->begin(); i != exportedList->end(); i++) // Iterate through all the parsed footprints
+      {
+        if(i->first == result->uuid) // If found one with exact UUID then go out
+          return nullptr;
+        else
+          if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
+          { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
+            std::cerr << "Warning: More than one footprint on this board was found called <<<" << result->name << ">>>("
+                      << result->id << "), gID will be added to the name.";
+            result->name += ("__" + result->id); // Modify the name for clarification
+          }
+      }
+
+    result->moduleCoords =
+        (coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])} - workingDocument->origin);// * tenmils_to_mm_coefficient;
+    result->orientation = stod(moduleHeader[4] == "" ? "0" : moduleHeader[4]);
+    result->topLayer = stoi(moduleHeader[7]) == 1;
+    result->updateTime = (time_t)stoi(moduleHeader[9]);
+
+    if(parent)
+    {
+      coordinates originalOrigin = coordinates(workingDocument->origin);
+      workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
+      parsePCBLibComponent(shapesList, *result, parent);
+      workingDocument->origin = originalOrigin;
+    }
+    else
+      parsePCBLibComponent(shapesList, *result, workingDocument);
+
+
+    return !++result;
+  }
+
   // Judgement member function of parsers
 
-  bool LCJSONSerializer::judgeIsOnCopperLayer(const int layerKiCad) const
+  bool LCJSONSerializer::judgeIsOnCopperLayer(const KiCadLayerIndex layerKiCad)
   {
-    return layerKiCad >= 0 && layerKiCad <= 31;
+    return layerKiCad >= F_Cu && layerKiCad <= B_Cu;
   }
-  
+
   /**
    * This part is for schematic elements serializing.
    */
@@ -628,10 +743,10 @@ namespace lc2kicad
     if(pinLengthTemp.size() == 1)
       pinLengthTemp = splitString(paramList[11], 'v');
 
-    while(pinLengthTemp[1][0] == ' ') // Get rid of potential spaces ("v -10" or "v10" variation)
+    while(pinLengthTemp[1][0] == ' ') // Get rid of potential spaces ("v -10" or "v-10" variation)
       pinLengthTemp[1].erase(0, 1);
 
-    if(pinLengthTemp[1][0] == '-')
+    if(pinLengthTemp[1][0] == '-') // Get rid of potential negative signs
       pinLengthTemp[1][0] = ' ';
     result->pinLength = stoi(pinLengthTemp[1]) * 10;
     

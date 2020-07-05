@@ -70,10 +70,10 @@ namespace lc2kicad
                 "DRAW\n";
         break;
       case documentTypes::pcb_lib:
-        *ret += "(module " + docInfo["documentname"] + " (tedit " + timestamp + ")\n"
+        *ret += "(module \"" + docInfo["documentname"] + "\" (tedit " + timestamp + ")\n"
               + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
                 " (effects (font (size 1 1) (thickness 0.15))))\n"
-                "  (fp_text value " + docInfo["documentname"] + " (at 0 0) (layer F.Fab)"
+                "  (fp_text value \"" + docInfo["documentname"] + "\" (at 0 0) (layer F.Fab)"
                 " (effects (font (size 1 1) (thickness 0.15))))\n\n";
         indent += "";
         break;
@@ -196,11 +196,11 @@ namespace lc2kicad
     if(isInFootprint)
       std::cerr << "Warning: Copper track " << target.id << " on footprint. This is not recommended.\n";
 
-    for(int i = 0; i < target.trackPoints.size() - 1; i++)
+    for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
       *ret += indent + string(isInFootprint? "(segment (start " : "(gr_line  (start ") + to_string(target.trackPoints[i].X) + ' '
            + to_string(target.trackPoints[i].Y) + ") (end " + to_string(target.trackPoints[i + 1].X) + ' '
            + to_string(target.trackPoints[i + 1].Y) + ") (width " + to_string(target.width) + ") (layer "
-           + KiCadLayerNameLUT[target.layerKiCad] + ") (net " + target.netName + "))\n";
+           + KiCadLayerName[target.layerKiCad] + ") (net " + target.netName + "))\n";
 
     (!ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
@@ -213,10 +213,10 @@ namespace lc2kicad
     bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
       
 
-    for(int i = 0; i < target.trackPoints.size() - 1; i++)
+    for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
       *ret += indent + string(isInFootprint ? "(fp_line (start " : "(gr_line (start ") + to_string(target.trackPoints[i].X)
            + ' ' + to_string(target.trackPoints[i].Y) + ") (end " + to_string(target.trackPoints[i + 1].X) + ' '
-           + to_string(target.trackPoints[i + 1].Y) + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width "
+           + to_string(target.trackPoints[i + 1].Y) + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (width "
            + to_string(target.width) + "))\n";
 
     (*ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
@@ -229,7 +229,7 @@ namespace lc2kicad
     // untested
     RAIIC<string> ret;
 
-    *ret += indent + string("(zone (net ") + target.netName + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+    *ret += indent + string("(zone (net ") + target.netName + ") (layer " + KiCadLayerName[target.layerKiCad]
         + ") (tstamp 0) (hatch edge 0.508)\n" + indent + "  (connect_pads " + (target.isSpokeConnection ? "" : "yes")
         + " (clearance " + to_string(target.clearanceWidth) + "))\n" + indent + "  (min_thickness 0.254)\n" + indent
         + "  (fill " + (target.fillStyle == floodFillStyle::noFill ? "no" : "yes") + " (arc_segments 32) (thermal_gap "
@@ -276,7 +276,7 @@ namespace lc2kicad
       
     *ret += indent + string(isInFootprint ? "(fp_circle (center " : "(gr_circle (center ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.center.X) + ' ' + to_string(target.center.Y + target.radius)
-          + ") (layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + to_string(target.width) + "))";
+          + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (width " + to_string(target.width) + "))";
     
     return !++ret;
   }
@@ -312,19 +312,19 @@ namespace lc2kicad
     if(target.parent->module)
     {
       
-      *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+      *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerName[target.layerKiCad]
                      + ") (width " + w + "))\n";
-      *ret += indent + "(fp_line (start " + x2 + " " + y1 + ") (end " + x2 + " " + y2 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+      *ret += indent + "(fp_line (start " + x2 + " " + y1 + ") (end " + x2 + " " + y2 + ") (layer " + KiCadLayerName[target.layerKiCad]
                      + ") (width " + w + "))\n";
-      *ret += indent + "(fp_line (start " + x2 + " " + y2 + ") (end " + x1 + " " + y2 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+      *ret += indent + "(fp_line (start " + x2 + " " + y2 + ") (end " + x1 + " " + y2 + ") (layer " + KiCadLayerName[target.layerKiCad]
                      + ") (width " + w + "))\n";
-      *ret += indent + "(fp_line (start " + x1 + " " + y2 + ") (end " + x1 + " " + y1 + ") (layer " + KiCadLayerNameLUT[target.layerKiCad]
+      *ret += indent + "(fp_line (start " + x1 + " " + y2 + ") (end " + x1 + " " + y1 + ") (layer " + KiCadLayerName[target.layerKiCad]
                      + ") (width " + w + "))\n";
     }
     else
     {
       *ret += "  (gr_poly (pts (xy " + x1 + " " + y1 + ") (xy " + x1 + " " + y2 + ") (xy " + x2 + ' ' + y2 + ") (xy " + x1 + ' ' + y2 + ")) "
-              "(layer " + KiCadLayerNameLUT[target.layerKiCad] + ") (width " + w + "))";
+              "(layer " + KiCadLayerName[target.layerKiCad] + ") (width " + w + "))";
     }
 
     return !++ret;

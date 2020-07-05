@@ -34,24 +34,28 @@
         void setCompatibilitySwitches(const str_dbl_map&);
         void initWorkingDocument(EDADocument*);
         void deinitWorkingDocument();
-        
+
         virtual ~LCJSONSerializer();
         
         virtual void parseSchLibDocument() const;
         virtual void parsePCBLibDocument();
+        virtual vector<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, EDADocument&) const;
-        virtual void parsePCBLibComponent(std::vector<std::string>&, EDADocument&) const;
+        virtual void parsePCBLibComponent(std::vector<std::string>&, PCB_Module&, EDADocument*);
 
-        PCB_Pad* parsePCBPadString(const std::string&) const;
-        PCB_Hole* parsePCBHoleString(const std::string&) const;
-        PCB_Via* parsePCBViaString(const std::string&) const;
-        PCB_CopperTrack* parsePCBCopperTrackString(const std::string&) const;
-        PCB_GraphicalTrack* parsePCBGraphicalTrackString(const std::string&) const;
-        PCB_FloodFill* parsePCBFloodFillString(const std::string&) const;
-        PCB_CopperCircle* parsePCBCopperCircleString(const std::string&) const;
-        PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&) const;
-        PCB_Rect* parsePCBRectString(const std::string&) const;
+        PCB_Pad* parsePCBPadString(const std::string&);
+        PCB_Hole* parsePCBHoleString(const std::string&);
+        PCB_Via* parsePCBViaString(const std::string&);
+        PCB_CopperTrack* parsePCBCopperTrackString(const std::string&);
+        PCB_GraphicalTrack* parsePCBGraphicalTrackString(const std::string&);
+        PCB_FloodFill* parsePCBFloodFillString(const std::string&);
+        PCB_CopperCircle* parsePCBCopperCircleString(const std::string&);
+        PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&);
+        PCB_Rect* parsePCBRectString(const std::string&);
+        PCB_Module* parsePCBModuleString(const std::string&, EDADocument*, map<string, RAIIC<EDADocument>>*);
+
+        bool judgeIsOnCopperLayer(const KiCadLayerIndex layerKiCad);
         
         
         Schematic_Pin* parseSchPin(const std::string&) const;
@@ -62,8 +66,60 @@
         /*
         void parseSchImage(const std::string&) const;
         */
-        
-        bool judgeIsOnCopperLayer(const int layerKiCad) const;
+        std::map<int, KiCadLayerIndex> EasyEdaToKiCadLayerMap
+        {
+          {0, Invalid},         // Placeholder.
+          {1, F_Cu},
+          {2, B_Cu},
+          {3, F_SilkS},
+          {4, B_SilkS},
+          {5, F_Paste},
+          {6, B_Paste},
+          {7, F_Mask},
+          {8, B_Mask},
+          {9, Invalid},
+          {10, Edge_Cuts},
+          {11, Invalid},        // Multilayer, for through holes, No such layer for KiCad
+          {12, Cmts_User},
+          {13, F_Fab},
+          {14, B_Fab},
+          {15, Eco1_User},      // Mechanical layer.
+          {16, Invalid},        // 3D Model layer.
+          {17, Invalid},        // Component outline layer.
+          {18, Invalid},        // Pin outline layer.
+          {19, Invalid},        // Through hole layer(graphical only).
+          {20, Invalid},        // Violation marker layer.
+          {21, In1_Cu},
+          {22, In2_Cu},
+          {23, In3_Cu},
+          {24, In4_Cu},
+          {25, In5_Cu},
+          {26, In6_Cu},
+          {27, In7_Cu},
+          {28, In8_Cu},
+          {29, In9_Cu},
+          {30, In10_Cu},
+          {31, In11_Cu},
+          {32, In12_Cu},
+          {33, In13_Cu},
+          {34, In14_Cu},
+          {35, In15_Cu},
+          {36, In16_Cu},
+          {37, In17_Cu},
+          {38, In18_Cu},
+          {39, In19_Cu},
+          {40, In20_Cu},
+          {41, In21_Cu},
+          {42, In22_Cu},
+          {43, In23_Cu},
+          {44, In24_Cu},
+          {45, In25_Cu},
+          {46, In26_Cu},
+          {47, In27_Cu},
+          {48, In28_Cu},
+          {49, In29_Cu},
+          {50, In30_Cu},
+        };
       private:
         str_dbl_map internalCompatibilitySwitches;
         EDADocument *workingDocument = nullptr;

@@ -71,7 +71,7 @@ namespace lc2kicad
   {
     element->parent = this;
     if(this->module)
-      static_cast<PCB_Module*>(this->containedElements[0])->containedElements.push_back(static_cast<PCBElement*>(element));
+      static_cast<PCB_Module*>(this->containedElements.back())->containedElements.push_back(static_cast<PCBElement*>(element));
     else
       this->containedElements.push_back(static_cast<PCBElement*>(element));
   }

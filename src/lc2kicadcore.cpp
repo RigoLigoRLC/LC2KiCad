@@ -4,7 +4,7 @@
     This file is part of LC2KiCad.
 
     LC2KiCad is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as 
+    it under the terms of the GNU Lesser General Public License as
     published by the Free Software Foundation, either version 3 of
     the License, or (at your option) any later version.
 
@@ -48,22 +48,25 @@ namespace lc2kicad
 {
   LC2KiCadCore::LC2KiCadCore(str_dbl_map &setCompatibSw)
   {
-    switch(static_cast<int>(setCompatibSw["SSV"])) // SetSerializerVersion
+    switch(static_cast<int>(setCompatibSw["SSV"])) // SelectSerializerVersion
     {
-      case 0:
+      case 0: // Default
+      case 1: // EasyEDA 6
       default:
         internalSerializer = new LCJSONSerializer();
     }
 
-    switch(static_cast<int>(setCompatibSw["SDV"])) // SetDeserializerVersion
+    switch(static_cast<int>(setCompatibSw["SDV"])) // SelectDeserializerVersion
     {
-      case 0:
+      case 0: // Default
+      case 1: // KiCad 5
       default:
         internalDeserializer = new KiCad_5_Deserializer();
     }
 
     internalSerializer->setCompatibilitySwitches(setCompatibSw);
     internalDeserializer->setCompatibilitySwitches(setCompatibSw);
+    coreParserArguments = setCompatibSw;
   }
 
   LC2KiCadCore::~LC2KiCadCore()
@@ -72,12 +75,13 @@ namespace lc2kicad
     delete internalDeserializer;
   }
 
-  EDADocument* LC2KiCadCore::autoParseLCFile(string& filePath)
+  vector<EDADocument*> LC2KiCadCore::autoParseLCFile(string& filePath)
   {
     // First, the program has to identify what the file type EasyEDA document is.
     // Determine if it's JSON file. So use RapidJSON read the file first.
 
     // Create an internal class object.
+    vector<EDADocument*> ret;
     EDADocument targetInternalDoc(true);
     targetInternalDoc.pathToFile = filePath; //Just for storage; not being used now.
     targetInternalDoc.parent = this; // Set parent. Currently used for deserializer referencing.
@@ -96,7 +100,7 @@ namespace lc2kicad
     // EasyEDA files are now only in JSON. If fail to detect a valid JSON file, throw an exception.
     assertThrow(!parseTargetDoc.HasParseError(),
                 string("Error occured while parsing a file:\n") + "Error when parsing file \"" + filePath + "\":\n" +
-                "\tError code " + to_string(parseTargetDoc.GetParseError()) + " at offset " + 
+                "\tError code " + rapidjsonErrorMsg[parseTargetDoc.GetParseError()] + " at offset " +
                 to_string(parseTargetDoc.GetErrorOffset()) + ".\n"
                 );
 
@@ -147,8 +151,18 @@ namespace lc2kicad
         internalSerializer->parseSchLibDocument();
         internalSerializer->deinitWorkingDocument();
 
-        return !++targetDocument;
+        ret.push_back(!++targetDocument);
         break;
+      }
+      case 3:
+      {
+        if(coreParserArguments.count("ENL"))
+        {
+          internalSerializer->initWorkingDocument(!targetDocument);
+          ret = internalSerializer->parsePCBNestedLibs();
+          internalSerializer->deinitWorkingDocument();
+          break;
+        }
       }
       case 4:
       {
@@ -159,14 +173,27 @@ namespace lc2kicad
         internalSerializer->parsePCBLibDocument(); //Exceptions will be thrown out of the function. Dynamic memory will be released by RAIIC
         internalSerializer->deinitWorkingDocument();
 
-        return !++targetDocument; // Remember to manage dynamic memory and check if it's valid!
+        ret.push_back(!++targetDocument); // Remember to manage dynamic memory and check if it's valid!
         break;
       }
       default:
         cerr << "Error: Cannot process file \"" << filename << "\".\n"
                 "       This kind of document type is not supported yet.";
     }
-    return nullptr;
+    return ret;
+  }
+
+  /*
+   * Provide an internal document object and parse it as a EasyEDA 6 document file.
+   * Note that the jsonParseResult member should be a valid one. Or else, the program will read and parse JSON
+   * from the path provided by pathToFile member.
+   *
+   * This function will push the parsed document into the ret vector reference that the user provides.
+   * Therefore a valid reference to a corresponding vector must be provided.
+   */
+  void LC2KiCadCore::parseAsEasyEDA6File(EDADocument &targetInternalDoc, vector<EDADocument *> &ret)
+  {
+
   }
 
   void LC2KiCadCore::deserializeFile(EDADocument* target, string* path)

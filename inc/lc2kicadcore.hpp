@@ -34,6 +34,8 @@
         ~LC2KiCadCore();
 
         vector<EDADocument*> autoParseLCFile(string& filePath);
+        void parseAsEasyEDA6File(EDADocument&, vector<EDADocument*>&);
+        void processPerDocumentType(EDADocument&);
 
         void deserializeFile(EDADocument*, std::string*);
 

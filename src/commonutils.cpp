@@ -44,22 +44,6 @@ namespace lc2kicad
     return rtn;
   }
 
-  /**
-   * LCLayerToKiCadLayer fucntion
-   * 
-   * @param LCLayer Layer ID in LCEDA
-   * @return KiCad Layer ID.
-   */
-  int LCLayerToKiCadLayer(const int &LCLayer)
-  {
-    assertThrow(LCLayer <= 51, std::string("LCLayerToKiCadLayer: Invalid LC Layer number ") + std::to_string(LCLayer));
-    return LCtoKiCadLayerLUT[LCLayer];
-  }
-
-  std::string LCLayerToKiCadName(const int &LCLayer)
-  {
-    return KiCadLayerNameLUT[LCLayerToKiCadLayer(LCLayer)];
-  }
   
   void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace)
   {
@@ -81,6 +65,23 @@ namespace lc2kicad
     std::stringstream tmp;
     tmp << std::hex << _decimal;
     return tmp.str();
+  }
+
+  std::vector<std::string> splitByString (std::string& s, std::string &&delimiter)
+  {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos)
+    {
+      token = s.substr(pos_start, pos_end - pos_start);
+      pos_start = pos_end + delim_len;
+      res.push_back(token);
+    }
+
+    res.push_back(s.substr(pos_start));
+    return res;
   }
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
