@@ -8,3 +8,5 @@ cmake_install.cmake
 lc2kicad
 out/
 .vs/
+testfolder/
+CMakeLists.txt.user
