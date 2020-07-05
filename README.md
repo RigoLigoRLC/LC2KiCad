@@ -60,14 +60,20 @@ No macOS compilation has been done. But things should be similar to Linux enviro
   
 ### Usable commands
 - `lc2kicad`  Without an argument, the help message will be displayed.
+
 - `lc2kicad -h` or `lc2kicad --help` Display the help message.
+
 - `lc2kicad -V` or `lc2kicad --version` Display the version and about message.
+
 - `lc2kicad FILE1 [FILE2] ...` Convert the files specified.
+
+  The following part describes other parameters that the program accepts.
+
+- `-a PARSER_ARGS` Specify parser arguments. This is used for compatibility fixes, feature switches and other configurations for serializer and deserializer. See current documentation: [Parser Arguments Descriptions](docs/parser_arguments.md)
 
 ### Not implemented functions
 - `-o PATH` Specify output path.
 - `-f CONFIG_FILE` Specify a configuration file rather than using the standard ones. Configuration file contains default output path, default parser arguments and other things.
-- `-a PARSER_ARGS` Specify parser arguments. This is used for compatibility fixes, feature switches and other configurations for serializer and deserializer.
 
 ### Functions planned
 - `--pipe` Read file from STDIN until an EOF flag, output will come out of STDOUT.
