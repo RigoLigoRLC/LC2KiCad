@@ -261,7 +261,7 @@ namespace lc2kicad
       if(!m) // If there is an identical one then m is nullptr and both RAIIC managed memory blocks will be cleared out.
       {
         t->containedElements.push_back(!++m); // Protect the module and push it back into Document
-        prepareList[static_cast<PCB_Module*>((!t)->containedElements.back())->uuid] = --t;
+        prepareList[static_cast<PCB_Module*>((!t)->containedElements.back())->uuid] = --t; // operator-- on RAIIC means one destruction will be ignored.
       }
     }
 

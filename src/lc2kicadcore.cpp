@@ -163,6 +163,8 @@ namespace lc2kicad
           internalSerializer->deinitWorkingDocument();
           break;
         }
+        cerr << "Error: Cannot process file \"" << filename << "\".\n"
+                "       This kind of document type is not supported yet.";
       }
       case 4:
       {
