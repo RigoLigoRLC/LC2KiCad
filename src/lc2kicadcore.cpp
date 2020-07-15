@@ -216,14 +216,22 @@ namespace lc2kicad
     
     internalDeserializer->initWorkingDocument(target);
 
-    *outputStream << *internalDeserializer->outputFileHeader();
+    // Deserializer output are pointers to dynamic memory. They must be freed manually.
+
+    tempResult = internalDeserializer->outputFileHeader();
+    *outputStream << *tempResult << endl;
+    delete tempResult;
+
     for(auto &i : target->containedElements)
     {
       tempResult = i->deserializeSelf(*internalDeserializer);
       *outputStream << *tempResult << endl;
       delete tempResult;
     }
-    *outputStream << *internalDeserializer->outputFileEnding();
+
+    tempResult = internalDeserializer->outputFileEnding();
+    *outputStream << *tempResult << endl;
+    delete tempResult;
 
     if(!outputfile.fail())
       outputfile.close();
