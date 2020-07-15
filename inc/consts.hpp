@@ -48,6 +48,9 @@
     static const char *padTypeKiCad[] = {"smd", "smd", "thru_hole", "np_thru_hole"};
     static const char *padShapeKiCad[] = {"circle", "oval", "rect", "custom"};
 
+    // Definiton from https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words .
+    static const std::string illegalCharsOfFilenames = "\\/:%*?\"<>|,;=";
+
     static std::map<KiCadLayerIndex, std::string> KiCadLayerName
     {
       {F_Cu, "F.Cu"},

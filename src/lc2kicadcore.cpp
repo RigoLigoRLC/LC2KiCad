@@ -200,13 +200,16 @@ namespace lc2kicad
 
   void LC2KiCadCore::deserializeFile(EDADocument* target, string* path)
   {
-    cout  << "Create output file for " << target->docInfo["documentname"] << documentExtensionName[target->docType]
-          << " for output.\n";
-
     std::ofstream outputfile;
     std::ostream *outputStream = &cout;
-    string* tempResult;
-    outputfile.open(*path + target->docInfo["documentname"] + documentExtensionName[target->docType], std::ios::out);
+    string* tempResult,
+        outputFileName = *path + target->docInfo["documentname"] + documentExtensionName[target->docType];
+
+    sanitizeFileName(outputFileName);
+
+    cout  << "Create output file for " << outputFileName << " for output.\n";
+
+    outputfile.open(outputFileName, std::ios::out);
 
     if(outputfile.fail())
       cerr << "Error: Cannot create file for this document. File content would be written into"

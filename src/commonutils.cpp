@@ -83,6 +83,16 @@ namespace lc2kicad
     res.push_back(s.substr(pos_start));
     return res;
   }
+
+  void sanitizeFileName(std::string &filename)
+  {
+    for(std::string::iterator it = filename.begin(); it < filename.end(); it++)
+    {
+        bool found = illegalCharsOfFilenames.find(*it) != std::string::npos;
+        if(found)
+            *it = '_';
+    }
+  }
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
   {

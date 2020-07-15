@@ -123,6 +123,7 @@
     coordslist* simpleLCSVGSegmentizer(const std::string&, int);
     stringlist splitString(std::string sourceString, char delimeter);
     std::string base_name(const std::string& path);
+    void sanitizeFileName(std::string &filename);
     std::string decToHex(const long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     std::vector<std::string> splitByString(std::string&, std::string&&);
