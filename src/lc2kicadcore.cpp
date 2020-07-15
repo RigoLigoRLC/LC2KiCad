@@ -210,7 +210,7 @@ namespace lc2kicad
 
     if(outputfile.fail())
       cerr << "Error: Cannot create file for this document. File content would be written into"
-              "the standard output stream.";
+              "the standard output stream.\n";
     else
       outputStream = &outputfile;
     
