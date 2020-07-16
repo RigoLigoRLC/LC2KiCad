@@ -554,7 +554,7 @@ namespace lc2kicad
 
     // Resolve layer ID and net name
     result->netName = paramList[3];
-    result->layerKiCad = EasyEdaToKiCadLayerMap[stod(paramList[2])];
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
 
@@ -736,7 +736,7 @@ namespace lc2kicad
     else
     {
       findAndReplaceString(paramList[20], "pt", "");
-      result->fontSize = paramList[20] == "" ? 50 : (stod(paramList[20]) * (50.0f / 7.0f));
+      result->fontSize = paramList[20] == "" ? 50 : int (stod(paramList[20]) * (50.0f / 7.0f));
     }
     
     auto pinLengthTemp = splitString(paramList[11], 'h'); // h or v? I have to reimplement this later.
@@ -767,7 +767,7 @@ namespace lc2kicad
                         (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stoi(paramList[3]) * 2 * schematic_unit_coefficient;
+    result->lineWidth = int (stoi(paramList[3]) * 2 * schematic_unit_coefficient);
     
     return !++result;
   }
@@ -786,7 +786,7 @@ namespace lc2kicad
                         (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = stoi(paramList[3]) * 2 * schematic_unit_coefficient;
+    result->lineWidth = int (stoi(paramList[3]) * 2 * schematic_unit_coefficient);
     
     return !++result;
   }
@@ -820,7 +820,7 @@ namespace lc2kicad
                          (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
     result->size = { stoi(paramList[5]) * schematic_unit_coefficient, stoi(paramList[6]) * schematic_unit_coefficient };
     result->isFilled = paramList[10] == "none" ? false : true;
-    result->width = stoi(paramList[8]) * 2 * schematic_unit_coefficient;
+    result->width = int (stoi(paramList[8]) * 2 * schematic_unit_coefficient);
     
     return !++result;
   }

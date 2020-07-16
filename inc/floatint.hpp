@@ -26,7 +26,7 @@ namespace FloatInt
   {
     private:
       int data;
-      unsigned int digits;
+      size_t digits;
     public:
       int getData() const { return data; }
       int getDigits() const { return digits; }

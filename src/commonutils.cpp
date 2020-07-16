@@ -60,7 +60,7 @@ namespace lc2kicad
     return path.substr(path.find_last_of("/\\") + 1);
   }
 
-  std::string decToHex(long _decimal)
+  std::string decToHex(const unsigned long long _decimal)
   {
     std::stringstream tmp;
     tmp << std::hex << _decimal;

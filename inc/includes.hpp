@@ -21,10 +21,6 @@
 #ifndef GLOBAL_FUNCS
   #define GLOBAL_FUNCS
   
-  //#define MAKE_CUSTOM_TEST_OF_FUNCS
-  
-  #include "consts.hpp"
-  
   #include <vector>
   #include <string>
   #include <map>
@@ -124,7 +120,7 @@
     stringlist splitString(std::string sourceString, char delimeter);
     std::string base_name(const std::string& path);
     void sanitizeFileName(std::string &filename);
-    std::string decToHex(const long _decimal);
+    std::string decToHex(const unsigned long long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     std::vector<std::string> splitByString(std::string&, std::string&&);
   }

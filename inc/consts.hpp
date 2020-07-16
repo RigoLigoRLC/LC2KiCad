@@ -36,7 +36,7 @@
       Dwgs_User, Cmts_User, Eco1_User, Eco2_User, Edge_Cuts, Margin, B_CrtYd, F_CrtYd, B_Fab, F_Fab
     };
 
-    static const char *rapidjsonErrorMsg[] = {"No error", "Empty document", "Document root is not singular", "Invalid value", "Object missing its name", "Object missing colon", "Object missing ‘,’ or ‘}’", "Array missing ‘,’ or ‘]’", "Incorrect digits after \\u escape", "Surrogate pair in the string is invalid", "Invalid escape character in the string", "String missing ‘\\”’", "Invalid encoding of the string", "Number is too big", "Number missing its fraction part", "Number missing its exponent part", "Parsing is terminated", "Unspecificd syntax error"};
+    static const char *rapidjsonErrorMsg[] = {"No error", "Empty document", "Document root is not singular", "Invalid value", "Object missing its name", "Object missing colon", "Object missing ',' or '}'", "Array missing ',' or ']'", "Incorrect digits after \\u escape", "Surrogate pair in the string is invalid", "Invalid escape character in the string", "String missing '\"'", "Invalid encoding of the string", "Number is too big", "Number missing its fraction part", "Number missing its exponent part", "Parsing is terminated", "Unspecificd syntax error"};
 
     static const double tenmils_to_mm_coefficient = 0.254;
     static const double sch_convert_coefficient = 10;
