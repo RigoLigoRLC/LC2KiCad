@@ -1,5 +1,6 @@
 /*
     Copyright (c) 2020 RigoLigoRLC.
+    Copyright 2019-2020 Wokwi (for arc serialization).
 
     This file is part of LC2KiCad.
 
@@ -15,6 +16,9 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with LC2KiCad. If not, see <https:// www.gnu.org/licenses/>.
+
+    Further notice on arc serialization code: this part of code is ported
+    from wokwi/easyeda2kicad project, licensed under MIT license.
 */
 
 #include <iostream>
@@ -332,7 +336,14 @@ namespace lc2kicad
           targetModule.containedElements.push_back(parsePCBRectString(i));
           break;
         case 'A': // Arc
+        {
+          stringlist tmp = splitString(i, '~');
+          if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[2])]))
+            targetModule.containedElements.push_back(parsePCBCopperArcString(i));
+          else
+            targetModule.containedElements.push_back(parsePCBGraphicalArcString(i));
           break;
+        }
         case 'V': // Via
           targetModule.containedElements.push_back(parsePCBViaString(i));
           break;
@@ -607,6 +618,79 @@ namespace lc2kicad
     result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
+
+    return !++result;
+  }
+
+  /*
+      The arc serialization code is ported from wokwi/easyeda2kicad.
+      Original: https://github.com/wokwi/easyeda2kicad/blob/master/src/board.ts
+  */
+
+  PCB_CopperArc *LCJSONSerializer::parsePCBCopperArcString(const string &LCJSONString)
+  {
+    RAIIC<PCB_CopperArc> result;
+    stringlist paramList = splitString(LCJSONString, '~'), arcCmdParams, movetoCmdParams;
+
+    result->id = paramList[6]; // GGE ID
+
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
+    result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
+    result->netName = paramList[3];
+
+    string arcpath = paramList[4];
+    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
+    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
+    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
+    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
+    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
+    arcCmdParams = splitString(arcpath, ' ');
+    movetoCmdParams = splitString(movetoCmd, ' ');
+
+    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
+                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+
+    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
+          stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+
+    result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
+    result->angle = std::abs(resultArc.angleExtend);
+    result->endPoint = ((stoi(arcCmdParams[4]) ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
+
+    return !++result;
+
+  }
+
+  PCB_GraphicalArc *LCJSONSerializer::parsePCBGraphicalArcString(const string &LCJSONString)
+  {
+    RAIIC<PCB_GraphicalArc> result;
+    stringlist paramList = splitString(LCJSONString, '~'), arcCmdParams, movetoCmdParams;
+
+    result->id = paramList[6]; // GGE ID
+
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
+    result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
+
+    string arcpath = paramList[4];
+    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
+    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
+    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
+    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
+    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
+    arcCmdParams = splitString(arcpath, ' ');
+    movetoCmdParams = splitString(movetoCmd, ' ');
+
+    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
+                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+
+    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
+          stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+
+    result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
+    result->angle = std::abs(resultArc.angleExtend);
+    result->endPoint = ((stoi(arcCmdParams[4]) ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
 
     return !++result;
   }

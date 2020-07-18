@@ -62,13 +62,13 @@
         coordinates() {}
         coordinates(double _X, double _Y)
           { X = _X, Y = _Y; }
-        coordinates operator+(coordinates coord)
+        coordinates operator+(const coordinates coord)
           { coordinates ret; ret.X = this->X + coord.X; ret.Y = this->Y + coord.Y; return ret; }
-        coordinates operator-(coordinates coord)
+        coordinates operator-(const coordinates coord)
           { coordinates ret; ret.X = this->X - coord.X; ret.Y = this->Y - coord.Y; return ret; }
-        coordinates operator*(coordinates coord)
+        coordinates operator*(const coordinates coord)
           { coordinates ret; ret.X = this->X * coord.X; ret.Y = this->Y * coord.Y; return ret; }
-        coordinates operator/(coordinates coord)
+        coordinates operator/(const coordinates coord)
           { coordinates ret; ret.X = this->X / coord.X; ret.Y = this->Y / coord.Y; return ret; }
         coordinates operator+=(coordinates coord)
           { this->X += coord.X; this->Y += coord.Y; return *this; }
@@ -93,6 +93,13 @@
     typedef std::map<std::string, double> str_dbl_map;
     //typedef std::vector<str_dbl_pair> str_dbl_pairlist;
     typedef std::map<std::string, std::string> str_str_map;
+
+    struct centerArc
+    {
+      coordinates center;
+      sizeXY size;
+      double angleStart, angleExtend;
+    };
     
     enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
 
@@ -122,6 +129,9 @@
     void sanitizeFileName(std::string &filename);
     std::string decToHex(const unsigned long long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
+    double toRadians(double degree);
+    double toDegrees(double radian);
+    centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(std::string&, std::string&&);
   }
 

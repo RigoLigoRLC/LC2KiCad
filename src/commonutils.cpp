@@ -1,5 +1,7 @@
 /*
     Copyright (c) 2020 RigoLigoRLC.
+    Copyright 2001-2003  The Apache Software Foundation,
+              2019-2020 Wokwi (for lc2kicad::svgEllipticalArcComputation).
 
     This file is part of LC2KiCad.
 
@@ -15,6 +17,11 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
+
+    Further notice on lc2kicad::svgEllipticalArcComputation function:
+    This function is ported from Wokwi's easyeda2kicad project, which is
+    based on Apache Batik code. See function implementation for details.
+    This part of code is licensed under Apache 2.0 license.
 */
 
 #include <cstring>
@@ -23,6 +30,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 
 #include "consts.hpp"
 #include "includes.hpp"
@@ -92,6 +100,104 @@ namespace lc2kicad
         if(found)
             *it = '_';
     }
+  }
+
+  inline double toRadians(double degree)
+  {
+    return (degree / 180.0) * M_PI;
+  }
+
+  inline double toDegrees(double radian)
+  {
+    return (radian / M_PI) * 180.0;
+  }
+
+  centerArc svgEllipticalArcComputation(double x0, double y0, double rx, double ry, double angle,
+                                         bool largeArcFlag, bool sweepFlag, double x, double y)
+  {
+    //
+    // Elliptical arc implementation based on the SVG specification notes
+    //
+    // This function is ported from wokwi/easyeda2kicad project.
+    // Original: https://github.com/wokwi/easyeda2kicad/blob/master/src/svg-arc.ts
+
+    // Compute the half distance between the current and the final point
+    double dx2 = (x0 - x) / 2.0,
+           dy2 = (y0 - y) / 2.0;
+    // Convert angle from degrees to radians
+    angle = toRadians(std::fmod(angle, 360.0));
+    double cosAngle = std::cos(angle),
+           sinAngle = std::sin(angle);
+
+    //
+    // Step 1 : Compute (x1, y1)
+    //
+    double x1 = cosAngle * dx2 + sinAngle * dy2,
+           y1 = -sinAngle * dx2 + cosAngle * dy2;
+    // Ensure radii are large enough
+    rx = std::abs(rx);
+    ry = std::abs(ry);
+    double Prx = rx * rx,
+           Pry = ry * ry,
+           Px1 = x1 * x1,
+           Py1 = y1 * y1,
+           radiiCheck = Px1 / Prx + Py1 / Pry;
+    // check that radii are large enough
+    if (radiiCheck > 1) {
+      rx = std::sqrt(radiiCheck) * rx;
+      ry = std::sqrt(radiiCheck) * ry;
+      Prx = rx * rx;
+      Pry = ry * ry;
+    }
+
+    //
+    // Step 2 : Compute (cx1, cy1)
+    //
+    short sign = largeArcFlag == sweepFlag ? -1 : 1;
+    double sq = (Prx * Pry - Prx * Py1 - Pry * Px1) / (Prx * Py1 + Pry * Px1);
+    sq = sq < 0 ? 0 : sq;
+    double coef = sign * std::sqrt(sq),
+           cx1 = coef * ((rx * y1) / ry),
+           cy1 = coef * -((ry * x1) / rx);
+
+    //
+    // Step 3 : Compute (cx, cy) from (cx1, cy1)
+    //
+    double sx2 = (x0 + x) / 2.0,
+           sy2 = (y0 + y) / 2.0,
+           cx = sx2 + (cosAngle * cx1 - sinAngle * cy1),
+           cy = sy2 + (sinAngle * cx1 + cosAngle * cy1);
+
+    //
+    // Step 4 : Compute the angleStart (angle1) and the angleExtent (dangle)
+    //
+    double ux = (x1 - cx1) / rx,
+           uy = (y1 - cy1) / ry,
+           vx = (-x1 - cx1) / rx,
+           vy = (-y1 - cy1) / ry;
+    // Compute the angle start
+    double n = std::sqrt(ux * ux + uy * uy),
+           p = ux; // (1 * ux) + (0 * uy)
+    sign = uy < 0 ? -1 : 1;
+    double angleStart = toDegrees(sign * std::acos(p / n));
+
+    // Compute the angle extent
+    n = std::sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
+    p = ux * vx + uy * vy;
+    sign = ux * vy - uy * vx < 0 ? -1 : 1;
+    double angleExtent = toDegrees(sign * std::acos(p / n));
+    if (!sweepFlag && angleExtent > 0) {
+      angleExtent -= 360;
+    } else if (sweepFlag && angleExtent < 0) {
+      angleExtent += 360;
+    }
+    angleExtent = std::fmod(angleExtent, 360.0);
+    angleStart = std::fmod(angleStart, 360.0);
+
+    //
+    // We can now build the resulting Arc2D in double precision
+    //
+    return { { cx, cy }, { rx * 2.0, ry * 2.0 }, angleStart, angleExtent };
   }
   
   coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)

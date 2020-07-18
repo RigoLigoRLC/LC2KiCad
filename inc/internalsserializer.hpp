@@ -52,6 +52,8 @@
         PCB_FloodFill* parsePCBFloodFillString(const std::string&);
         PCB_CopperCircle* parsePCBCopperCircleString(const std::string&);
         PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&);
+        PCB_CopperArc* parsePCBCopperArcString(const std::string&);
+        PCB_GraphicalArc* parsePCBGraphicalArcString(const std::string&);
         PCB_Rect* parsePCBRectString(const std::string&);
         PCB_Module* parsePCBModuleString(const std::string&, EDADocument*, map<string, RAIIC<EDADocument>>*);
 

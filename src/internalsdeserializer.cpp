@@ -21,6 +21,7 @@
 #include <vector>
 #include <fstream>
 #include <ctime>
+#include <cmath>
 
 #include "includes.hpp"
 #include "internalsdeserializer.hpp"
@@ -34,6 +35,8 @@ using std::vector;
 using std::stof;
 using std::stoi;
 using std::to_string;
+using std::sin;
+using std::cos;
 
 namespace lc2kicad
 {
@@ -336,17 +339,24 @@ namespace lc2kicad
     std::cerr << "KiCad_5_Deserializer::outputPCBSolidRegion stub. " << target.id << "is ignored.\n";
     return !++ret;
   }
+
   string* KiCad_5_Deserializer::outputPCBGraphicalArc(const PCB_GraphicalArc& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputPCBGraphicalArc stub. " << target.id << "is ignored.\n";
+    *ret += (workingDocument->module ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
+          + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.endPoint.X) + ' ' + to_string(target.endPoint.Y)
+          + ") (angle " + to_string(target.angle) + ") (layer " + KiCadLayerName[target.layerKiCad]
+          + ") (width " + to_string(target.width) + "))";
     return !++ret;
   }
 
   string* KiCad_5_Deserializer::outputPCBCopperArc(const PCB_CopperArc& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputPCBCopperArc stub. " << target.id << "is ignored.\n";
+    *ret += (workingDocument->module ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
+          + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.endPoint.X) + ' ' + to_string(target.endPoint.Y)
+          + ") (angle " + to_string(target.angle) + ") (layer " + KiCadLayerName[target.layerKiCad]
+          + ") (net \"" + target.netName + "\") (width " + to_string(target.width) + "))";
     return !++ret;
   }
 

@@ -259,9 +259,9 @@
     //ARCs on non copper layers. Derived from PCB_Arc.
     struct PCB_GraphicalArc : public PCBElement
     {
-      coordinates center;
+      coordinates center, endPoint;
       //For default, use right deirection as 0 deg point. Use degrees not radians.
-      double beginAngle, endAngle, width;
+      double angle, width;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
       string* deserializeSelf() const;
