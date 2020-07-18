@@ -68,7 +68,7 @@ namespace lc2kicad
 
   void LCJSONSerializer::parseSchLibDocument() const
   {
-    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
+    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document as symbol with its module property set to \"false\".");
     workingDocument->docType = documentTypes::schematic_lib;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
@@ -182,14 +182,13 @@ namespace lc2kicad
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
-      targetDocument.containedElements.back()->parent = workingDocument; //
     }
   }
 
 
   void LCJSONSerializer::parsePCBLibDocument()
   {
-    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"false\".");
+    assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document as footprint with its module property set to \"false\".");
     workingDocument->docType = documentTypes::pcb_lib;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
@@ -232,7 +231,7 @@ namespace lc2kicad
 
   vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
   {
-    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document with its module property set to \"true\".");
+    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as PCB with its module property set to \"true\".");
     workingDocument->docType = pcb;
     map<string, RAIIC<EDADocument>> prepareList;
     vector<EDADocument*> ret;
@@ -276,7 +275,6 @@ namespace lc2kicad
       ret.push_back(!++(i.second));
       EDADocument *doc = ret.back();
       map<string, string> &cpara = static_cast<PCB_Module*>(doc->containedElements.back())->cparaContent;
-      static_cast<PCB_Module*>(doc->containedElements.back())->parent = doc;
       doc->docInfo["documentname"] = cpara["package"];
       doc->docInfo["contributor"] = cpara["contributor"];
       doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
@@ -357,8 +355,6 @@ namespace lc2kicad
         default:
           assertThrow(false, "Invalid element of <<<" + i + ">>>.");
       }
-      if(targetModule.containedElements.size()) //
-        targetModule.containedElements.back()->parent = parent;
     }
   }
 

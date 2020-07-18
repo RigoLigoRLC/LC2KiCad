@@ -51,6 +51,18 @@
     // Definiton from https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words .
     static const std::string illegalCharsOfFilenames = "\\/:%*?\"<>|,;=";
 
+    enum elementType
+    {
+      Base,
+      
+      PCBBase,
+      PCBModule, PCBPad, PCBGraphicalTrack, PCBCopperTrack, PCBHole, PCBVia, PCBSolidRegion, PCBFloodFill,
+      PCBGraphicalCircle, PCBCopperCircle, PCBRect, PCBGraphicalArc, PCBCopperArc,
+
+      SchBase,
+      SchModule, SchPin, SchPolyline, SchText, SchRect, SchPolygon, SchImage
+    };
+
     static std::map<KiCadLayerIndex, std::string> KiCadLayerName
     {
       {F_Cu, "F.Cu"},

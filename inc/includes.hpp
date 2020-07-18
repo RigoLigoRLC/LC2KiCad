@@ -59,7 +59,7 @@
         double X;
         double Y;
         
-        coordinates() {}
+        coordinates() { X = 0.0, Y = 0.0; }
         coordinates(double _X, double _Y)
           { X = _X, Y = _Y; }
         coordinates operator+(const coordinates coord)

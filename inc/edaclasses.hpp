@@ -72,7 +72,6 @@
       LC2KiCadCore *parent = nullptr;
       
       virtual void addElement(EDAElement*);
-      virtual string* deserializeSelf() const ;
       //virtual string* deserializeSelf(str_dbl_pair deserializerSwitch);
       //string* deserializeSelf(KiCad_5_Deserializer&)
 
@@ -98,10 +97,8 @@
     struct EDAElement
     {
       bool visibility = true, locked = false;
-      EDADocument *parent = nullptr;
       string id;
 
-      virtual string* deserializeSelf() const = 0;
       virtual string* deserializeSelf(KiCad_5_Deserializer&) const = 0;
       
       virtual ~EDAElement();
@@ -131,7 +128,6 @@
       map<string, string> cparaContent;
       string reference, name, uuid;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     /**
@@ -149,7 +145,6 @@
       string netName, pinNumber;
       coordslist shapePolygonPoints;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //TRACKs on non copper layers.
@@ -159,7 +154,6 @@
       double width;
       coordslist trackPoints;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //TRACKs on copper layers.
@@ -167,7 +161,6 @@
     {
       string netName;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //HOLEs (non-plated through-holes) in LCEDA.
@@ -176,7 +169,6 @@
       coordinates holeCoordinates;
       double holeDiameter;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     /**
@@ -189,7 +181,6 @@
       string netName;
       double viaDiameter; //The outer diameter of the copper ring
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     /**
@@ -203,7 +194,6 @@
       string netName;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     /**
@@ -218,7 +208,6 @@
       double spokeWidth, clearanceWidth;
       bool isPreservingIslands, isSpokeConnection;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
         
     //CIRCLEs on non copper layers.
@@ -228,7 +217,6 @@
       enum KiCadLayerIndex layerKiCad;
       double width, radius;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //CIRCLEs on copper layers.
@@ -236,7 +224,6 @@
     {
       string netName;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     /**
@@ -253,7 +240,6 @@
       enum KiCadLayerIndex layerKiCad;
       double strokeWidth;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //ARCs on non copper layers. Derived from PCB_Arc.
@@ -264,7 +250,6 @@
       double angle, width;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //ARCs on copper layers.
@@ -272,7 +257,6 @@
     {
       string netName;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
 
     //PROTRACTORs.
@@ -292,7 +276,6 @@
       double orientation;
       string reference, value;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     struct Schematic_Pin : public Schematic_Element
@@ -308,7 +291,6 @@
        */
       coordinates pinCoord;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     struct Schematic_Polyline : public Schematic_Element
@@ -317,7 +299,6 @@
       bool isFilled; //Fill color is not supported, but if EasyEDA document has a non-white fill color, then fill it
       int lineWidth;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     //struct SchematicArc : public SchematicElement
@@ -329,7 +310,6 @@
       bool italic, bold;
       coordinates position; //Text coordinate defined as the bottom left corner (when 0 deg rotation)
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     //Schematic rectangle. KiCad doesn't support round corner rectangles.
@@ -340,13 +320,11 @@
       int width;
       bool isFilled;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     struct Schematic_Polygon : public Schematic_Polyline
     {
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
     
     struct Schematic_Image : public Schematic_Element
@@ -355,6 +333,5 @@
       string content;
       bool isBase64Image;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
-      string* deserializeSelf() const;
     };
   }

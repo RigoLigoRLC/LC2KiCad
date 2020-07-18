@@ -113,7 +113,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     string* elementOutput;
     
-    if(!target.parent->module)
+    if(!workingDocument->module)
       indent = "  ";
 
     for(auto &i : target.containedElements)
@@ -194,7 +194,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBCopperTrack(const PCB_CopperTrack& target) const
   {
     RAIIC<string> ret;
-    bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
+    bool isInFootprint = workingDocument->module; // If not in a footprint, use gr_line. Else, use fp_line
 
     if(isInFootprint)
       std::cerr << "Warning: Copper track " << target.id << " on footprint. This is not recommended.\n";
@@ -213,7 +213,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBGraphicalTrack(const PCB_GraphicalTrack& target) const
   {
     RAIIC<string> ret;
-    bool isInFootprint = target.parent->module; // If not in a footprint, use gr_line. Else, use fp_line
+    bool isInFootprint = workingDocument->module; // If not in a footprint, use gr_line. Else, use fp_line
       
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
@@ -272,7 +272,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     bool isInFootprint;
     
-    if(target.parent->module) // Determine if this graphical line is used in footprint
+    if(workingDocument->module) // Determine if this graphical line is used in footprint
       isInFootprint = true;
     else
       isInFootprint = false;               // If not in a footprint, use gr_circle. Else, use fp_circle
@@ -288,7 +288,7 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
-    if(target.parent->module)
+    if(workingDocument->module)
       *ret += indent + 
               "(pad \"\" np_thru_hole circle (at " + to_string(target.holeCoordinates.X) + " " + to_string(target.holeCoordinates.Y) + ") "
               "(size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
@@ -312,7 +312,7 @@ namespace lc2kicad
            y2 = to_string(target.topLeftPos.Y + target.size.Y),
            w = to_string(target.strokeWidth);
 
-    if(target.parent->module)
+    if(workingDocument->module)
     {
       
       *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerName[target.layerKiCad]
