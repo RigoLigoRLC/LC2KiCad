@@ -23,7 +23,9 @@
     based on Apache Batik code. See function implementation for details.
     This part of code is licensed under Apache 2.0 license.
 */
-
+#ifdef _MSVC_LANG
+  #define _USE_MATH_DEFINES
+#endif
 #include <cstring>
 #include <string>
 #include <vector>

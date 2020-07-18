@@ -37,6 +37,9 @@ namespace lc2kicad
   EDADocument::EDADocument()
   {
     jsonParseResult = std::make_shared<rapidjson::Document>();
+    module = false;
+    docType = documentTypes::invalid;
+    gridSize = 2.54;
   }
   
   void EDADocument::addElement(EDAElement*) {} //I wished it to be a pure virtual function but can't do it. UHHH
@@ -50,6 +53,9 @@ namespace lc2kicad
   {
     if(useJSONStorage)
       jsonParseResult = std::make_shared<rapidjson::Document>();
+    module = false;
+    docType = documentTypes::invalid;
+    gridSize = 2.54;
   }
 
   string* EDADocument::deserializeSelf() const { return nullptr; }

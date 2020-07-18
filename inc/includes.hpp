@@ -101,7 +101,7 @@
       double angleStart, angleExtend;
     };
     
-    enum documentTypes {schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7};
+    enum documentTypes { invalid = 0, schematic = 1, schematic_lib = 2, pcb = 3, pcb_lib = 4, project = 5, sub_part = 6, spice_symbol = 7 };
 
     struct programArgumentParseResult
     {

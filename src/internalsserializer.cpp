@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <math.h>
+#include <cmath>
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
