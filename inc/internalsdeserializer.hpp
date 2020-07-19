@@ -60,6 +60,7 @@
         std::string* outputSchText(const Schematic_Text&) const;
         std::string* outputSchRect(const Schematic_Rect&) const;
         std::string* outputSchPolygon(const Schematic_Polygon&) const;
+        std::string* outputSchArc(const Schematic_Arc&) const;
         /*
         std::string* outputSchImage(const Schematic_Image) const;
         */

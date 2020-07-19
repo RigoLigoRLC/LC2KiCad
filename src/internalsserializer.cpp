@@ -147,6 +147,7 @@ namespace lc2kicad
             case 'R': // Arrowhead
               break;
             default: // Arc
+              workingDocument->addElement(parseSchArc(i));
               break;
           }
           break;
@@ -226,7 +227,7 @@ namespace lc2kicad
       workingDocument->docInfo["documentname"] = packageName;
     workingDocument->docInfo["contributor"] = contributor;
 
-    parsePCBLibComponent(shapesList, *static_cast<PCB_Module*>(workingDocument->containedElements.back()), workingDocument);
+    parsePCBLibComponent(shapesList, *static_cast<PCB_Module*>(workingDocument->containedElements.back()));
   }
 
   vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
@@ -285,7 +286,7 @@ namespace lc2kicad
     return ret;
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, PCB_Module &targetModule, EDADocument *parent)
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, PCB_Module &targetModule)
   {
     for(auto &i : shapesList)
     {
@@ -753,11 +754,11 @@ namespace lc2kicad
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
-      parsePCBLibComponent(shapesList, *result, parent);
+      parsePCBLibComponent(shapesList, *result);
       workingDocument->origin = originalOrigin;
     }
     else
-      parsePCBLibComponent(shapesList, *result, workingDocument);
+      parsePCBLibComponent(shapesList, *result);
 
 
     return !++result;
@@ -847,7 +848,7 @@ namespace lc2kicad
                         (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = int (stoi(paramList[3]) * 2 * schematic_unit_coefficient);
+    result->lineWidth = int (stoi(paramList[3]) * schematic_unit_coefficient);
     
     return !++result;
   }
@@ -866,7 +867,7 @@ namespace lc2kicad
                         (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
     
     result->isFilled = paramList[5] == "none" ? false : true;
-    result->lineWidth = int (stoi(paramList[3]) * 2 * schematic_unit_coefficient);
+    result->lineWidth = int (stoi(paramList[3]) * schematic_unit_coefficient);
     
     return !++result;
   }
@@ -902,6 +903,46 @@ namespace lc2kicad
     result->isFilled = paramList[10] == "none" ? false : true;
     result->width = int (stoi(paramList[8]) * 2 * schematic_unit_coefficient);
     
+    return !++result;
+  }
+
+  Schematic_Arc *LCJSONSerializer::parseSchArc(const string &LCJSONString) const
+  {
+    RAIIC<Schematic_Arc> result;
+    stringlist paramList = splitString(LCJSONString, '~'), arcCmdParams, movetoCmdParams;
+
+    result->isFilled = paramList[6] == "none" ? false : true;
+    result->width = int (stoi(paramList[4]) * schematic_unit_coefficient);
+
+    string arcpath = paramList[1];
+    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
+    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
+    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
+    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
+    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
+    arcCmdParams = splitString(arcpath, ' ');
+    movetoCmdParams = splitString(movetoCmd, ' ');
+
+    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
+                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+    sizeXY size = { stod(arcCmdParams[0]), stod(arcCmdParams[1]) };
+
+    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
+          size.X, size.Y, stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+
+    double angle1 = resultArc.angleStart, angle2 = fmod(resultArc.angleStart + resultArc.angleExtend, 360.0);
+
+    result->elliptical = !(size.X == size.Y);
+    result->center = (resultArc.center - workingDocument->origin) * schematic_unit_coefficient;
+    result->startAngle = angle1 > angle2 ? angle2 : angle1;
+    result->endAngle = angle1 > angle2 ? angle1 : angle2;
+    result->startPoint = (startpoint - workingDocument->origin) * schematic_unit_coefficient;
+    result->endPoint = (endpoint - workingDocument->origin) * schematic_unit_coefficient;
+    result->size = size * schematic_unit_coefficient;
+
+    result->center.Y *= -1, result->startPoint.Y *= -1, result->endPoint.Y *= -1;
+
     return !++result;
   }
 }

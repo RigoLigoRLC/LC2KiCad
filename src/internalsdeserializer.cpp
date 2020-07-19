@@ -434,6 +434,19 @@ namespace lc2kicad
     *ret += (target.isFilled ? " f" : " N");
     return !++ret;
   }
+
+  string *KiCad_5_Deserializer::outputSchArc(const Schematic_Arc& target) const
+  {
+    RAIIC<string> ret;
+    *ret += "A " + to_string(static_cast<int>(target.center.X)) + " " + to_string(static_cast<int>(target.center.Y)) + " "
+          + to_string(static_cast<int>(target.size.X)) + " "
+          + to_string(static_cast<int>(target.startAngle * 10)) + " " + to_string(static_cast<int>(target.endAngle * 10)) + " "
+            "0 1 "
+          + to_string(static_cast<int>(target.width)) + " " + (target.isFilled ? " f" : " N") + " "
+          + to_string(static_cast<int>(target.startPoint.X)) + " " + to_string(static_cast<int>(target.startPoint.Y)) + " "
+          + to_string(static_cast<int>(target.endPoint.X)) + " " + to_string(static_cast<int>(target.endPoint.Y)) + " ";
+    return !++ret;
+  }
   
   string* KiCad_5_Deserializer::outputSchText(const Schematic_Text& target) const
   {

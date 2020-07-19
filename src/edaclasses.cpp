@@ -123,5 +123,8 @@ namespace lc2kicad
   string* Schematic_Polyline::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolyline(*this); }
   string* Schematic_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchRect(*this); }
   string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); }
+  string* Schematic_Arc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchArc(*this); }
   string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); }
+
+
 }

@@ -326,6 +326,17 @@
     {
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
+
+    struct Schematic_Arc : public Schematic_Element
+    {
+      coordinates center, startPoint, endPoint;
+      sizeXY size;
+      double startAngle, endAngle;
+      int width;
+      bool isFilled,
+           elliptical; // KiCad doesn't support elliptical arcs, those would require linearization
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+    };
     
     struct Schematic_Image : public Schematic_Element
     {

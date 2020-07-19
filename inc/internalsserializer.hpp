@@ -42,7 +42,7 @@
         virtual vector<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, EDADocument&) const;
-        virtual void parsePCBLibComponent(std::vector<std::string>&, PCB_Module&, EDADocument*);
+        virtual void parsePCBLibComponent(std::vector<std::string>&, PCB_Module&);
 
         PCB_Pad* parsePCBPadString(const std::string&);
         PCB_Hole* parsePCBHoleString(const std::string&);
@@ -59,12 +59,12 @@
 
         bool judgeIsOnCopperLayer(const KiCadLayerIndex layerKiCad);
         
-        
         Schematic_Pin* parseSchPin(const std::string&) const;
         Schematic_Polyline* parseSchPolyline(const std::string&) const;
         Schematic_Polygon* parseSchPolygon(const std::string&) const;
         Schematic_Text* parseSchText(const std::string&) const;
         Schematic_Rect* parseSchRect(const std::string&) const;
+        Schematic_Arc* parseSchArc(const std::string&) const;
         /*
         void parseSchImage(const std::string&) const;
         */
