@@ -21,6 +21,10 @@
 #include <vector>
 #include <fstream>
 
+#ifdef _WIN32
+  #define USE_WINAPI_FOR_TEXT_COLOR
+#endif
+
 #include "includes.hpp"
 #include "lc2kicad.hpp"
 #include "edaclasses.hpp"
@@ -28,7 +32,7 @@
 
 #include "floatint.hpp"
 
-#define MAKE_CUSTOM_TEST_OF_FUNCS
+//#define MAKE_CUSTOM_TEST_OF_FUNCS
 
 using std::cout;
 using std::cerr;
@@ -40,17 +44,35 @@ namespace lc2kicad
 {
   void displayAbout();
   void displayUsage();
+  programArgumentParseResult argParseResult;
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+  HANDLE hStdOut;
+  CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+  WORD wBackgroundColor;
+#endif
 }
 
 int main(int argc, const char** argv)
 {
-  
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
-  //Macro above is defined in includes.cpp.
   //test anything here
 
+  argParseResult.verboseInfo = true;
+  cout << "A message;\n";
+  Error("This is an error");
+  cout << "Next message;\n";
+  Warn("This is a warning");
+  cout << "Next message;\n";
+  InfoVerbose("This is a verbose mode info");
+  cout << "Final message.\n";
+  return 0;
+
 #endif
-  programArgumentParseResult argParseResult;
+
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+   hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
+
 
   try { argParseResult = programArgumentParser(argc, argv);}
   catch (std::exception &e) { cout << e.what(); };

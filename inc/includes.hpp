@@ -17,7 +17,6 @@
     along with LC2KiCad. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef GLOBAL_FUNCS
   #define GLOBAL_FUNCS
   
@@ -108,7 +107,8 @@
       bool invokeHelp = false, invokeVersionInfo = false;
       bool convertAsProject = false,
            useCompatibilitySwitches = false,
-           exportNestedLibs = false;
+           exportNestedLibs = false,
+           verboseInfo = false;
       std::string configFile,
                   outputDirectory;
       str_dbl_map parserArguments;
@@ -133,6 +133,10 @@
     double toDegrees(double radian);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(std::string&, std::string&&);
+
+    void Error(std::string s);
+    void Warn(std::string s);
+    void InfoVerbose(std::string s);
   }
 
 #endif

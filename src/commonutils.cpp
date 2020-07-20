@@ -39,6 +39,13 @@
 
 namespace lc2kicad
 {
+  extern programArgumentParseResult argParseResult;
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+#include <windows.h>
+  extern HANDLE hStdOut;
+  extern CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+  extern WORD wBackgroundColor;
+#endif
   
   //void assertThrow(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
   void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
@@ -265,6 +272,46 @@ namespace lc2kicad
     }
     
     return !++ret;
+  }
+
+  void Error(std::string s)
+  {
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+    GetConsoleScreenBufferInfo(hdl, &info);
+    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hdl, FOREGROUND_RED | FOREGROUND_INTENSITY | wBackgroundColor);
+    std::cout << "Error: " << s << std::endl;
+    SetConsoleTextAttribute(hdl, info.wAttributes);
+#else
+    std::cout << "\033[1;31mError: " << s << "\033[39m\n";
+#endif
+  }
+
+  void Warn(std::string s)
+  {
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+    GetConsoleScreenBufferInfo(hdl, &info);
+    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hdl, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY | wBackgroundColor);
+    std::cout << "Error: " << s << std::endl;
+    SetConsoleTextAttribute(hdl, info.wAttributes);
+#else
+    std::cout << "\033[1;93mWarning: " << s << "\033[39m\n";
+#endif
+  }
+
+  void InfoVerbose(std::string s)
+  {
+    if(!argParseResult.verboseInfo) return;
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+    GetConsoleScreenBufferInfo(hdl, &info);
+    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hdl, FOREGROUND_BLUE | FOREGROUND_INTENSITY | wBackgroundColor);
+    std::cout << "Error: " << s << std::endl;
+    SetConsoleTextAttribute(hdl, info.wAttributes);
+#else
+    std::cout << "\033[1;96mInfo: " << s << "\033[39m\n";
+#endif
   }
 
 }
