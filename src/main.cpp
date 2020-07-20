@@ -21,9 +21,6 @@
 #include <vector>
 #include <fstream>
 
-#ifdef _WIN32
-  #define USE_WINAPI_FOR_TEXT_COLOR
-#endif
 
 #include "includes.hpp"
 #include "lc2kicad.hpp"
@@ -31,6 +28,11 @@
 #include "lc2kicadcore.hpp"
 
 #include "floatint.hpp"
+
+
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+  #include <Windows.h>
+#endif
 
 //#define MAKE_CUSTOM_TEST_OF_FUNCS
 
@@ -54,6 +56,10 @@ namespace lc2kicad
 
 int main(int argc, const char** argv)
 {
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+  hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
+
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
   //test anything here
 
@@ -69,9 +75,6 @@ int main(int argc, const char** argv)
 
 #endif
 
-#ifdef USE_WINAPI_FOR_TEXT_COLOR
-   hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-#endif
 
 
   try { argParseResult = programArgumentParser(argc, argv);}
@@ -122,12 +125,13 @@ namespace lc2kicad
 {
   void displayUsage()
   {
-    cout  << "Usage: lc2kicad FILENAME...\n"
-          << "  or:  lc2kicad [OPTION]\n\n"
-          << "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
-          << "          vis EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
-          << "  -h, --help:     Display this help message and quit.\n"
-          << "  -v, --version:  Display about message.\n";
+  cout << "Usage: lc2kicad [OPTION] [--] FILENAME\n\n"
+          "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
+          "          via EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
+          "  -h, --help:     Display this help message and quit.\n"
+          "      --version:  Display about message.\n"
+          "  -a [ARGS]:      Specify parser arguments; see documentation for details.\n"
+          "  -l:             Export nested libraries from a document.\n";
   }
 
   void displayAbout()

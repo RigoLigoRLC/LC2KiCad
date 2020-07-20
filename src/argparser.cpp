@@ -66,7 +66,7 @@ namespace lc2kicad
           ret.invokeHelp = true;
           break;
         case 'v':
-          ret.invokeVersionInfo = true;
+          ret.verboseInfo = true;
           break;
         case 'a': // Parser argument (formerly Compatibility switches)
           status = parserArgument;

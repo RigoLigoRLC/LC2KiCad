@@ -19,6 +19,10 @@
 
 #ifndef GLOBAL_FUNCS
   #define GLOBAL_FUNCS
+
+  #ifdef _WIN32
+    #define USE_WINAPI_FOR_TEXT_COLOR // Comment this line out to use ANSI escape code coloring for Windows too
+  #endif
   
   #include <vector>
   #include <string>

@@ -37,11 +37,14 @@
 #include "consts.hpp"
 #include "includes.hpp"
 
+#ifdef USE_WINAPI_FOR_TEXT_COLOR
+#include <windows.h>
+#endif
+
 namespace lc2kicad
 {
   extern programArgumentParseResult argParseResult;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
-#include <windows.h>
   extern HANDLE hStdOut;
   extern CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
   extern WORD wBackgroundColor;
@@ -277,11 +280,11 @@ namespace lc2kicad
   void Error(std::string s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
-    GetConsoleScreenBufferInfo(hdl, &info);
-    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
-    SetConsoleTextAttribute(hdl, FOREGROUND_RED | FOREGROUND_INTENSITY | wBackgroundColor);
+    GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
+    wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_INTENSITY | wBackgroundColor);
     std::cout << "Error: " << s << std::endl;
-    SetConsoleTextAttribute(hdl, info.wAttributes);
+    SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
     std::cout << "\033[1;31mError: " << s << "\033[39m\n";
 #endif
@@ -290,11 +293,11 @@ namespace lc2kicad
   void Warn(std::string s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
-    GetConsoleScreenBufferInfo(hdl, &info);
-    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
-    SetConsoleTextAttribute(hdl, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY | wBackgroundColor);
+    GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
+    wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY | wBackgroundColor);
     std::cout << "Error: " << s << std::endl;
-    SetConsoleTextAttribute(hdl, info.wAttributes);
+    SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
     std::cout << "\033[1;93mWarning: " << s << "\033[39m\n";
 #endif
@@ -304,11 +307,11 @@ namespace lc2kicad
   {
     if(!argParseResult.verboseInfo) return;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
-    GetConsoleScreenBufferInfo(hdl, &info);
-    wBackgroundColor = info.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
-    SetConsoleTextAttribute(hdl, FOREGROUND_BLUE | FOREGROUND_INTENSITY | wBackgroundColor);
+    GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
+    wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
+    SetConsoleTextAttribute(hStdOut, FOREGROUND_BLUE | FOREGROUND_INTENSITY | wBackgroundColor);
     std::cout << "Error: " << s << std::endl;
-    SetConsoleTextAttribute(hdl, info.wAttributes);
+    SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
     std::cout << "\033[1;96mInfo: " << s << "\033[39m\n";
 #endif
