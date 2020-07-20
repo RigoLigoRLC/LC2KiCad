@@ -267,6 +267,7 @@
      * Schematic elements part
      */
     enum class SchematicRotations : int { Deg0 = 0, Deg90 = 1, Deg180 = 2, Deg270 = 3 };
+    enum class SchPinElectricProperty : int { Unspecified = 0, Input = 1, Output = 2, Bidirectional = 3, Power = 4 };
 
     struct Schematic_Element : public EDAElement { } ;
 
@@ -285,6 +286,7 @@
       int fontSize; //Font size is a fixed-point number, divided by 10 before use
       bool inverted, clock; //In EasyEDA a pin has a property "Dot" which means "Inverted" in KiCad
       SchematicRotations pinRotation;
+      SchPinElectricProperty electricProperty;
       /**
        * Coordinates should be inverted in the serialization process:
        * EasyEDA use up and right as positive, while KiCad use down and left.

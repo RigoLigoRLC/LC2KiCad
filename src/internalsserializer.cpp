@@ -788,6 +788,9 @@ namespace lc2kicad
     //EasyEDA uses the inversed direction in schematics against KiCad.
     result->pinCoord = { (stod(paramList[4]) - workingDocument->origin.X) * schematic_unit_coefficient,
                          (stod(paramList[5]) - workingDocument->origin.Y) * -1 * schematic_unit_coefficient };
+
+    // Pin electric property on EasyEDA didn't split power in and power out, so power would be treated as passive.
+    result->electricProperty = SchPinElectricProperty(stoi(paramList[2]));
     
     //Resolve pin rotation
     if(paramList[6] == "")
@@ -829,7 +832,7 @@ namespace lc2kicad
 
     if(pinLengthTemp[1][0] == '-') // Get rid of potential negative signs
       pinLengthTemp[1][0] = ' ';
-    result->pinLength = stoi(pinLengthTemp[1]) * 10;
+    result->pinLength = (stoi(pinLengthTemp[1]) + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
     
     return !++result;
   }
@@ -901,7 +904,7 @@ namespace lc2kicad
                          (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
     result->size = { stoi(paramList[5]) * schematic_unit_coefficient, stoi(paramList[6]) * schematic_unit_coefficient };
     result->isFilled = paramList[10] == "none" ? false : true;
-    result->width = int (stoi(paramList[8]) * 2 * schematic_unit_coefficient);
+    result->width = int (stoi(paramList[8]) * schematic_unit_coefficient);
     
     return !++result;
   }

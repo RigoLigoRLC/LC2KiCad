@@ -395,8 +395,25 @@ namespace lc2kicad
       case SchematicRotations::Deg270:
         *ret += "U "; break;
     }
+
     *ret += to_string(target.fontSize) + " " + to_string(target.fontSize) + " ";
-    *ret += "1 0 U "; //Electrical property. Not implemented yet
+    *ret += "1 0 ";
+
+    //Electrical property. EasyEDA didn't split power in and power out, so power would become passive to avoid ERC violations.
+    switch (target.electricProperty)
+    {
+      case SchPinElectricProperty::Unspecified:
+        *ret += "U "; break;
+      case SchPinElectricProperty::Input:
+        *ret += "I "; break;
+      case SchPinElectricProperty::Output:
+        *ret += "O "; break;
+      case SchPinElectricProperty::Bidirectional:
+        *ret += "B "; break;
+      case SchPinElectricProperty::Power:
+      default:
+        *ret += "P "; break;
+    }
     *ret += target.clock ? target.inverted ? "IC" : "C" : target.inverted ? "I" : ""; //Either clock, or target. Or both, or none.
     
     return !++ret;
