@@ -30,7 +30,7 @@ namespace lc2kicad
   {
     int endpos = -1, remainingArgs = 0;
     bool noDoubleDash = true;
-    char currentShortSwitch;
+    char currentShortSwitch = 0;
     programArgumentParseResult ret;
     enum { none, configFile, outputDirectory, parserArgument } status = none;
 
