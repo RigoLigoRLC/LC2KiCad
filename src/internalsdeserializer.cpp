@@ -205,7 +205,7 @@ namespace lc2kicad
            + to_string(target.trackPoints[i + 1].Y) + ") (width " + to_string(target.width) + ") (layer "
            + KiCadLayerName[target.layerKiCad] + ") (net " + target.netName + "))\n";
 
-    (!ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
+    (*ret)[ret->size() - 1] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
     return !++ret;
   }
@@ -221,7 +221,7 @@ namespace lc2kicad
            + to_string(target.trackPoints[i + 1].Y) + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (width "
            + to_string(target.width) + "))\n";
 
-    (*ret)[ret->size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
+    (*ret)[ret->size() - 1] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     
     return !++ret;
   }
