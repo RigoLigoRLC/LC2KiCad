@@ -88,7 +88,7 @@ namespace lc2kicad
 
     char readBuffer[BUFSIZ]; // Create the buffer for RapidJSON to read the file
     std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
-    assertThrow(parseTarget != 0, "Error: File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
+    assertThrow(parseTarget != 0, "File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
     FileReadStream fileReader(parseTarget, readBuffer, BUFSIZ);
     targetInternalDoc.jsonParseResult->ParseStream(fileReader); // Let RapidJSON parse JSON file
     std::fclose(parseTarget);
@@ -99,8 +99,8 @@ namespace lc2kicad
     
     // EasyEDA files are now only in JSON. If fail to detect a valid JSON file, throw an exception.
     assertThrow(!parseTargetDoc.HasParseError(),
-                string("Error occured while parsing a file:\n") + "Error when parsing file \"" + filePath + "\":\n" +
-                "\tError code " + rapidjsonErrorMsg[parseTargetDoc.GetParseError()] + " at offset " +
+                string("RapidJSON reported error when parsing the file. Error code: ") +
+                rapidjsonErrorMsg[parseTargetDoc.GetParseError()] + ", offset " +
                 to_string(parseTargetDoc.GetErrorOffset()) + ".\n"
                 );
 
@@ -114,6 +114,7 @@ namespace lc2kicad
       Value& head = parseTargetDoc["head"];
       assertThrow(head.IsObject(), "Invalid \"head\" type.");
       assertThrow(head.HasMember("docType"), "\"docType\" not found.");
+      assertThrow(head["docType"].IsNumber(), "Invalid \"docType\" type: not number.");
       documentType = stoi(head["docType"].GetString());
       if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
         editorVer = head["editorVersion"].GetString();
@@ -121,17 +122,18 @@ namespace lc2kicad
     else
     {
       assertThrow(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
-      assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type.");
+      assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type: not string.");
       documentType = stoi(parseTargetDoc["docType"].GetString());
       if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
         editorVer = parseTargetDoc["editorVersion"].GetString();
     }
-    assertThrow((documentType >= 1 && documentType <= 7), "Not supported document type.");
-    cout << "This document is a " << documentTypeName[documentType] << " file";
+    assertThrow((documentType >= 1 && documentType <= 7),
+                string("Unsupported document type ID ") + to_string(documentType) + ".");
+    cout << "Auto Parse Processor: This document is a " << documentTypeName[documentType] << " file";
     if(editorVer != "")
       cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
     else
-      cout << ". Unknown EasyEDA Editor version.\n";
+      cout << ". EasyEDA Editor version unknown.\n";
 
     targetInternalDoc.docInfo["filename"] = filename;
     targetInternalDoc.docInfo["documentname"] = filename;
@@ -163,8 +165,7 @@ namespace lc2kicad
           internalSerializer->deinitWorkingDocument();
           break;
         }
-        cerr << "Error: Cannot process file \"" << filename << "\".\n"
-                "       This kind of document type is not supported yet.";
+        Error("PCB conversion is not supported yet.");
       }
       case 4:
       {
@@ -179,8 +180,7 @@ namespace lc2kicad
         break;
       }
       default:
-        cerr << "Error: Cannot process file \"" << filename << "\".\n"
-                "       This kind of document type is not supported yet.";
+        Error(string("The document type \"") + documentTypeName[documentType] + "\" is not supported yet.");
     }
     return ret;
   }
@@ -207,13 +207,13 @@ namespace lc2kicad
 
     sanitizeFileName(outputFileName);
 
-    cout  << "Create output file for " << outputFileName << " for output.\n";
+    cout  << "Deserializer: Create output file " << outputFileName << ".\n";
 
     outputfile.open(outputFileName, std::ios::out);
 
-    if(outputfile.fail())
-      cerr << "Error: Cannot create file for this document. File content would be written into"
-              "the standard output stream.\n";
+    if(outputfile)
+      Error("Cannot create file for this document. File content would be written into"
+            "the standard output stream.");
     else
       outputStream = &outputfile;
     
@@ -236,7 +236,7 @@ namespace lc2kicad
     *outputStream << *tempResult << endl;
     delete tempResult;
 
-    if(!outputfile.fail())
+    if(!outputfile)
       outputfile.close();
   }
 }

@@ -197,7 +197,7 @@ namespace lc2kicad
     bool isInFootprint = workingDocument->module; // If not in a footprint, use gr_line. Else, use fp_line
 
     if(isInFootprint)
-      std::cerr << "Warning: Copper track " << target.id << " on footprint. This is not recommended.\n";
+      Warn(target.id + ": Copper track on footprint. This is not recommended.");
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
       *ret += indent + string(isInFootprint? "(segment (start " : "(gr_line  (start ") + to_string(target.trackPoints[i].X) + ' '
@@ -214,7 +214,6 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
     bool isInFootprint = workingDocument->module; // If not in a footprint, use gr_line. Else, use fp_line
-      
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
       *ret += indent + string(isInFootprint ? "(fp_line (start " : "(gr_line (start ") + to_string(target.trackPoints[i].X)
@@ -263,6 +262,7 @@ namespace lc2kicad
 
     ret[ret.size()] = '\0'; // Remove the last '\n' because no end-of-line is needed at the end right there
     */
+    Warn("KiCad_5_Deserializer::outputPCBCopperCircle stub. " + target.id + "is ignored.");
     
     return !++ret;
   }
@@ -336,7 +336,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_SolidRegion& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputPCBSolidRegion stub. " << target.id << "is ignored.\n";
+    Warn("KiCad_5_Deserializer::outputPCBSolidRegion stub. " + target.id + "is ignored.");
     return !++ret;
   }
 
@@ -468,7 +468,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputSchText(const Schematic_Text& target) const
   {
     RAIIC<string> ret;
-    std::cerr << "KiCad_5_Deserializer::outputSchText stub. " << target.id << "is ignored.\n";
+    Warn("KiCad_5_Deserializer::outputSchText stub. " + target.id + "is ignored.");
     return !++ret;
   }
 }

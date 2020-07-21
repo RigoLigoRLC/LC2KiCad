@@ -29,7 +29,6 @@
 
 #include "floatint.hpp"
 
-
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
   #include <Windows.h>
 #endif
@@ -78,8 +77,10 @@ int main(int argc, const char** argv)
 
 
   try { argParseResult = programArgumentParser(argc, argv);}
-  catch (std::exception &e) { cout << e.what(); };
+  catch (std::exception &e) { Error(string("Argument parsing failed with exception: ") + e.what()); };
 
+  if(argParseResult.verboseInfo)
+    argParseResult.verboseOutputArgParseResult(&argParseResult);
   if(argParseResult.invokeHelp) // Show help or version info then exit
   {
     lc2kicad::displayUsage();
@@ -98,7 +99,7 @@ int main(int argc, const char** argv)
 
   if(argParseResult.convertAsProject)
   {
-    cerr << "Error: converting as project is not supported yet.";
+    Error("converting as project is not supported yet.");
     exit(1);
   }
   
@@ -108,10 +109,10 @@ int main(int argc, const char** argv)
       auto docList = core.autoParseLCFile(i);
       for(auto &j : docList)
         documentCacheList.push_back(j);
-  }
+    }
     catch(std::runtime_error &e)
     {
-      std::cerr << e.what() << std::endl;
+      Error(string("Parsing for \"") + i + "\" failed with exception: " + e.what());
     }
 
   for(auto &i : documentCacheList)

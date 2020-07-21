@@ -266,8 +266,8 @@ namespace lc2kicad
           break;
         }
         default: //Unknown situation
-          std::cout << ">>> Warning: error executing SVG path graph conversion, offset " << std::to_string(indexer)
-                    << " of path \"" << workingPath << "\". This may cause problem.";
+          Error(">>>Error executing SVG path graph conversion, offset " + std::to_string(indexer) +
+                " of path \"" + workingPath + "\". This may cause problem.");
           indexer++;
           break;
         relative = false;

@@ -149,4 +149,29 @@ namespace lc2kicad
 
     return ret;
   }
+
+  void programArgumentParseResult::verboseOutputArgParseResult(const programArgumentParseResult *result)
+  {
+    InfoVerbose(string("Invoke help: ") + (result->invokeHelp ? "true" : "false"));
+    InfoVerbose(string("Invoke version: ") + (result->invokeVersionInfo ? "true" : "false"));
+    InfoVerbose(string("Convert as project: ") + (result->convertAsProject ? "true" : "false"));
+    if(result->configFile.size())
+      InfoVerbose(string("Explicitly specified config file: ") + result->configFile);
+    if(result->outputDirectory.size())
+      InfoVerbose(string("Specified output directory: ") + result->outputDirectory);
+    if(result->parserArguments.size())
+    {
+      string parserArgumentsList("Specified parser arguments:\n");
+      for(auto &i : result->parserArguments)
+        parserArgumentsList += "Arg \"" + i.first + "\" = " + std::to_string(i.second) + "\n";
+      InfoVerbose(parserArgumentsList);
+    }
+    if(result->filenames.size())
+    {
+      string filenameList("Input files: \n");
+      for(auto &i : result->filenames)
+        filenameList += i + "\n";
+      InfoVerbose(filenameList);
+    }
+  }
 }

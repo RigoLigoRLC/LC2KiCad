@@ -75,40 +75,46 @@ namespace lc2kicad
     string canvasPropertyString;
     vector<string> canvasPropertyList;
     vector<int> layerMapper;
-    string packageName, contributor, prefix;
+    string symbolName, contributor, prefix;
     str_str_map &docInfo = workingDocument->docInfo;
 
     // Parse canvas properties
+    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
+    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
     canvasPropertyString = parseTarget["canvas"].GetString();
     canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
-    coordinates origin = workingDocument->origin;
     workingDocument->origin.X = stod(canvasPropertyList[13]);
     workingDocument->origin.Y = stod(canvasPropertyList[14]);
     workingDocument->gridSize = stod(canvasPropertyList[6]);
+    coordinates origin = workingDocument->origin;
+
+    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+                ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
-    Value &head = parseTarget["head"];
-    Value &headlist = head.GetObject()["c_para"];
-    packageName = headlist["name"].GetString();
+    assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
+    assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
+    Value head = parseTarget["head"].GetObject();
+    assertThrow(parseTarget.HasMember("c_para"), "\"c_para\" not found.");
+    assertThrow(parseTarget["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
+    Value &headlist = head["c_para"];
+    symbolName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : "";\
 
-
-    // TODO: Make layer info useful information
-    // Value layer = parseTarget["layers"].GetArray();
-
-    assertThrow(parseTarget["shape"].IsArray(), "Not an array.");
+    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
+    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
-    vector<PCBElement*> elementsList;
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
-    if(packageName.size() != 0)
-      docInfo["documentname"] = packageName;
-    prefix = headlist["pre"].GetString();
+    if(symbolName.size() != 0)
+      docInfo["documentname"] = symbolName;
+    prefix = headlist.HasMember("pre") ? headlist["pre"].IsString() ? headlist["pre"].GetString() : "U" : "U";
     prefix.pop_back();
     docInfo["prefix"] = prefix;
-    docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
+    docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
+                             headlist["Contributor"].GetString() : "" : "" ;
 
     parseSchLibComponent(shapesList, *workingDocument);
   }
@@ -181,7 +187,7 @@ namespace lc2kicad
         case 'O': // No Connect Flag
           break;
         default:
-          assertThrow(false, "Invalid element of <<<" + i + ">>>.");
+          assertThrow(false, "Invalid element string <<<" + i + ">>>.");
       }
     }
   }
@@ -196,36 +202,44 @@ namespace lc2kicad
     string canvasPropertyString;
     vector<string> canvasPropertyList;
     vector<int> layerMapper;
-    string packageName, contributor;
+    string footprintName, contributor;
+    str_str_map &docInfo = workingDocument->docInfo;
 
     // Parse canvas properties
+    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
+    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
     canvasPropertyString = parseTarget["canvas"].GetString();
     canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
-    coordinates origin = workingDocument->origin;
-    workingDocument->origin.X = stod(canvasPropertyList[16]);
-    workingDocument->origin.Y = stod(canvasPropertyList[17]);
+    workingDocument->origin.X = stod(canvasPropertyList[13]);
+    workingDocument->origin.Y = stod(canvasPropertyList[14]);
     workingDocument->gridSize = stod(canvasPropertyList[6]);
+    coordinates origin = workingDocument->origin;
+
+    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+                ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
-    Value &head = parseTarget["head"];
-    Value &headlist = head.GetObject()["c_para"];
-    packageName = headlist["package"].GetString();
+    assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
+    assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
+    Value head = parseTarget["head"].GetObject();
+    assertThrow(parseTarget.HasMember("c_para"), "\"c_para\" not found.");
+    assertThrow(parseTarget["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
+    Value &headlist = head["c_para"];
+    footprintName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : ""; \
 
-    contributor = headlist.HasMember("Contributor") ? headlist["Contributor"].GetString() : "" ;
-
-    // TODO: Make layer info useful information
-    // Value layer = parseTarget["layers"].GetArray();
-
-    assertThrow(parseTarget["shape"].IsArray(), "Not an array.");
+    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
+    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
     Value shape = parseTarget["shape"].GetArray();
     vector<string> shapesList;
-    vector<PCBElement*> elementsList;
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
-    if(packageName.size() != 0)
-      workingDocument->docInfo["documentname"] = packageName;
-    workingDocument->docInfo["contributor"] = contributor;
+
+    if(footprintName.size() != 0)
+      docInfo["documentname"] = footprintName;
+    docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
+      headlist["Contributor"].GetString() : "" : "";
+
 
     parsePCBLibComponent(shapesList, *static_cast<PCB_Module*>(workingDocument->containedElements.back()));
   }
@@ -238,8 +252,14 @@ namespace lc2kicad
     vector<EDADocument*> ret;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
+
+    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
+    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
     Value shape = parseTarget["shape"].GetArray();
 
+
+    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
+    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
     string canvasPropertyString = parseTarget["canvas"].GetString();
     stringlist canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
@@ -247,6 +267,9 @@ namespace lc2kicad
     workingDocument->origin.Y = stod(canvasPropertyList[17]);
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
+
+    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+                ", grid size " + to_string(workingDocument->gridSize));
 
     stringlist shapesList;
     string shapeStringTmp;
@@ -354,7 +377,7 @@ namespace lc2kicad
         case 'S': // Solidregion
           break;
         default:
-          assertThrow(false, "Invalid element of <<<" + i + ">>>.");
+          assertThrow(false, "Invalid element string <<<" + i + ">>>.");
       }
     }
   }
@@ -388,7 +411,7 @@ namespace lc2kicad
       result->padShape = PCBPadShape::polygon;
       break;
     default:
-      assertThrow(false, (string("Invalid pad shape: ") + paramList[12]).data());
+      assertThrow(false, result->id + string(": Invalid pad shape: ") + paramList[12]);
       break;
     }
 
@@ -510,8 +533,8 @@ namespace lc2kicad
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track layer
-    EasyEdaToKiCadLayerMap[1];
-    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + paramList[3]));
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
+    assertThrow(result->layerKiCad != KiCadLayerIndex::Invalid, result->id + (": Invalid layer for TRACK " + paramList[3]));
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
@@ -538,7 +561,7 @@ namespace lc2kicad
 
     // Resolve track layer
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
-    assertThrow(result->layerKiCad != -1, ("Invalid layer for TRACK " + result->id));
+    assertThrow(result->layerKiCad != KiCadLayerIndex::Invalid, result->id + (": Invalid layer for TRACK " + result->id));
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
@@ -564,7 +587,7 @@ namespace lc2kicad
     result->netName = paramList[3];
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     // Throw error with gge ID if layer is invalid
-    assertThrow(result->layerKiCad != -1, "Invalid layer for COPPERAREA " + paramList[7]);
+    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for COPPERAREA " + paramList[7]);
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
@@ -738,8 +761,8 @@ namespace lc2kicad
         else
           if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
           { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
-            std::cerr << "Warning: More than one footprint on this board was found called <<<" << result->name << ">>>("
-                      << result->id << "), gID will be added to the name.";
+            Warn("More than one footprint on this board was found called <<<" + result->name + ">>>(" + 
+                 result->id + "), gID will be added to the name.");
             result->name += ("__" + result->id); // Modify the name for clarification
           }
       }
@@ -943,6 +966,9 @@ namespace lc2kicad
     result->startPoint = (startpoint - workingDocument->origin) * schematic_unit_coefficient;
     result->endPoint = (endpoint - workingDocument->origin) * schematic_unit_coefficient;
     result->size = size * schematic_unit_coefficient;
+
+    if(!result->elliptical)
+      Warn(result->id + ": Arc is not perfectly elliptical. This could cause problem.");
 
     result->center.Y *= -1, result->startPoint.Y *= -1, result->endPoint.Y *= -1;
 

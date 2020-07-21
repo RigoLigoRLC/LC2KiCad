@@ -108,6 +108,7 @@
 
     struct programArgumentParseResult
     {
+      static void verboseOutputArgParseResult(const programArgumentParseResult *result);
       bool invokeHelp = false, invokeVersionInfo = false;
       bool convertAsProject = false,
            useCompatibilitySwitches = false,
