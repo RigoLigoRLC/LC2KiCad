@@ -54,6 +54,7 @@ MSVC编译器和Ninja也可使用。可以用CMakeLists.txt将本项目导入Vis
 
 - **LC2KiCad目前只是一个半成品，这里列出的操作随时可能变更。本程序也可能无法按照该部分的说明工作。本软件没有任何使用保障。**
 
+中文 Windows 环境下，会出现 Unicode 和 GB-2312 编码不一致产生输出文件乱码导致的一系列问题。如确实因此问题软件使用受到影响，请参阅该 [Wiki 页面](https://github.com/RigoLigoRLC/LC2KiCad/wiki/Windows%E4%B8%8B%E4%B8%AD%E6%96%87%E8%BE%93%E5%87%BA%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98) 。
   
 
 ### 可用命令
