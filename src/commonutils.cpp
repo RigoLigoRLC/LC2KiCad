@@ -44,6 +44,7 @@
 namespace lc2kicad
 {
   extern programArgumentParseResult argParseResult;
+  extern long errorCount, warningCount;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
   extern HANDLE hStdOut;
   extern CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -288,6 +289,7 @@ namespace lc2kicad
 #else
     std::cout << "\033[1;31mError: " << s << "\033[39m\n";
 #endif
+    errorCount++;
   }
 
   void Warn(std::string s)
@@ -301,6 +303,7 @@ namespace lc2kicad
 #else
     std::cout << "\033[1;93mWarning: " << s << "\033[39m\n";
 #endif
+    warningCount++;
   }
 
   void InfoVerbose(std::string s)

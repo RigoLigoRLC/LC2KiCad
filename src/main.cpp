@@ -39,6 +39,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::vector;
+using std::to_string;
 using namespace lc2kicad;
 
 namespace lc2kicad
@@ -46,6 +47,7 @@ namespace lc2kicad
   void displayAbout();
   void displayUsage();
   programArgumentParseResult argParseResult;
+  long errorCount = 0, warningCount = 0;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
   HANDLE hStdOut;
   CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -119,6 +121,12 @@ int main(int argc, const char** argv)
   for(auto &i : documentCacheList)
     if(i)
       core.deserializeFile(i, &path), delete i;
+
+  cout << endl;
+  if(errorCount | warningCount)
+    Warn(string("Error(s): ") + to_string(errorCount) + ", warning(s): " + to_string(warningCount) + ".");
+  else
+    cout << "Error(s): " << errorCount << ", warning(s): " << warningCount << ".\n";
 
   return 0;
 }
