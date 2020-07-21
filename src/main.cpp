@@ -108,7 +108,8 @@ int main(int argc, const char** argv)
     {
       auto docList = core.autoParseLCFile(i);
       for(auto &j : docList)
-        documentCacheList.push_back(j);
+        if(j)
+          documentCacheList.push_back(j);
     }
     catch(std::runtime_error &e)
     {
@@ -116,7 +117,8 @@ int main(int argc, const char** argv)
     }
 
   for(auto &i : documentCacheList)
-    core.deserializeFile(i, &path), delete i;
+    if(i)
+      core.deserializeFile(i, &path), delete i;
 
   return 0;
 }

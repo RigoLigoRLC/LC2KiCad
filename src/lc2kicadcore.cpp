@@ -114,7 +114,7 @@ namespace lc2kicad
       Value& head = parseTargetDoc["head"];
       assertThrow(head.IsObject(), "Invalid \"head\" type.");
       assertThrow(head.HasMember("docType"), "\"docType\" not found.");
-      assertThrow(head["docType"].IsNumber(), "Invalid \"docType\" type: not number.");
+      assertThrow(head["docType"].IsString(), "Invalid \"docType\" type: not string.");
       documentType = stoi(head["docType"].GetString());
       if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
         editorVer = head["editorVersion"].GetString();
@@ -166,6 +166,8 @@ namespace lc2kicad
           break;
         }
         Error("PCB conversion is not supported yet.");
+        ret.push_back(nullptr);
+        break;
       }
       case 4:
       {
@@ -181,6 +183,7 @@ namespace lc2kicad
       }
       default:
         Error(string("The document type \"") + documentTypeName[documentType] + "\" is not supported yet.");
+        ret.push_back(nullptr);
     }
     return ret;
   }
@@ -211,7 +214,7 @@ namespace lc2kicad
 
     outputfile.open(outputFileName, std::ios::out);
 
-    if(outputfile)
+    if(!outputfile)
       Error("Cannot create file for this document. File content would be written into"
             "the standard output stream.");
     else
