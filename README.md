@@ -20,13 +20,14 @@ LC2KiCad is a software that is designed to be able to convert documents of EasyE
 
 LC2KiCad requires C++ standard libraries to be present. Compilation process requires GCC and CMake. Other compilers were not tested. You will also need Git to be able to pull the repository (if required).
 
+"8" of `-j 8` in the command, is the count of parallel jobs used during compilation. You could change the number according to your CPU core count.
 ### Linux
 
 ```shell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && make
+cmake .. && make -j 8
 ```
 
 The compiled executable is right in `lc2kicad/build/`.
@@ -39,7 +40,7 @@ You need to get Git, CMake and Mingw working, and make sure all of them are avai
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && mingw32-make -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" .. && mingw32-make -j 8 
 ```
 
 MSVC and Ninja are also supported. You may import the project into Visual Studio via CMakeLists.txt, or use cmake CLI directly.

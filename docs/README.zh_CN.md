@@ -18,13 +18,15 @@ LC2KiCad 是一个可以把EasyEDA的文档（或又称LCEDA，即立创EDA，�
 
 LC2KiCad需要使用C++的标准库组件。编译过程需要使用GCC和CMake。其他的编译器并未经过测试。如需克隆本仓库，Git也是需要使用的组件之一。
 
+命令中`-j 8`中的“8”是编译时的并行任务数量，你可以根据CPU核心数更改它。
+
 ### Linux
 
 ```shell
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && make
+cmake .. && make -j 8
 ```
 
 编译出的二进制文件被存放在 `lc2kicad/build/`
@@ -37,7 +39,7 @@ cmake .. && make
 git clone https://github.com/rigoligorlc/lc2kicad.git
 cd lc2kicad
 mkdir build && cd build
-cmake .. && mingw32-make -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" .. && mingw32-make -j 8
 ```
 MSVC编译器和Ninja也可使用。可以用CMakeLists.txt将本项目导入Visual Studio，也可直接使用CMake进行编译。
 ### macOS
