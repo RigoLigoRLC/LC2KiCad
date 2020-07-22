@@ -96,8 +96,8 @@ namespace lc2kicad
     assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
     assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
     Value head = parseTarget["head"].GetObject();
-    assertThrow(parseTarget.HasMember("c_para"), "\"c_para\" not found.");
-    assertThrow(parseTarget["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
+    assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
+    assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
     symbolName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : "";\
 
