@@ -62,16 +62,7 @@ int main(int argc, const char** argv)
 #endif
 
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
-  //test anything here
 
-  argParseResult.verboseInfo = true;
-  cout << "A message;\n";
-  Error("This is an error");
-  cout << "Next message;\n";
-  Warn("This is a warning");
-  cout << "Next message;\n";
-  InfoVerbose("This is a verbose mode info");
-  cout << "Final message.\n";
   return 0;
 
 #endif

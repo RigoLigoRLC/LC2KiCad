@@ -86,6 +86,7 @@ namespace lc2kicad
     targetInternalDoc.pathToFile = filePath; //Just for storage; not being used now.
     targetInternalDoc.parent = this; // Set parent. Currently used for deserializer referencing.
 
+    cout << "Auto Parse Processor: Read file " << filePath << ".\n";
     char readBuffer[BUFSIZ]; // Create the buffer for RapidJSON to read the file
     std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
     assertThrow(parseTarget != 0, "File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
@@ -129,7 +130,7 @@ namespace lc2kicad
     }
     assertThrow((documentType >= 1 && documentType <= 7),
                 string("Unsupported document type ID ") + to_string(documentType) + ".");
-    cout << "Auto Parse Processor: This document is a " << documentTypeName[documentType] << " file";
+    cout << "Auto Parse Processor: Document " << filePath <<  " is a " << documentTypeName[documentType] << " file";
     if(editorVer != "")
       cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
     else
@@ -185,6 +186,7 @@ namespace lc2kicad
         Error(string("The document type \"") + documentTypeName[documentType] + "\" is not supported yet.");
         ret.push_back(nullptr);
     }
+    cout << "Auto Parse Processor: processing for " << filePath << " is done.\n";
     return ret;
   }
 

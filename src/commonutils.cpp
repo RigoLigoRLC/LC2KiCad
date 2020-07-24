@@ -319,5 +319,4 @@ namespace lc2kicad
     std::cout << "\033[1;96mInfo: " << s << "\033[39m\n";
 #endif
   }
-
 }
