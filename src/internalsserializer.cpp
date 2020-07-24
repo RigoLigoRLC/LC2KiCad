@@ -211,8 +211,8 @@ namespace lc2kicad
     canvasPropertyString = parseTarget["canvas"].GetString();
     canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
-    workingDocument->origin.X = stod(canvasPropertyList[13]);
-    workingDocument->origin.Y = stod(canvasPropertyList[14]);
+    workingDocument->origin.X = stod(canvasPropertyList[16]);
+    workingDocument->origin.Y = stod(canvasPropertyList[17]);
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
@@ -223,8 +223,8 @@ namespace lc2kicad
     assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
     assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
     Value head = parseTarget["head"].GetObject();
-    assertThrow(parseTarget.HasMember("c_para"), "\"c_para\" not found.");
-    assertThrow(parseTarget["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
+    assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
+    assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
     footprintName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : ""; \
 
@@ -456,19 +456,6 @@ namespace lc2kicad
       }
     }
 
-    // Resolve hole shape size
-    result->holeSize.X = stod(paramList[13]) * tenmils_to_mm_coefficient;
-    result->holeSize.Y = (stod(paramList[9]) * 2 * tenmils_to_mm_coefficient);
-    result->holeSize.X == 0.0f ? result->holeSize.X = result->holeSize.Y, result->holeShape = PCBHoleShape::circle : result->holeShape = PCBHoleShape::slot;
-    /**
-     * Fix: EasyEDA determines the slot direction by pad size.
-     * When rotation is 0 degrees and the pad has a circular/polygonal shape, slot drill is horizontal.
-     * When the pad is rectangular or oval shape, when X is smaller than Y, slot drill will become vertical;
-     * when X is greater or equal to Y, slot drill will remain horizontal. Great design!
-     */
-    if(result->padSize.X < result->padSize.Y)
-      result->holeSize.swapXY();
-
     // Resolve pad type
     int padTypeTemp = stoi(paramList[6]);
     if(padTypeTemp == 11)
@@ -481,6 +468,21 @@ namespace lc2kicad
         result->padType = PCBPadType::top;
       else if(padTypeTemp == 2)
         result->padType = PCBPadType::bottom;
+    if(padTypeTemp == 11) // Fix: Only parse hole size when the pad is a through-hole pad.
+    {
+      // Resolve hole shape size
+      result->holeSize.X = stod(paramList[13]) * tenmils_to_mm_coefficient;
+      result->holeSize.Y = (stod(paramList[9]) * 2 * tenmils_to_mm_coefficient);
+      result->holeSize.X == 0.0f ? result->holeSize.X = result->holeSize.Y, result->holeShape = PCBHoleShape::circle : result->holeShape = PCBHoleShape::slot;
+      /**
+       * Fix: EasyEDA determines the slot direction by pad size.
+       * When rotation is 0 degrees and the pad has a circular/polygonal shape, slot drill is horizontal.
+       * When the pad is rectangular or oval shape, when X is smaller than Y, slot drill will become vertical;
+       * when X is greater or equal to Y, slot drill will remain horizontal. Great design!
+       */
+      if(result->padSize.X < result->padSize.Y)
+        result->holeSize.swapXY();
+    }
     // store net name
     result->netName = paramList[7];
     result->pinNumber = paramList[8];
