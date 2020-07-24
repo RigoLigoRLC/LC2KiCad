@@ -164,6 +164,7 @@ namespace lc2kicad
       string parserArgumentsList("Specified parser arguments:\n");
       for(auto &i : result->parserArguments)
         parserArgumentsList += "Arg \"" + i.first + "\" = " + std::to_string(i.second) + "\n";
+      parserArgumentsList.pop_back(); // Remove excess '\n'. Same for next one.
       InfoVerbose(parserArgumentsList);
     }
     if(result->filenames.size())
@@ -171,6 +172,7 @@ namespace lc2kicad
       string filenameList("Input files: \n");
       for(auto &i : result->filenames)
         filenameList += i + "\n";
+      filenameList.pop_back();
       InfoVerbose(filenameList);
     }
   }
