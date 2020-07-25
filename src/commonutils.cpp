@@ -105,6 +105,15 @@ namespace lc2kicad
     return res;
   }
 
+  std::string loadNthSeparated(std::string &s, char delimiter, unsigned int nth)
+  {
+    std::stringstream ss(s);
+    std::string ret;
+    for(unsigned int i = 0; i <= nth; i++)
+      std::getline(ss, ret, delimiter);
+    return ret;
+  }
+
   void sanitizeFileName(std::string &filename)
   {
     for(std::string::iterator it = filename.begin(); it < filename.end(); it++)

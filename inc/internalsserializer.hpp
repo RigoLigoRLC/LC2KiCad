@@ -37,12 +37,12 @@
 
         virtual ~LCJSONSerializer();
         
-        virtual void parseSchLibDocument() const;
+        virtual void parseSchLibDocument();
         virtual void parsePCBLibDocument();
         virtual vector<EDADocument *> parsePCBNestedLibs();
 
-        virtual void parseSchLibComponent(std::vector<std::string>&, EDADocument&) const;
-        virtual void parsePCBLibComponent(std::vector<std::string>&, PCB_Module&);
+        virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
+        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<PCBElement*> &containedElements);
 
         PCB_Pad* parsePCBPadString(const std::string&);
         PCB_Hole* parsePCBHoleString(const std::string&);

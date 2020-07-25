@@ -134,6 +134,7 @@
     void sanitizeFileName(std::string &filename);
     std::string decToHex(const unsigned long long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
+    std::string loadNthSeparated(std::string &s, char delimiter, unsigned int nth);
     double toRadians(double degree);
     double toDegrees(double radian);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);

@@ -66,7 +66,7 @@ namespace lc2kicad
   
   LCJSONSerializer::~LCJSONSerializer() { };
 
-  void LCJSONSerializer::parseSchLibDocument() const
+  void LCJSONSerializer::parseSchLibDocument()
   {
     assertThrow(workingDocument->module, "Internal document type mismatch: Parse an internal document as symbol with its module property set to \"false\".");
     workingDocument->docType = documentTypes::schematic_lib;
@@ -116,10 +116,10 @@ namespace lc2kicad
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
                              headlist["Contributor"].GetString() : "" : "" ;
 
-    parseSchLibComponent(shapesList, *workingDocument);
+    parseSchLibComponent(shapesList, static_cast<Schematic_Module*>(workingDocument->containedElements.back())->containedElements);
   }
 
-  void LCJSONSerializer::parseSchLibComponent(vector<string> &shapesList, EDADocument &targetDocument) const
+  void LCJSONSerializer::parseSchLibComponent(vector<string> &shapesList, vector<Schematic_Element*> &containedElements)
   {
     for(auto &i : shapesList)
     {
@@ -130,22 +130,22 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'G': // Polygon
-              workingDocument->addElement(parseSchPolygon(i));
+              containedElements.push_back(parseSchPolygon(i));
               break;
             case 'I': // Pie
               break;
             case 'L': // Polyline
-              workingDocument->addElement(parseSchPolyline(i));
+              containedElements.push_back(parseSchPolyline(i));
               break;
             case 'T': // Path
               break;
             default: // Pin
-              workingDocument->addElement(parseSchPin(i));
+              containedElements.push_back(parseSchPin(i));
               break;
           }
           break;
         case 'R': // Rectangle
-          workingDocument->addElement(parseSchRect(i));
+          containedElements.push_back(parseSchRect(i));
           break;
         case 'A':
           switch(i[1])
@@ -153,7 +153,7 @@ namespace lc2kicad
             case 'R': // Arrowhead
               break;
             default: // Arc
-              workingDocument->addElement(parseSchArc(i));
+              containedElements.push_back(parseSchArc(i));
               break;
           }
           break;
@@ -241,7 +241,7 @@ namespace lc2kicad
       headlist["Contributor"].GetString() : "" : "";
 
 
-    parsePCBLibComponent(shapesList, *static_cast<PCB_Module*>(workingDocument->containedElements.back()));
+    parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements);
   }
 
   vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
@@ -309,7 +309,7 @@ namespace lc2kicad
     return ret;
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, PCB_Module &targetModule)
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<PCBElement*> &containedElements)
   {
     for(auto &i : shapesList)
     {
@@ -320,7 +320,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              targetModule.containedElements.push_back(parsePCBPadString(i));
+              containedElements.push_back(parsePCBPadString(i));
               break;
             case 'R': // Protractor
               break;
@@ -333,10 +333,10 @@ namespace lc2kicad
               break;
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
-              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[2])]))
-                targetModule.containedElements.push_back(parsePCBCopperTrackString(i));
+              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 2))]))
+                containedElements.push_back(parsePCBCopperTrackString(i));
               else
-                targetModule.containedElements.push_back(parsePCBGraphicalTrackString(i));
+                containedElements.push_back(parsePCBGraphicalTrackString(i));
               break;
           }
           break;
@@ -346,31 +346,29 @@ namespace lc2kicad
             case 'O': // CopperArea
               break;
             case 'I': // Circle
-              stringlist tmp = splitString(i, '~');
-              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[5])]))
-                targetModule.containedElements.push_back(parsePCBCopperCircleString(i));
+              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 5))]))
+                containedElements.push_back(parsePCBCopperCircleString(i));
               else
-                targetModule.containedElements.push_back(parsePCBGraphicalCircleString(i));
+                containedElements.push_back(parsePCBGraphicalCircleString(i));
               break;
           }
           break;
         case 'R': // Rect
-          targetModule.containedElements.push_back(parsePCBRectString(i));
+          containedElements.push_back(parsePCBRectString(i));
           break;
         case 'A': // Arc
         {
-          stringlist tmp = splitString(i, '~');
-          if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(tmp[2])]))
-            targetModule.containedElements.push_back(parsePCBCopperArcString(i));
+          if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 2))]))
+            containedElements.push_back(parsePCBCopperArcString(i));
           else
-            targetModule.containedElements.push_back(parsePCBGraphicalArcString(i));
+            containedElements.push_back(parsePCBGraphicalArcString(i));
           break;
         }
         case 'V': // Via
-          targetModule.containedElements.push_back(parsePCBViaString(i));
+          containedElements.push_back(parsePCBViaString(i));
           break;
         case 'H': // Hole
-          targetModule.containedElements.push_back(parsePCBHoleString(i));
+          containedElements.push_back(parsePCBHoleString(i));
           break;
         case 'D': // Dimension
           break;
@@ -779,11 +777,11 @@ namespace lc2kicad
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
-      parsePCBLibComponent(shapesList, *result);
+      parsePCBLibComponent(shapesList, result->containedElements);
       workingDocument->origin = originalOrigin;
     }
     else
-      parsePCBLibComponent(shapesList, *result);
+      parsePCBLibComponent(shapesList, result->containedElements);
 
 
     return !++result;

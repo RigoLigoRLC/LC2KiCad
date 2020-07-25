@@ -63,8 +63,6 @@ int main(int argc, const char** argv)
 
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
 
-  return 0;
-
 #endif
 
 
