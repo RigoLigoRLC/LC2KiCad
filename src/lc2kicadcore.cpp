@@ -141,8 +141,8 @@ namespace lc2kicad
     targetInternalDoc.docInfo["editorversion"] = editorVer;
     
     // Now decide what are we going to parse, whether schematics or PCB, anything else.
-    PCBDocument* targetDoc = new PCBDocument(targetInternalDoc);
-    RAIIC<PCBDocument> targetDocument(targetDoc);
+    //PCBDocument* targetDoc = new PCBDocument(targetInternalDoc); // Deprecated
+    RAIIC<PCBDocument> targetDocument(new PCBDocument(targetInternalDoc));
     switch(documentType)
     {
       case 2:
@@ -166,8 +166,14 @@ namespace lc2kicad
           internalSerializer->deinitWorkingDocument();
           break;
         }
-        Error("PCB conversion is not supported yet.");
-        ret.push_back(nullptr);
+        else
+        {
+          internalSerializer->initWorkingDocument(!targetDocument);
+          internalSerializer->parsePCBDocument();
+          internalSerializer->deinitWorkingDocument();
+
+          ret.push_back(!++targetDocument);
+        }
         break;
       }
       case 4:

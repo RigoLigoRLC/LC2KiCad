@@ -22,6 +22,7 @@
 
   #include <string>
   #include "includes.hpp"
+  #include "rapidjson.hpp"
   #include "edaclasses.hpp"
 
   using namespace lc2kicad;
@@ -38,11 +39,17 @@
         virtual ~LCJSONSerializer();
         
         virtual void parseSchLibDocument();
+        virtual void parsePCBDocument();
         virtual void parsePCBLibDocument();
         virtual vector<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
         virtual void parsePCBLibComponent(std::vector<std::string>&, vector<PCBElement*> &containedElements);
+
+        void parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
+                                          std::vector<std::string> &canvasPropertyList,
+                                          rapidjson::Value &shapesArray,
+                                          rapidjson::Value &headObject);
 
         PCB_Pad* parsePCBPadString(const std::string&);
         PCB_Hole* parsePCBHoleString(const std::string&);

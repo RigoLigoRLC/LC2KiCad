@@ -72,17 +72,13 @@ namespace lc2kicad
     workingDocument->docType = documentTypes::schematic_lib;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
-    string canvasPropertyString;
-    vector<string> canvasPropertyList;
-    vector<int> layerMapper;
+    vector<string> canvasPropertyList, shapesList;
     string symbolName, contributor, prefix;
     str_str_map &docInfo = workingDocument->docInfo;
+    Value shape, head;
 
-    // Parse canvas properties
-    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
-    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
-    canvasPropertyString = parseTarget["canvas"].GetString();
-    canvasPropertyList = splitString(canvasPropertyString, '~');
+    parseCommonDoucmentStructure(parseTarget, canvasPropertyList, shape, head);
+
     // Write canvas properties like origin and gridsize
     workingDocument->origin.X = stod(canvasPropertyList[13]);
     workingDocument->origin.Y = stod(canvasPropertyList[14]);
@@ -93,18 +89,11 @@ namespace lc2kicad
                 ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
-    assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
-    assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
-    Value head = parseTarget["head"].GetObject();
     assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
     assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
     symbolName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : "";\
 
-    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
-    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
-    Value shape = parseTarget["shape"].GetArray();
-    vector<string> shapesList;
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
@@ -192,6 +181,13 @@ namespace lc2kicad
     }
   }
 
+  void LCJSONSerializer::parsePCBDocument()
+  {
+    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as PCB with its module property set to \"true\".");
+    workingDocument->docType = documentTypes::pcb;
+
+
+  }
 
   void LCJSONSerializer::parsePCBLibDocument()
   {
@@ -199,17 +195,14 @@ namespace lc2kicad
     workingDocument->docType = documentTypes::pcb_lib;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
-    string canvasPropertyString;
-    vector<string> canvasPropertyList;
+    vector<string> canvasPropertyList, shapesList;
     vector<int> layerMapper;
     string footprintName, contributor;
     str_str_map &docInfo = workingDocument->docInfo;
+    Value shape, head;
 
-    // Parse canvas properties
-    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
-    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
-    canvasPropertyString = parseTarget["canvas"].GetString();
-    canvasPropertyList = splitString(canvasPropertyString, '~');
+    parseCommonDoucmentStructure(parseTarget, canvasPropertyList, shape, head);
+
     // Write canvas properties like origin and gridsize
     workingDocument->origin.X = stod(canvasPropertyList[16]);
     workingDocument->origin.Y = stod(canvasPropertyList[17]);
@@ -220,9 +213,6 @@ namespace lc2kicad
                 ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
-    assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
-    assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
-    Value head = parseTarget["head"].GetObject();
     assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
     assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
@@ -230,8 +220,7 @@ namespace lc2kicad
 
     assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
     assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
-    Value shape = parseTarget["shape"].GetArray();
-    vector<string> shapesList;
+
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
@@ -250,18 +239,13 @@ namespace lc2kicad
     workingDocument->docType = pcb;
     map<string, RAIIC<EDADocument>> prepareList;
     vector<EDADocument*> ret;
+    stringlist canvasPropertyList;
+    Value shape, head;
 
     Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
 
-    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
-    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
-    Value shape = parseTarget["shape"].GetArray();
+    parseCommonDoucmentStructure(parseTarget, canvasPropertyList, shape, head);
 
-
-    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
-    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
-    string canvasPropertyString = parseTarget["canvas"].GetString();
-    stringlist canvasPropertyList = splitString(canvasPropertyString, '~');
     // Write canvas properties like origin and gridsize
     workingDocument->origin.X = stod(canvasPropertyList[16]);
     workingDocument->origin.Y = stod(canvasPropertyList[17]);
@@ -380,6 +364,24 @@ namespace lc2kicad
     }
   }
 
+  void LCJSONSerializer::parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
+                                                      std::vector<std::string> &canvasPropertyList,
+                                                      rapidjson::Value &shapesArray,
+                                                      rapidjson::Value &headObject)
+  {
+    assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
+    assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
+    headObject = parseTarget["head"].GetObject();
+
+    assertThrow(parseTarget.HasMember("canvas"), "\"canvas\" not found.");
+    assertThrow(parseTarget["canvas"].IsString(), "Invalid \"canvas\" type: not string.");
+    string canvasPropertyString = parseTarget["canvas"].GetString();
+    canvasPropertyList = splitString(canvasPropertyString, '~');
+
+    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
+    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
+    shapesArray = parseTarget["shape"].GetArray();
+  }
 
   /**
    * The below section is for PCB elements serializing.
