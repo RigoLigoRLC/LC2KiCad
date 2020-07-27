@@ -44,7 +44,7 @@
         virtual vector<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
-        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<PCBElement*> &containedElements);
+        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements);
 
         void parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
                                           std::vector<std::string> &canvasPropertyList,
@@ -62,7 +62,8 @@
         PCB_CopperArc* parsePCBCopperArcString(const std::string&);
         PCB_GraphicalArc* parsePCBGraphicalArcString(const std::string&);
         PCB_Rect* parsePCBRectString(const std::string&);
-        PCB_Module* parsePCBModuleString(const std::string&, EDADocument*, map<string, RAIIC<EDADocument>>*);
+        PCB_Module* parsePCBModuleString(const std::string& LCJSONString, EDADocument* parent = nullptr,
+                                         map<string, RAIIC<EDADocument>>* exportedList = nullptr);
 
         bool judgeIsOnCopperLayer(const KiCadLayerIndex layerKiCad);
         

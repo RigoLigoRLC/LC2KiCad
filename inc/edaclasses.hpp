@@ -53,6 +53,19 @@
     class LC2KiCadCore;
     class KiCad_5_Deserializer;
 
+    typedef std::pair<unsigned int, string> PCBNet;
+
+    class PCBNetManager
+    {
+      private:
+        map<unsigned int, string> netNameCodeMap;
+      public:
+        unsigned int obtainNetCode(string &netName); // Get netcode if present, or else would create new one.
+        void setNet(string& netName, PCBNet &net);
+        bool findNet(string &netName); // Return true if a net is present, vice-versa.
+        string outputPCBNetInfo(); // For deserializer calls.
+        PCBNetManager();
+    };
     struct EDAElement;
     struct PCBElement;
     //Referencing each other, must declare one first.
@@ -84,6 +97,7 @@
     {
       PCBDocument(const EDADocument&);
       void addElement(EDAElement*) override;
+      PCBNetManager netManager;
       ~PCBDocument();
     };
     
@@ -103,9 +117,19 @@
       
       virtual ~EDAElement();
     };
+
     /**
      * This section is dedicated for elements on the PCBs and footprints.
      */
+
+    /*
+    struct PCBNet
+    {
+      string netName;
+      unsigned int netCode;
+    };
+    */
+
     /**
      * LCEDA flood fill (COPPERAREA) fill style. KiCad does not support grid fill yet,
      * thus a warning should be given to the user.
@@ -119,7 +143,7 @@
 
     struct PCB_Module : public PCBElement
     {
-      vector<PCBElement*> containedElements;
+      vector<EDAElement*> containedElements;
       coordinates moduleCoords;
       double orientation;
       bool topLayer = true;
@@ -142,7 +166,8 @@
       double orientation;
       coordinates padCoordinates;
       sizeXY padSize, holeSize;
-      string netName, pinNumber;
+      string pinNumber;
+      PCBNet net;
       coordslist shapePolygonPoints;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
@@ -159,7 +184,7 @@
     //TRACKs on copper layers.
     struct PCB_CopperTrack : public PCB_GraphicalTrack
     {
-      string netName;
+      PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
 
@@ -178,7 +203,7 @@
      */
     struct PCB_Via : public PCB_Hole
     {
-      string netName;
+      PCBNet net;
       double viaDiameter; //The outer diameter of the copper ring
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
@@ -191,7 +216,7 @@
     struct PCB_SolidRegion : public PCBElement
     {
       coordslist fillAreaPolygonPoints;
-      string netName;
+      PCBNet net;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
@@ -207,6 +232,7 @@
       enum KiCadLayerIndex layerKiCad;
       double spokeWidth, clearanceWidth;
       bool isPreservingIslands, isSpokeConnection;
+      PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
         
@@ -222,7 +248,7 @@
     //CIRCLEs on copper layers.
     struct PCB_CopperCircle : public PCB_GraphicalCircle
     {
-      string netName;
+      PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
 
@@ -255,7 +281,7 @@
     //ARCs on copper layers.
     struct PCB_CopperArc : public PCB_GraphicalArc
     {
-      string netName;
+      PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
 

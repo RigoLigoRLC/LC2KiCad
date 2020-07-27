@@ -69,6 +69,7 @@
         EDADocument *workingDocument = nullptr;
         str_dbl_map internalCompatibilitySwitches; //3-Character version copy of compatibility switches.
         std::string indent;
+        bool        processingModule;
     };
   }
 #endif

@@ -186,7 +186,30 @@ namespace lc2kicad
     assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as PCB with its module property set to \"true\".");
     workingDocument->docType = documentTypes::pcb;
 
+    Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
+    vector<string> canvasPropertyList, shapesList;
+    vector<int> layerMapper;
+    string footprintName, contributor;
+    str_str_map &docInfo = workingDocument->docInfo;
+    Value shape, head;
 
+    (void)docInfo; // Supress warning
+
+    parseCommonDoucmentStructure(parseTarget, canvasPropertyList, shape, head);
+
+    // Write canvas properties like origin and gridsize
+    workingDocument->origin.X = stod(canvasPropertyList[16]);
+    workingDocument->origin.Y = stod(canvasPropertyList[17]);
+    workingDocument->gridSize = stod(canvasPropertyList[6]);
+    coordinates origin = workingDocument->origin;
+
+    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+                ", grid size " + to_string(workingDocument->gridSize));
+
+    for(unsigned int i = 0; i < shape.Size(); i++)
+      shapesList.push_back(shape[i].GetString());
+
+    parsePCBLibComponent(shapesList, workingDocument->containedElements);
   }
 
   void LCJSONSerializer::parsePCBLibDocument()
@@ -217,9 +240,6 @@ namespace lc2kicad
     assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
     footprintName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : ""; \
-
-    assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
-    assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
 
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
@@ -293,7 +313,7 @@ namespace lc2kicad
     return ret;
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<PCBElement*> &containedElements)
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<EDAElement*> &containedElements)
   {
     for(auto &i : shapesList)
     {
@@ -357,6 +377,9 @@ namespace lc2kicad
         case 'D': // Dimension
           break;
         case 'S': // Solidregion
+          break;
+        case 'L': // Footprint
+          containedElements.push_back(parsePCBModuleString(i));
           break;
         default:
           assertThrow(false, "Invalid element string <<<" + i + ">>>.");
@@ -484,7 +507,7 @@ namespace lc2kicad
         result->holeSize.swapXY();
     }
     // store net name
-    result->netName = paramList[7];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[7], result->net);
     result->pinNumber = paramList[8];
 
     //workingDocument->containedElements.push_back(!++result);
@@ -519,7 +542,7 @@ namespace lc2kicad
     result->viaDiameter = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->holeDiameter = stod(paramList[5]) * tenmils_to_mm_coefficient;
 
-    result->netName = paramList[4];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[4], result->net);
 
     return !++result;
   }
@@ -537,6 +560,7 @@ namespace lc2kicad
     // Resolve track layer
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     assertThrow(result->layerKiCad != KiCadLayerIndex::Invalid, result->id + (": Invalid layer for TRACK " + paramList[3]));
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
@@ -586,7 +610,7 @@ namespace lc2kicad
     result->id = paramList[7]; // GGE ID.
 
     // Resolve layer ID and net name
-    result->netName = paramList[3];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for COPPERAREA " + paramList[7]);
@@ -623,7 +647,7 @@ namespace lc2kicad
     result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
-    result->netName = paramList[8];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[8], result->net);
 
     return !++result;
   }
@@ -658,7 +682,7 @@ namespace lc2kicad
 
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
-    result->netName = paramList[3];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
 
     string arcpath = paramList[4];
     findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
@@ -734,8 +758,8 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_Module* LCJSONSerializer::parsePCBModuleString(const string &LCJSONString, EDADocument *parent = nullptr,
-                                                     map<string, RAIIC<EDADocument>> *exportedList = nullptr)
+  PCB_Module* LCJSONSerializer::parsePCBModuleString(const string &LCJSONString, EDADocument *parent,
+                                                     map<string, RAIIC<EDADocument>> *exportedList)
   {
     RAIIC<PCB_Module> result;
     string copyJSONString = string(LCJSONString);
@@ -770,12 +794,13 @@ namespace lc2kicad
       }
 
     result->moduleCoords =
-        (coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])} - workingDocument->origin);// * tenmils_to_mm_coefficient;
+        (coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])} - workingDocument->origin) * tenmils_to_mm_coefficient;
     result->orientation = stod(moduleHeader[4] == "" ? "0" : moduleHeader[4]);
     result->topLayer = stoi(moduleHeader[7]) == 1;
+    result->layer = result->topLayer ? KiCadLayerIndex::F_Cu : KiCadLayerIndex::B_Cu;
     result->updateTime = (time_t)stoi(moduleHeader[9]);
 
-    if(parent)
+    if((workingDocument->docType == documentTypes::pcb) || (parent != nullptr))
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};

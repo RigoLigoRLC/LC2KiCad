@@ -103,6 +103,42 @@ namespace lc2kicad
         if(i) //If it's not a NULL or nullptr
           delete i, i = nullptr;
   }
+
+  unsigned int PCBNetManager::obtainNetCode(std::string &netName)
+  {
+    for(auto it = netNameCodeMap.begin(); it != netNameCodeMap.end(); it++)
+      if(it->second == netName)
+        return it->first;
+    netNameCodeMap[netNameCodeMap.size()] = netName;
+    return netNameCodeMap.size() - 1;
+  }
+
+  void PCBNetManager::setNet(std::string &netName, PCBNet &net)
+  {
+    net.first = obtainNetCode(netName);
+    net.second = netName;
+  }
+
+  bool PCBNetManager::findNet(std::string &netName)
+  {
+    for(auto it = netNameCodeMap.begin(); it != netNameCodeMap.end(); it++)
+      if(it->second == netName)
+        return true;
+    return false;
+  }
+
+  std::string PCBNetManager::outputPCBNetInfo()
+  {
+    string ret;
+    for(auto &i : netNameCodeMap)
+      ret += "  (net " + std::to_string(i.first) + " \"" + i.second + "\")\n";
+    return ret;
+  }
+
+  PCBNetManager::PCBNetManager()
+  {
+    netNameCodeMap[0] = "";
+  }
   
   string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); }
   string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); }
@@ -125,6 +161,7 @@ namespace lc2kicad
   string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); }
   string* Schematic_Arc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchArc(*this); }
   string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); }
+
 
 
 }

@@ -42,7 +42,7 @@
     static const double sch_convert_coefficient = 10;
 
     static const char *documentTypeName[8] = {"", "schematics", "schematic library", "PCB", "PCB library", "project", "sub-part", "SPICE symbol"};
-    static const char *documentExtensionName[8] = {"", "", ".lib", "", ".kicad_mod", "prj", "", ""};
+    static const char *documentExtensionName[8] = {"", "", ".lib", ".kicad_pcb", ".kicad_mod", "prj", "", ""};
     //Layer mapper. Input EasyEDA, ouput KiCad.
     static const int EasyEdaToKiCadLayerMap[] = {-1, 0, 31, 37, 36, 35, 34, 39, 38, -1, 44, -1, 41, 49, 48, -1, -1, -1, -1, -1, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
     static const char *padTypeKiCad[] = {"smd", "smd", "thru_hole", "np_thru_hole"};
