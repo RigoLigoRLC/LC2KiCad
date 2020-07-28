@@ -118,14 +118,15 @@ namespace lc2kicad
     string* elementOutput;
     
     if(!workingDocument->module)
+    {
       indent = "  ";
-
-    *ret += "(module \"LC2KICAD:" + target.name + "\" (layer " + KiCadLayerName[target.layer] + ") (at "
-          + to_string(target.moduleCoords.X) + ' ' + to_string(target.moduleCoords.Y) + ' ' + to_string(target.orientation) + ")\n"
-          + indent + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
-            "  (effects (font (size 1 1) (thickness 0.15))))\n"
-            "   (fp_text value \"" + target.name + "\" (at 0 0) (layer F.Fab)"
-            "  (effects (font (size 1 1) (thickness 0.15))))\n\n";
+      *ret += "(module \"LC2KICAD:" + target.name + "\" (layer " + KiCadLayerName[target.layer] + ") (at "
+           + to_string(target.moduleCoords.X) + ' ' + to_string(target.moduleCoords.Y) /*+ ' ' + to_string(target.orientation)*/ + ")\n"
+           + indent + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
+           "  (effects (font (size 1 1) (thickness 0.15))))\n"
+           "   (fp_text value \"" + target.name + "\" (at 0 0) (layer F.Fab)"
+           "  (effects (font (size 1 1) (thickness 0.15))))\n\n";
+    }
 
     processingModule = true;
     for(auto &i : target.containedElements)
@@ -136,7 +137,8 @@ namespace lc2kicad
     }
     processingModule = false; // TODO: RAII
 
-    *ret += ")\n";
+    if(!workingDocument->module)
+      *ret += ")\n";
 
     indent = "";
     
@@ -164,6 +166,7 @@ namespace lc2kicad
       }
     }
     *ret += ") (layers ";
+
     switch(target.padType)
     {
       case PCBPadType::top:
@@ -175,8 +178,16 @@ namespace lc2kicad
       default:
         *ret += "*.Cu *.Mask)";
     }
+
+    if(!workingDocument->module)
+    {
+      if(target.net.second != "")
+        *ret += " (net " + to_string(target.net.first) + " \"" + target.net.second + "\")";
+    }
+
     if(target.padShape != PCBPadShape::polygon)
       *ret += ')';
+
     else
     {
       *ret += string("\n") + indent + string("  (zone_connect 2)") + '\n' + indent +
@@ -246,12 +257,21 @@ namespace lc2kicad
     // untested
     RAIIC<string> ret;
 
-    *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (layer " + KiCadLayerName[target.layerKiCad]
-        + ") (tstamp 0) (hatch edge 0.508)\n" + indent + "  (connect_pads " + (target.isSpokeConnection ? "" : "yes")
-        + " (clearance " + to_string(target.clearanceWidth) + "))\n" + indent + "  (min_thickness 0.254)\n" + indent
-        + "  (fill " + (target.fillStyle == floodFillStyle::noFill ? "no" : "yes") + " (arc_segments 32) (thermal_gap "
-        + to_string(target.clearanceWidth) + ") (thermal_bridge_width " + to_string(target.spokeWidth) + "))\n" + indent
-        + "  (polygon\n" + indent + "    (pts\n" + indent + "      ";
+    *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name " + target.net.second
+        + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
+
+        + indent + "  (connect_pads " + (target.isSpokeConnection ? "" : "yes") + " (clearance "
+        + to_string(target.clearanceWidth) + "))\n"
+
+        + indent + "  (min_thickness " + to_string(target.minimumWidth) + ")\n"
+
+        + indent + "  (fill " + (target.fillStyle == floodFillStyle::noFill ? "no" : "yes")
+        + " (arc_segments 32) (thermal_gap " + to_string(target.clearanceWidth) + ") (thermal_bridge_width "
+        + to_string(target.spokeWidth) + "))\n"
+
+        + indent + "  (polygon\n"
+        + indent + "    (pts\n"
+        + indent + "      ";
     
     for(coordinates i : target.fillAreaPolygonPoints)
       *ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";

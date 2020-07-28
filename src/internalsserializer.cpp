@@ -348,6 +348,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'O': // CopperArea
+              containedElements.push_back(parsePCBFloodFillString(i));
               break;
             case 'I': // Circle
               if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 5))]))
@@ -540,7 +541,7 @@ namespace lc2kicad
     result->holeCoordinates.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     // Resolve via diameter (size)
     result->viaDiameter = stod(paramList[3]) * tenmils_to_mm_coefficient;
-    result->holeDiameter = stod(paramList[5]) * tenmils_to_mm_coefficient;
+    result->holeDiameter = stod(paramList[5]) * tenmils_to_mm_coefficient * 2; // Hole "holeR" is radius.
 
     static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[4], result->net);
 
@@ -618,10 +619,10 @@ namespace lc2kicad
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
     coordinates tempCoord;
-    for(unsigned int i = 0; i < pointsStrList.size(); i += 2)
+    for(unsigned int i = 0; i < pointsStrList.size() - 1; i += 3)
     {
-      tempCoord.X = (stod(pointsStrList[i]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 1]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      tempCoord.X = (stod(pointsStrList[i + 1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
       result->fillAreaPolygonPoints.push_back(tempCoord);
     }
 
@@ -631,6 +632,19 @@ namespace lc2kicad
       // Resolve fill style
     result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
     result->isPreservingIslands = (paramList[9] == "yes" ? true : false); // Resolve island keep
+    result->minimumWidth = 0.254; // 20 mils; KiCad default.
+    result->spokeWidth = stod(paramList[18]) * tenmils_to_mm_coefficient;
+    if(result->spokeWidth <= 0)
+    {
+      result->spokeWidth = 0.508;
+      Warn(result->id + ": Flood fill area spoke width was not set; it is now 0.508mm.");
+    }
+    if(result->spokeWidth <= 0.254)
+    {
+      result->minimumWidth = result->spokeWidth;
+      Warn(result->id + ": Flood fill area spoke width seems low (" + to_string(result->spokeWidth) + "mm). "
+           "Minimum width was set to the spoke width automatically from 0.254mm.");
+    }
 
     return !++result;
   }

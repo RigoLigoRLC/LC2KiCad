@@ -230,7 +230,7 @@
     {
       floodFillStyle fillStyle;
       enum KiCadLayerIndex layerKiCad;
-      double spokeWidth, clearanceWidth;
+      double spokeWidth, clearanceWidth, minimumWidth;
       bool isPreservingIslands, isSpokeConnection;
       PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
