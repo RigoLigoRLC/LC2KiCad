@@ -368,6 +368,32 @@ namespace lc2kicad
     return !++ret;
   }
 
+  string *KiCad_5_Deserializer::outputPCBText(const PCB_Text& target) const
+  {
+    RAIIC<string> ret;
+    *ret += indent + ((workingDocument->module | processingModule) ? "(fp_text " : "(gr_text ");
+    switch(target.type)
+    {
+      case PCBTextTypes::PackageReference: *ret += "reference"; break;
+      case PCBTextTypes::PackageValue: *ret += "value"; break;
+      default:
+        break;
+    }
+    *ret += indent
+          + " \"" + target.text + "\" (at " + to_string(target.midLeftPos.X) + ' ' + to_string(target.midLeftPos.Y)
+          + (target.orientation ? " " + to_string(target.orientation) + ") " : ") ") + "(layer "
+          + (target.type == PCBTextTypes::PackageValue ?
+               target.layerKiCad == F_SilkS ? KiCadLayerName[F_Fab] : KiCadLayerName[B_Fab]
+                                              : KiCadLayerName[target.layerKiCad]) + ")\n"
+
+          + indent + "  (effects (font (size " + to_string(target.height) + ' ' + to_string(target.height) + ") (thickness "
+          + to_string(target.width) + ")) (justify left))\n"
+
+          + indent + ")\n";
+
+    return !++ret;
+  }
+
   string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_SolidRegion& target) const
   {
     RAIIC<string> ret;

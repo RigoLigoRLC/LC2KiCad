@@ -153,6 +153,7 @@ namespace lc2kicad
   string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBRect(*this); }
   string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalArc(*this); }
   string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); }
+  string* PCB_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBText(*this); }
 
   string* Schematic_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchModule(*this); }
   string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); }

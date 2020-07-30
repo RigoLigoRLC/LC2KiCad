@@ -62,6 +62,7 @@
         PCB_CopperArc* parsePCBCopperArcString(const std::string&);
         PCB_GraphicalArc* parsePCBGraphicalArcString(const std::string&);
         PCB_Rect* parsePCBRectString(const std::string&);
+        PCB_Text* parseTextString(const std::string&);
         PCB_Module* parsePCBModuleString(const std::string& LCJSONString, EDADocument* parent = nullptr,
                                          map<string, RAIIC<EDADocument>>* exportedList = nullptr);
 

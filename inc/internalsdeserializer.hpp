@@ -53,6 +53,7 @@
         std::string* outputPCBGraphicalArc(const PCB_GraphicalArc&) const;
         std::string* outputPCBCopperArc(const PCB_CopperArc&) const;
         std::string* outputPCBRect(const PCB_Rect&) const;
+        std::string* outputPCBText(const PCB_Text&) const;
         
         std::string* outputSchModule(const Schematic_Module& target);
         std::string* outputSchPin(const Schematic_Pin&) const;

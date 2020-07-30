@@ -138,6 +138,7 @@
     enum class PCBPadShape : int { circle = 0, oval = 1, rectangle = 2, polygon = 3 };
     enum class PCBPadType : int { top = 0, bottom = 1, through = 2, noplating = 3 };
     enum class PCBHoleShape : int { circle = 0, slot = 1 };
+    enum class PCBTextTypes : int { StandardText = 0, PackageValue = 1, PackageReference = 2, PackageName = 3 };
 
     struct PCBElement : public EDAElement { };
 
@@ -282,6 +283,18 @@
     struct PCB_CopperArc : public PCB_GraphicalArc
     {
       PCBNet net;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+    };
+
+    //TEXTs on PCBs.
+    struct PCB_Text : public PCBElement
+    {
+      string text;
+      coordinates midLeftPos; // EasyEDA takes text bottom-left corner for its anchor point
+      bool mirrored;
+      double height, orientation, width;
+      enum PCBTextTypes type;
+      enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
 

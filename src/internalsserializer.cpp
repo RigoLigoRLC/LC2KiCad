@@ -334,6 +334,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'E': // Text
+              containedElements.push_back(parseTextString(i));
               break;
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
@@ -772,6 +773,41 @@ namespace lc2kicad
     return !++result;
   }
 
+  PCB_Text *LCJSONSerializer::parseTextString(const string &LCJSONString)
+  {
+    RAIIC<PCB_Text> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[13];
+    result->height = stod(paramList[9]) * tenmils_to_mm_coefficient;
+    result->orientation = stod(paramList[5]);
+    result->midLeftPos = (coordinates(stod(paramList[2]) - result->height * cos(toRadians(result->orientation + 90)),
+                                      stod(paramList[3]) - result->height * sin(toRadians(result->orientation + 90)))
+                          - workingDocument->origin) * tenmils_to_mm_coefficient;
+
+    // Crude fix for shift down issue
+    result->midLeftPos.Y -= 0.5;
+
+    result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
+    result->mirrored = paramList[6] == "" ? false : true;
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[7])];
+    result->text = paramList[10];
+    if(paramList[1].length() == 1)
+      switch(paramList[1][0])
+      {
+        default:
+        case 'L': result->type = PCBTextTypes::StandardText; break;
+        case 'N': result->type = PCBTextTypes::PackageValue; break;
+        case 'P': result->type = PCBTextTypes::PackageReference; break;
+      }
+    else if(paramList[1] == "PK")
+      result->type = PCBTextTypes::PackageName;
+    else
+      result->type = PCBTextTypes::StandardText;
+
+    return !++result;
+  }
+
   PCB_Module* LCJSONSerializer::parsePCBModuleString(const string &LCJSONString, EDADocument *parent,
                                                      map<string, RAIIC<EDADocument>> *exportedList)
   {
@@ -813,6 +849,8 @@ namespace lc2kicad
     result->topLayer = stoi(moduleHeader[7]) == 1;
     result->layer = result->topLayer ? KiCadLayerIndex::F_Cu : KiCadLayerIndex::B_Cu;
     result->updateTime = (time_t)stoi(moduleHeader[9]);
+
+
 
     if((workingDocument->docType == documentTypes::pcb) || (parent != nullptr))
     {
