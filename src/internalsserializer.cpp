@@ -209,7 +209,7 @@ namespace lc2kicad
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
-    parsePCBLibComponent(shapesList, workingDocument->containedElements);
+    parsePCBLibComponent(shapesList, workingDocument->containedElements, false);
   }
 
   void LCJSONSerializer::parsePCBLibDocument()
@@ -250,7 +250,7 @@ namespace lc2kicad
       headlist["Contributor"].GetString() : "" : "";
 
 
-    parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements);
+    parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements, true);
   }
 
   vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
@@ -288,6 +288,7 @@ namespace lc2kicad
     {
       RAIIC<EDADocument> t;
       t->origin = origin;
+      t->module = true;
       RAIIC<PCB_Module> m = parsePCBModuleString(i, !t, &prepareList); // Try parse module without knowing if identical ones were processed
       if(!m) // If there is an identical one then m is nullptr and both RAIIC managed memory blocks will be cleared out.
       {
@@ -307,13 +308,12 @@ namespace lc2kicad
       doc->docInfo["contributor"] = cpara["contributor"];
       doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
       doc->docType = pcb_lib;
-      doc->module = true;
     }
 
     return ret;
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<EDAElement*> &containedElements)
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<EDAElement*> &containedElements, bool module)
   {
     for(auto &i : shapesList)
     {
@@ -324,7 +324,10 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              containedElements.push_back(parsePCBPadString(i));
+              if(module)
+                containedElements.push_back(parsePCBPadString(i));
+              else
+                containedElements.push_back(parsePCBDiscretePadString(i));
               break;
             case 'R': // Protractor
               break;
@@ -334,7 +337,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'E': // Text
-              containedElements.push_back(parseTextString(i));
+              containedElements.push_back(parsePCBTextString(i));
               break;
             case 'R': // Track
               stringlist tmp = splitString(i, '~');
@@ -516,6 +519,46 @@ namespace lc2kicad
     return !++result;
   }
 
+  PCB_Module *LCJSONSerializer::parsePCBDiscretePadString(const string &LCJSONString)
+  {
+    RAIIC<PCB_Module> result;
+    RAIIC<PCB_Pad> pad = parsePCBPadString(LCJSONString);
+    RAIIC<PCB_Text> ref;
+
+    result->id = pad->id;
+    result->name = "DiscretePad" + pad->id;
+    result->moduleCoords = pad->padCoordinates;
+    result->orientation = pad->orientation;
+    pad->padCoordinates = { 0, 0 };
+    pad->orientation = 0;
+    ref->type = PCBTextTypes::PackageReference;
+    ref->layerKiCad = KiCadLayerIndex::F_Fab;
+    ref->text = "Pad" + pad->id;
+    ref->height = 4 * tenmils_to_mm_coefficient;
+    ref->width = 0.4 * tenmils_to_mm_coefficient;
+    ref->midLeftPos = { -5, -5 };
+
+    switch(pad->padType)
+    {
+      default:
+      case PCBPadType::top:
+        result->layer = KiCadLayerIndex::F_Cu;
+        result->topLayer = true;
+        break;
+      case PCBPadType::bottom:
+        result->layer = KiCadLayerIndex::B_Cu;
+        result->topLayer = false;
+        break;
+    }
+
+    result->containedElements.push_back(!++pad);
+    result->containedElements.push_back(!++ref);
+
+    result->updateTime = time(nullptr);
+
+    return !++result;
+  }
+
   PCB_Hole* LCJSONSerializer::parsePCBHoleString(const string &LCJSONString)
   {
     RAIIC<PCB_Hole> result;
@@ -618,7 +661,19 @@ namespace lc2kicad
     assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for COPPERAREA " + paramList[7]);
 
     // Resolve track points
-    stringlist pointsStrList = splitString(paramList[4], ' ');
+    string pointsStr = paramList[4];
+    for(auto it = pointsStr.begin(); it != pointsStr.end(); it++)
+    {
+      if(*it == ',')
+        *it = ' ';
+      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
+      {
+        it++;
+        if(*it != ' ')
+        it = pointsStr.insert(it, ' ');
+      }
+    }
+    stringlist pointsStrList = splitString(pointsStr, ' ');
     coordinates tempCoord;
     for(unsigned int i = 0; i < pointsStrList.size() - 1; i += 3)
     {
@@ -773,7 +828,7 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_Text *LCJSONSerializer::parseTextString(const string &LCJSONString)
+  PCB_Text *LCJSONSerializer::parsePCBTextString(const string &LCJSONString)
   {
     RAIIC<PCB_Text> result;
     stringlist paramList = splitString(LCJSONString, '~');
@@ -781,12 +836,12 @@ namespace lc2kicad
     result->id = paramList[13];
     result->height = stod(paramList[9]) * tenmils_to_mm_coefficient;
     result->orientation = stod(paramList[5]);
-    result->midLeftPos = (coordinates(stod(paramList[2]) - result->height * cos(toRadians(result->orientation + 90)),
-                                      stod(paramList[3]) - result->height * sin(toRadians(result->orientation + 90)))
+    result->midLeftPos = (coordinates(stod(paramList[2]) - (result->height - 2) * cos(toRadians(result->orientation + 90)),
+                                      stod(paramList[3]) - (result->height + 2) * sin(toRadians(result->orientation + 90)))
                           - workingDocument->origin) * tenmils_to_mm_coefficient;
 
     // Crude fix for shift down issue
-    result->midLeftPos.Y -= 0.5;
+    //result->midLeftPos.Y -= 0.5;
 
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
     result->mirrored = paramList[6] == "" ? false : true;
@@ -856,11 +911,11 @@ namespace lc2kicad
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
-      parsePCBLibComponent(shapesList, result->containedElements);
+      parsePCBLibComponent(shapesList, result->containedElements, true);
       workingDocument->origin = originalOrigin;
     }
     else
-      parsePCBLibComponent(shapesList, result->containedElements);
+      parsePCBLibComponent(shapesList, result->containedElements, true);
 
 
     return !++result;

@@ -238,6 +238,7 @@ namespace lc2kicad
 
     for(auto &i : target->containedElements)
     {
+      if(!i) continue;
       tempResult = i->deserializeSelf(*internalDeserializer);
       *outputStream << *tempResult << endl;
       delete tempResult;

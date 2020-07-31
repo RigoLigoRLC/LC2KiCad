@@ -147,7 +147,7 @@
       vector<EDAElement*> containedElements;
       coordinates moduleCoords;
       double orientation;
-      bool topLayer = true;
+      bool topLayer;
       time_t updateTime;
       KiCadLayerIndex layer;
       map<string, string> cparaContent;

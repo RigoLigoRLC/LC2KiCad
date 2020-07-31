@@ -44,7 +44,7 @@
         virtual vector<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
-        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements);
+        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements, bool module);
 
         void parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
                                           std::vector<std::string> &canvasPropertyList,
@@ -52,6 +52,7 @@
                                           rapidjson::Value &headObject);
 
         PCB_Pad* parsePCBPadString(const std::string&);
+        PCB_Module* parsePCBDiscretePadString(const std::string&);
         PCB_Hole* parsePCBHoleString(const std::string&);
         PCB_Via* parsePCBViaString(const std::string&);
         PCB_CopperTrack* parsePCBCopperTrackString(const std::string&);
@@ -62,7 +63,7 @@
         PCB_CopperArc* parsePCBCopperArcString(const std::string&);
         PCB_GraphicalArc* parsePCBGraphicalArcString(const std::string&);
         PCB_Rect* parsePCBRectString(const std::string&);
-        PCB_Text* parseTextString(const std::string&);
+        PCB_Text* parsePCBTextString(const std::string&);
         PCB_Module* parsePCBModuleString(const std::string& LCJSONString, EDADocument* parent = nullptr,
                                          map<string, RAIIC<EDADocument>>* exportedList = nullptr);
 

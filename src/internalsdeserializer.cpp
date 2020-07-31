@@ -132,8 +132,11 @@ namespace lc2kicad
     for(auto &i : target.containedElements)
     {
       elementOutput = i->deserializeSelf(*this);
-      *ret += *elementOutput + "\n";
-      delete elementOutput;
+      if(elementOutput)
+      {
+        *ret += *elementOutput + "\n";
+        delete elementOutput;
+      }
     }
     processingModule = false; // TODO: RAII
 
@@ -370,12 +373,17 @@ namespace lc2kicad
 
   string *KiCad_5_Deserializer::outputPCBText(const PCB_Text& target) const
   {
+    //if(target.type == PCBTextTypes::StandardText && (processingModule | workingDocument->module))
+    //  return nullptr;
+
     RAIIC<string> ret;
     *ret += indent + ((workingDocument->module | processingModule) ? "(fp_text " : "(gr_text ");
     switch(target.type)
     {
+      case PCBTextTypes::StandardText: if(workingDocument->module | processingModule) *ret += "user"; break;
       case PCBTextTypes::PackageReference: *ret += "reference"; break;
       case PCBTextTypes::PackageValue: *ret += "value"; break;
+      case PCBTextTypes::PackageName: return nullptr; break;
       default:
         break;
     }
