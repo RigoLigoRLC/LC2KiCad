@@ -26,6 +26,7 @@
 #include <string>
 #include <fstream>
 #include <cmath>
+#include <time.h> //Windows build fail workaround
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
