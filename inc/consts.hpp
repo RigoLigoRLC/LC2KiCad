@@ -25,7 +25,7 @@
 
   namespace lc2kicad
   {
-    #define SOFTWARE_VERSION "version alpha-0.1.41"
+    #define SOFTWARE_VERSION "alpha-0.1.51"
 
     enum KiCadLayerIndex
     {

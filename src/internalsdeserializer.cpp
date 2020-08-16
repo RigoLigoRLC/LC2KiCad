@@ -425,7 +425,8 @@ namespace lc2kicad
     *ret += ((workingDocument->module | processingModule) ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.endPoint.X) + ' ' + to_string(target.endPoint.Y)
           + ") (angle " + to_string(target.angle) + ") (layer " + KiCadLayerName[target.layerKiCad]
-          + ") (net " + to_string(target.net.first) + ") (width " + to_string(target.width) + "))";
+          + ") (width " + to_string(target.width) + "))";
+    Warn(target.id + ": KiCad 5 doesn't support copper layer arc with nets. Net info of this copper arc is discarded.");
     return !++ret;
   }
 
