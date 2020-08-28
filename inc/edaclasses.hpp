@@ -157,7 +157,7 @@
 
     /**
      * PADs as said. Soldering pads.
-     * Fixme: Orphaned PADs on PCBs should be converted as a nested PAD in MODULE, then placed onto PCB.
+     * Orphaned PADs on PCBs would be converted as a nested PAD in MODULE, then placed onto PCB.
      */
     struct PCB_Pad : public PCBElement
     {

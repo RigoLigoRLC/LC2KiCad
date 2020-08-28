@@ -117,7 +117,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     string* elementOutput;
     
-    if(!(workingDocument->module | processingModule))
+    if(isProcessingModules())
     {
       indent = "  ";
       *ret += "(module \"LC2KICAD:" + target.name + "\" (layer " + KiCadLayerName[target.layer] + ") (at "
@@ -140,7 +140,7 @@ namespace lc2kicad
     }
     processingModule = false; // TODO: RAII
 
-    if(!(workingDocument->module | processingModule))
+    if(isProcessingModules())
       *ret += ")\n";
 
     indent = "";
@@ -182,7 +182,7 @@ namespace lc2kicad
         *ret += "*.Cu *.Mask)";
     }
 
-    if(!(workingDocument->module | processingModule))
+    if(isProcessingModules())
     {
       if(target.net.second != "")
         *ret += " (net " + to_string(target.net.first) + " \"" + target.net.second + "\")";
@@ -223,7 +223,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBCopperTrack(const PCB_CopperTrack& target) const
   {
     RAIIC<string> ret;
-    bool isInFootprint = workingDocument->module | processingModule; // If not in a footprint, use gr_line. Else, use fp_line
+    bool isInFootprint = isProcessingModules(); // If not in a footprint, use gr_line. Else, use fp_line
 
     if(isInFootprint)
       Warn(target.id + ": Copper track on footprint. This is not recommended.");
@@ -242,7 +242,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBGraphicalTrack(const PCB_GraphicalTrack& target) const
   {
     RAIIC<string> ret;
-    bool isInFootprint = workingDocument->module | processingModule; // If not in a footprint, use gr_line. Else, use fp_line
+    bool isInFootprint = isProcessingModules(); // If not in a footprint, use gr_line. Else, use fp_line
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
       *ret += indent + string(isInFootprint ? "(fp_line (start " : "(gr_line (start ") + to_string(target.trackPoints[i].X)
@@ -310,7 +310,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     bool isInFootprint;
     
-    if(workingDocument->module | processingModule) // Determine if this graphical line is used in footprint
+    if(isProcessingModules()) // Determine if this graphical line is used in footprint
       isInFootprint = true;
     else
       isInFootprint = false;               // If not in a footprint, use gr_circle. Else, use fp_circle
@@ -326,7 +326,7 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
-    if(workingDocument->module | processingModule)
+    if(isProcessingModules())
       *ret += indent + 
               "(pad \"\" np_thru_hole circle (at " + to_string(target.holeCoordinates.X) + " " + to_string(target.holeCoordinates.Y) + ") "
               "(size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
@@ -350,7 +350,7 @@ namespace lc2kicad
            y2 = to_string(target.topLeftPos.Y + target.size.Y),
            w = to_string(target.strokeWidth);
 
-    if(workingDocument->module | processingModule)
+    if(isProcessingModules())
     {
       
       *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerName[target.layerKiCad]
@@ -373,14 +373,14 @@ namespace lc2kicad
 
   string *KiCad_5_Deserializer::outputPCBText(const PCB_Text& target) const
   {
-    //if(target.type == PCBTextTypes::StandardText && (processingModule | workingDocument->module | processingModule))
+    //if(target.type == PCBTextTypes::StandardText && (processingModule | isProcessingModules()))
     //  return nullptr;
 
     RAIIC<string> ret;
-    *ret += indent + ((workingDocument->module | processingModule) ? "(fp_text " : "(gr_text ");
+    *ret += indent + ((isProcessingModules()) ? "(fp_text " : "(gr_text ");
     switch(target.type)
     {
-      case PCBTextTypes::StandardText: if(workingDocument->module | processingModule) *ret += "user"; break;
+      case PCBTextTypes::StandardText: if(isProcessingModules()) *ret += "user"; break;
       case PCBTextTypes::PackageReference: *ret += "reference"; break;
       case PCBTextTypes::PackageValue: *ret += "value"; break;
       case PCBTextTypes::PackageName: return nullptr; break;
@@ -412,7 +412,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBGraphicalArc(const PCB_GraphicalArc& target) const
   {
     RAIIC<string> ret;
-    *ret += ((workingDocument->module | processingModule) ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
+    *ret += ((isProcessingModules()) ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.endPoint.X) + ' ' + to_string(target.endPoint.Y)
           + ") (angle " + to_string(target.angle) + ") (layer " + KiCadLayerName[target.layerKiCad]
           + ") (width " + to_string(target.width) + "))";
@@ -422,7 +422,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBCopperArc(const PCB_CopperArc& target) const
   {
     RAIIC<string> ret;
-    *ret += ((workingDocument->module | processingModule) ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
+    *ret += ((isProcessingModules()) ? "(fp_arc (start " : "(gr_arc (start ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.endPoint.X) + ' ' + to_string(target.endPoint.Y)
           + ") (angle " + to_string(target.angle) + ") (layer " + KiCadLayerName[target.layerKiCad]
           + ") (width " + to_string(target.width) + "))";
@@ -433,7 +433,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputSchModule(const Schematic_Module& target)
   {
     RAIIC<string> ret;
-    if(workingDocument->module | processingModule)
+    if(isProcessingModules())
     {
       string* elementOutput;
 
