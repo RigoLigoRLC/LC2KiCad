@@ -139,6 +139,16 @@ namespace lc2kicad
   {
     netNameCodeMap[0] = "";
   }
+
+  void PCBFloodFillPriorityManager::logPriority(unsigned int easyedaFillPriority)
+  {
+    if(easyedaFillPriority > maximumPriority) maximumPriority = easyedaFillPriority;
+  }
+
+  unsigned int PCBFloodFillPriorityManager::getKiCadPriority(unsigned int easyedaFillPriority)
+  {
+    return maximumPriority + 1 - easyedaFillPriority; // 0 was reserved for solid regions
+  }
   
   string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); }
   string* PCB_Pad::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBPad(*this); }
@@ -146,7 +156,7 @@ namespace lc2kicad
   string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperTrack(*this); }
   string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBHole(*this); }
   string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBVia(*this); }
-  string* PCB_SolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); }
+  string* PCB_CopperSolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); }
   string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); }
   string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); }
   string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); }
@@ -162,7 +172,5 @@ namespace lc2kicad
   string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); }
   string* Schematic_Arc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchArc(*this); }
   string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); }
-
-
 
 }

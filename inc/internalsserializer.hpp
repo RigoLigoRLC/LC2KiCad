@@ -58,6 +58,10 @@
         PCB_CopperTrack* parsePCBCopperTrackString(const std::string&);
         PCB_GraphicalTrack* parsePCBGraphicalTrackString(const std::string&);
         PCB_FloodFill* parsePCBFloodFillString(const std::string&);
+        PCB_GraphicalSolidRegion* parsePCBGraphicalSolidRegionString(const std::string&);
+        PCB_GraphicalTrack* parsePCBNpthRegionString(const std::string&);
+        PCB_FloodFill* parsePCBCopperSolidRegionString(const std::string&);
+        PCB_KeepoutRegion* parsePCBKeepoutRegionString(const std::string&);
         PCB_CopperCircle* parsePCBCopperCircleString(const std::string&);
         PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&);
         PCB_CopperArc* parsePCBCopperArcString(const std::string&);
