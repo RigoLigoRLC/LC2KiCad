@@ -94,6 +94,8 @@ LC2KiCad的核心组件以GNU较宽松公共许可证（LGPL）v3授权。
 
 LC2KiCad使用了RapidJSON，其许可证为MIT许可证。
 
+本程序的部分源代码由Apache 2.0许可证授权的代码移植而来。
+
 ---
 
 ### 重要信息！

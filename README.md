@@ -95,6 +95,8 @@ LC2KiCad core part is licensed under GNU Lesser General Public License v3.
 
 LC2KiCad utilized RapidJSON libraries which is licensed under MIT License.
 
+Part of the program is ported from code licensed under Apache 2.0 License.
+
 ---
 
 ### Important Notes!
