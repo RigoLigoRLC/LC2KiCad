@@ -117,7 +117,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     string* elementOutput;
     
-    if(!workingDocument->module)
+    if(!(workingDocument->module | processingModule))
     {
       indent = "  ";
       *ret += "(module \"LC2KICAD:" + target.name + "\" (layer " + KiCadLayerName[target.layer] + ") (at "
@@ -140,7 +140,7 @@ namespace lc2kicad
     }
     processingModule = false; // TODO: RAII
 
-    if(!workingDocument->module)
+    if(!(workingDocument->module | processingModule))
       *ret += ")\n";
 
     indent = "";
@@ -182,7 +182,7 @@ namespace lc2kicad
         *ret += "*.Cu *.Mask)";
     }
 
-    if(!workingDocument->module)
+    if(!(workingDocument->module | processingModule))
     {
       if(target.net.second != "")
         *ret += " (net " + to_string(target.net.first) + " \"" + target.net.second + "\")";
@@ -310,7 +310,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     bool isInFootprint;
     
-    if(workingDocument->module) // Determine if this graphical line is used in footprint
+    if(workingDocument->module | processingModule) // Determine if this graphical line is used in footprint
       isInFootprint = true;
     else
       isInFootprint = false;               // If not in a footprint, use gr_circle. Else, use fp_circle
@@ -326,7 +326,7 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
-    if(workingDocument->module)
+    if(workingDocument->module | processingModule)
       *ret += indent + 
               "(pad \"\" np_thru_hole circle (at " + to_string(target.holeCoordinates.X) + " " + to_string(target.holeCoordinates.Y) + ") "
               "(size " + to_string(target.holeDiameter) + " " + to_string(target.holeDiameter) + ")"
@@ -350,7 +350,7 @@ namespace lc2kicad
            y2 = to_string(target.topLeftPos.Y + target.size.Y),
            w = to_string(target.strokeWidth);
 
-    if(workingDocument->module)
+    if(workingDocument->module | processingModule)
     {
       
       *ret += indent + "(fp_line (start " + x1 + " " + y1 + ") (end " + x2 + " " + y1 + ") (layer " + KiCadLayerName[target.layerKiCad]
@@ -373,7 +373,7 @@ namespace lc2kicad
 
   string *KiCad_5_Deserializer::outputPCBText(const PCB_Text& target) const
   {
-    //if(target.type == PCBTextTypes::StandardText && (processingModule | workingDocument->module))
+    //if(target.type == PCBTextTypes::StandardText && (processingModule | workingDocument->module | processingModule))
     //  return nullptr;
 
     RAIIC<string> ret;
@@ -432,7 +432,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputSchModule(const Schematic_Module& target)
   {
     RAIIC<string> ret;
-    if(workingDocument->module)
+    if(workingDocument->module | processingModule)
     {
       string* elementOutput;
 
