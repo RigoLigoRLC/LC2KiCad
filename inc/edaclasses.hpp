@@ -108,6 +108,7 @@
       PCBDocument(const EDADocument&);
       void addElement(EDAElement*) override;
       PCBNetManager netManager;
+      PCBFloodFillPriorityManager fillPriorityManager;
       ~PCBDocument();
     };
     
@@ -248,6 +249,7 @@
       floodFillStyle fillStyle;
       double spokeWidth, clearanceWidth, minimumWidth;
       bool isPreservingIslands, isSpokeConnection;
+      int EasyEDAPriority;
       PCBNet net;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };

@@ -147,7 +147,7 @@ namespace lc2kicad
 
   unsigned int PCBFloodFillPriorityManager::getKiCadPriority(unsigned int easyedaFillPriority)
   {
-    return maximumPriority + 1 - easyedaFillPriority; // 0 was reserved for solid regions
+    return easyedaFillPriority ? maximumPriority + 1 - easyedaFillPriority : 0; // 0 was reserved for solid regions
   }
   
   string* PCB_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBModule(*this); }
@@ -156,8 +156,8 @@ namespace lc2kicad
   string* PCB_CopperTrack::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperTrack(*this); }
   string* PCB_Hole::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBHole(*this); }
   string* PCB_Via::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBVia(*this); }
-  string* PCB_CopperSolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBSolidRegion(*this); }
-  string* PCB_GraphicalSolidRegion::deserializeSelf(KiCad_5_Deserializer &deserializer) const { return nullptr; } //TODO implement this
+  string* PCB_CopperSolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperSolidRegion(*this); }
+  string* PCB_GraphicalSolidRegion::deserializeSelf(KiCad_5_Deserializer &deserializer) const { return deserializer.outputPCBGraphicalSolidRegion(*this); }
   string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); }
   string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); }
   string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); }

@@ -31,6 +31,7 @@
 #include "includes.hpp"
 #include "rapidjson.hpp"
 #include "edaclasses.hpp"
+#include "smolsvg/pathreader.hpp"
 #include "internalsserializer.hpp"
 
 using std::cout;
@@ -669,31 +670,17 @@ namespace lc2kicad
 
     // Resolve layer ID and net name
     static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
+    static_cast<PCBDocument*>(workingDocument)->fillPriorityManager.logPriority(result->EasyEDAPriority = stoi(paramList[13]));
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for COPPERAREA " + paramList[7]);
 
     // Resolve track points
-    string pointsStr = paramList[4];
-    for(auto it = pointsStr.begin(); it != pointsStr.end(); it++)
-    {
-      if(*it == ',')
-        *it = ' ';
-      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
-      {
-        it++;
-        if(*it != ' ')
-          it = pointsStr.insert(it, ' ');
-      }
-    }
-    stringlist pointsStrList = splitString(pointsStr, ' ');
-    coordinates tempCoord;
-    for(unsigned int i = 0; i < pointsStrList.size() - 1; i += 3)
-    {
-      tempCoord.X = (stod(pointsStrList[i + 1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-      result->fillAreaPolygonPoints.push_back(tempCoord);
-    }
+    auto path = SmolSVG::readPathString(paramList[4]);
+
+    for(auto &i : path)
+      result->fillAreaPolygonPoints.emplace_back(
+              (i->getConstStartPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
 
 
     result->clearanceWidth = stod(paramList[5]) * tenmils_to_mm_coefficient; // Resolve clearance width
@@ -730,9 +717,25 @@ namespace lc2kicad
     return nullptr;
   }
 
-  PCB_GraphicalSolidRegion *LCJSONSerializer::parsePCBGraphicalSolidRegionString(const std::string &)
+  PCB_GraphicalSolidRegion *LCJSONSerializer::parsePCBGraphicalSolidRegionString(const std::string &LCJSONString)
   {
     RAIIC<PCB_GraphicalSolidRegion> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[5];
+
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
+    // Throw error with gge ID if layer is invalid
+    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION " + paramList[5]);
+
+    // Resolve track points
+    auto path = SmolSVG::readPathString(paramList[3]);
+
+    for(auto &i : path)
+      result->fillAreaPolygonPoints.emplace_back(
+              (i->getConstStartPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+
+    return !++result;
 
     return !++result;
   }
@@ -745,31 +748,17 @@ namespace lc2kicad
     result->id = paramList[5];
     // Resolve layer ID and net name
     static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[2], result->net);
+    result->EasyEDAPriority = 0;
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
     // Throw error with gge ID if layer is invalid
     assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION " + paramList[5]);
 
     // Resolve track points
-    string pointsStr = paramList[4];
-    for(auto it = pointsStr.begin(); it != pointsStr.end(); it++)
-    {
-      if(*it == ',')
-        *it = ' ';
-      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
-      {
-        it++;
-        if(*it != ' ')
-          it = pointsStr.insert(it, ' ');
-      }
-    }
-    stringlist pointsStrList = splitString(pointsStr, ' ');
-    coordinates tempCoord;
-    for(unsigned int i = 0; i < pointsStrList.size() - 1; i += 3)
-    {
-      tempCoord.X = (stod(pointsStrList[i + 1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
-      tempCoord.Y = (stod(pointsStrList[i + 2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
-      result->fillAreaPolygonPoints.push_back(tempCoord);
-    }
+    auto path = SmolSVG::readPathString(paramList[3]);
+
+    for(auto &i : path)
+      result->fillAreaPolygonPoints.emplace_back(
+                  (i->getConstStartPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
 
     return !++result;
   }
@@ -823,25 +812,19 @@ namespace lc2kicad
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
     static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
 
-    string arcpath = paramList[4];
-    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
-    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
-    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
-    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
-    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
-    arcCmdParams = splitString(arcpath, ' ');
-    movetoCmdParams = splitString(movetoCmd, ' ');
+    // Resolve track points
+    auto path = SmolSVG::readPathString(paramList[4]);
+    coordinates startpoint = path.getLastCommand()->getConstStartPoint().lc2kicadCoord(),
+            endpoint = path.getLastCommand()->getConstEndPoint().lc2kicadCoord();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
 
-    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
-
-    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-                            stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+    centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
+                                                      smolArcCmd.getRadii().Y, smolArcCmd.getXAxisRotation(), smolArcCmd.getLargeArc(),
+                                                      smolArcCmd.getFlagSweep(), endpoint.X, endpoint.Y);
 
     result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
     result->angle = std::abs(resultArc.angleExtend);
-    result->endPoint = ((stoi(arcCmdParams[4]) ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
+    result->endPoint = ((smolArcCmd.getFlagSweep() ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
 
     return !++result;
 
@@ -857,25 +840,19 @@ namespace lc2kicad
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
-    string arcpath = paramList[4];
-    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
-    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
-    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
-    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
-    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
-    arcCmdParams = splitString(arcpath, ' ');
-    movetoCmdParams = splitString(movetoCmd, ' ');
+    // Resolve track points
+    auto path = SmolSVG::readPathString(paramList[4]);
+    coordinates startpoint = path.getLastCommand()->getConstStartPoint().lc2kicadCoord(),
+                endpoint = path.getLastCommand()->getConstEndPoint().lc2kicadCoord();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
 
-    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
-
-    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-                            stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+    centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
+                            smolArcCmd.getRadii().Y, smolArcCmd.getXAxisRotation(), smolArcCmd.getLargeArc(),
+                            smolArcCmd.getFlagSweep(), endpoint.X, endpoint.Y);
 
     result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
     result->angle = std::abs(resultArc.angleExtend);
-    result->endPoint = ((stoi(arcCmdParams[4]) ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
+    result->endPoint = ((smolArcCmd.getFlagSweep() ? startpoint : endpoint) - workingDocument->origin) * tenmils_to_mm_coefficient;
 
     return !++result;
   }

@@ -263,6 +263,9 @@ namespace lc2kicad
     *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name " + target.net.second
         + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
 
+        + indent + "  (priority " + to_string(static_cast<PCBDocument*>(workingDocument)->fillPriorityManager
+                                              .getKiCadPriority(target.EasyEDAPriority)) + ")"
+
         + indent + "  (connect_pads " + (target.isSpokeConnection ? "" : "yes") + " (clearance "
         + to_string(target.clearanceWidth) + "))\n"
 
@@ -412,10 +415,20 @@ namespace lc2kicad
     return !++ret;
   }
 
-  string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_CopperSolidRegion& target) const
+  string* KiCad_5_Deserializer::outputPCBCopperSolidRegion(const PCB_CopperSolidRegion& target) const
   {
     RAIIC<string> ret;
     Warn("KiCad_5_Deserializer::outputPCBSolidRegion stub. " + target.id + "is ignored.");
+    return !++ret;
+  }
+
+  string *KiCad_5_Deserializer::outputPCBGraphicalSolidRegion(const PCB_GraphicalSolidRegion& target) const
+  {
+    RAIIC<string> ret;
+    *ret += (isProcessingModules() ? "(fp_poly (pts " : "(gr_poly (pts ");
+    for(auto &i : target.fillAreaPolygonPoints)
+      *ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";
+    *ret += ") (width 0))";
     return !++ret;
   }
 
@@ -544,7 +557,7 @@ namespace lc2kicad
           + to_string(static_cast<int>(target.endPoint.X)) + " " + to_string(static_cast<int>(target.endPoint.Y)) + " ";
     return !++ret;
   }
-  
+
   string* KiCad_5_Deserializer::outputSchText(const Schematic_Text& target) const
   {
     RAIIC<string> ret;

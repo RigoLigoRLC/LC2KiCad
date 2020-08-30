@@ -136,7 +136,7 @@ namespace lc2kicad
 
   bool fuzzyCompare(const double a, const double b)
   {
-    return std::abs(a - b) < 1e8;
+    return std::abs(a - b) < 1e-6;
   }
 
   centerArc svgEllipticalArcComputation(double x0, double y0, double rx, double ry, double angle,
