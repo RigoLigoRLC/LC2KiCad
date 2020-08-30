@@ -1053,6 +1053,10 @@ namespace lc2kicad
           result->pinRotation = SchematicRotations::Deg0; break;
       }
 
+    for(auto i = paramList[17].begin(); i < paramList[17].end(); i++)
+      if(*i == ' ')
+        *i = '_'; // KiCad schematics lib won't recognize space, even if you use semicolons.
+
     result->pinName = paramList[17];
     result->pinNumber = paramList[26];
 
