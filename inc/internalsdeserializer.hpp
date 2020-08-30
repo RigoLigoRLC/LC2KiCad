@@ -46,7 +46,7 @@
         std::string* outputPCBGraphicalTrack(const PCB_GraphicalTrack&) const;
         std::string* outputPCBCopperTrack(const PCB_CopperTrack&) const;
         std::string* outputPCBHole(const PCB_Hole&) const;
-        std::string* outputPCBSolidRegion(const PCB_SolidRegion&) const;
+        std::string* outputPCBSolidRegion(const PCB_CopperSolidRegion&) const;
         std::string* outputPCBFloodFill(const PCB_FloodFill&) const;
         std::string* outputPCBGraphicalCircle(const PCB_GraphicalCircle&) const;
         std::string* outputPCBCopperCircle(const PCB_CopperCircle&) const;

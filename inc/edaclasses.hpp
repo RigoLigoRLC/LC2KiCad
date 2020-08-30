@@ -66,6 +66,16 @@
         string outputPCBNetInfo(); // For deserializer calls.
         PCBNetManager();
     };
+
+    class PCBFloodFillPriorityManager
+    {
+      private:
+        unsigned int maximumPriority;
+      public:
+        void logPriority(unsigned int);
+        unsigned int getKiCadPriority(unsigned int);
+    };
+
     struct EDAElement;
     struct PCBElement;
     //Referencing each other, must declare one first.
@@ -208,15 +218,21 @@
       double viaDiameter; //The outer diameter of the copper ring
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
+    
+    struct PCB_GraphicalSolidRegion : public PCBElement
+    {
+      coordslist fillAreaPolygonPoints;
+      enum KiCadLayerIndex layerKiCad;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+    };
 
     /**
      * SOLIDREGIONs on PCBs.
      * Note: for PCBs, solid regions will be converted into solid flood fills if no compatibility switches
      *       are set, with a warning message prompted.
      */
-    struct PCB_SolidRegion : public PCBElement
+    struct PCB_CopperSolidRegion : public PCB_GraphicalSolidRegion
     {
-      coordslist fillAreaPolygonPoints;
       PCBNet net;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
@@ -227,13 +243,18 @@
      * Several features were not implemented or supported by KiCad:
      * Grid fill style, improve fabrication, board border clearance.
      */
-    struct PCB_FloodFill : public PCB_SolidRegion
+    struct PCB_FloodFill : public PCB_CopperSolidRegion
     {
       floodFillStyle fillStyle;
-      enum KiCadLayerIndex layerKiCad;
       double spokeWidth, clearanceWidth, minimumWidth;
       bool isPreservingIslands, isSpokeConnection;
       PCBNet net;
+      string* deserializeSelf(KiCad_5_Deserializer&) const;
+    };
+
+    struct PCB_KeepoutRegion : public PCB_GraphicalSolidRegion
+    {
+      bool allowRouting, allowVias, allowFloodFill;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
         

@@ -117,7 +117,7 @@ namespace lc2kicad
     RAIIC<string> ret;
     string* elementOutput;
     
-    if(isProcessingModules())
+    if(!workingDocument->module) // Do not output when dealing with PCB module file, but do it for PCB nested modules
     {
       indent = "  ";
       *ret += "(module \"LC2KICAD:" + target.name + "\" (layer " + KiCadLayerName[target.layer] + ") (at "
@@ -140,7 +140,7 @@ namespace lc2kicad
     }
     processingModule = false; // TODO: RAII
 
-    if(isProcessingModules())
+    if(!workingDocument->module)
       *ret += ")\n";
 
     indent = "";
@@ -392,17 +392,27 @@ namespace lc2kicad
           + (target.orientation ? " " + to_string(target.orientation) + ") " : ") ") + "(layer "
           + (target.type == PCBTextTypes::PackageValue ?
                target.layerKiCad == F_SilkS ? KiCadLayerName[F_Fab] : KiCadLayerName[B_Fab]
-                                              : KiCadLayerName[target.layerKiCad]) + ")\n"
+                                              : KiCadLayerName[target.layerKiCad]);
+    if((workingDocument->module | processingModule))
+      if(!target.visibility)
+        *ret += ") hide\n";
+      else
+        *ret += ")\n";
+    else
+      *ret += ")\n";
 
-          + indent + "  (effects (font (size " + to_string(target.height) + ' ' + to_string(target.height) + ") (thickness "
-          + to_string(target.width) + ")) (justify left))\n"
+    *ret += indent + "  (effects (font (size " + to_string(target.height) + ' ' + to_string(target.height) + ") (thickness "
+          + to_string(target.width) + ")) (justify left";
+    if(target.mirrored)
+      *ret += " mirror";
+    *ret += "))\n"
 
           + indent + ")\n";
 
     return !++ret;
   }
 
-  string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_SolidRegion& target) const
+  string* KiCad_5_Deserializer::outputPCBSolidRegion(const PCB_CopperSolidRegion& target) const
   {
     RAIIC<string> ret;
     Warn("KiCad_5_Deserializer::outputPCBSolidRegion stub. " + target.id + "is ignored.");

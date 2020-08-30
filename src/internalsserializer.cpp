@@ -1,24 +1,24 @@
 /*
-    Copyright (c) 2020 RigoLigoRLC.
-    Copyright 2019-2020 Wokwi (for arc serialization).
+  Copyright (c) 2020 RigoLigoRLC.
+  Copyright 2019-2020 Wokwi (for arc serialization).
 
-    This file is part of LC2KiCad.
+  This file is part of LC2KiCad.
 
-    LC2KiCad is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as 
-    published by the Free Software Foundation, either version 3 of
-    the License, or (at your option) any later version.
+  LC2KiCad is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as 
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
 
-    LC2KiCad is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+  LC2KiCad is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with LC2KiCad. If not, see <https:// www.gnu.org/licenses/>.
+  You should have received a copy of the GNU Lesser General Public License
+  along with LC2KiCad. If not, see <https:// www.gnu.org/licenses/>.
 
-    Further notice on arc serialization code: this part of code is ported
-    from wokwi/easyeda2kicad project, licensed under MIT license.
+  Further notice on arc serialization code: this part of code is ported
+  from wokwi/easyeda2kicad project, licensed under MIT license.
 */
 
 #include <iostream>
@@ -64,7 +64,7 @@ namespace lc2kicad
         schematic_unit_coefficient = 25.4; break;
     }
   }
-  
+
   LCJSONSerializer::~LCJSONSerializer() { };
 
   void LCJSONSerializer::parseSchLibDocument()
@@ -87,7 +87,7 @@ namespace lc2kicad
     coordinates origin = workingDocument->origin;
 
     InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
-                ", grid size " + to_string(workingDocument->gridSize));
+          ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
     assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
@@ -104,7 +104,7 @@ namespace lc2kicad
     prefix.pop_back();
     docInfo["prefix"] = prefix;
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
-                             headlist["Contributor"].GetString() : "" : "" ;
+                                   headlist["Contributor"].GetString() : "" : "" ;
 
     parseSchLibComponent(shapesList, static_cast<Schematic_Module*>(workingDocument->containedElements.back())->containedElements);
   }
@@ -205,7 +205,7 @@ namespace lc2kicad
     coordinates origin = workingDocument->origin;
 
     InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
-                ", grid size " + to_string(workingDocument->gridSize));
+          ", grid size " + to_string(workingDocument->gridSize));
 
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
@@ -234,7 +234,7 @@ namespace lc2kicad
     coordinates origin = workingDocument->origin;
 
     InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
-                ", grid size " + to_string(workingDocument->gridSize));
+          ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
     assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
@@ -248,7 +248,7 @@ namespace lc2kicad
     if(footprintName.size() != 0)
       docInfo["documentname"] = footprintName;
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
-      headlist["Contributor"].GetString() : "" : "";
+                                   headlist["Contributor"].GetString() : "" : "";
 
 
     parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements, true);
@@ -274,7 +274,7 @@ namespace lc2kicad
     coordinates origin = workingDocument->origin;
 
     InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
-                ", grid size " + to_string(workingDocument->gridSize));
+          ", grid size " + to_string(workingDocument->gridSize));
 
     stringlist shapesList;
     string shapeStringTmp;
@@ -383,6 +383,18 @@ namespace lc2kicad
         case 'D': // Dimension
           break;
         case 'S': // Solidregion
+        {
+          auto type = loadNthSeparated(i, '~', 4);
+          if(type == "solid")
+            if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
+              containedElements.push_back(parsePCBCopperSolidRegionString(i));
+            else
+              containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
+          else if(type == "npth")
+            containedElements.push_back(parsePCBNpthRegionString(i));
+          else if(type == "cutout")
+            containedElements.push_back(parsePCBKeepoutRegionString(i));
+        }
           break;
         case 'L': // Footprint
           containedElements.push_back(parsePCBModuleString(i));
@@ -394,9 +406,9 @@ namespace lc2kicad
   }
 
   void LCJSONSerializer::parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
-                                                      std::vector<std::string> &canvasPropertyList,
-                                                      rapidjson::Value &shapesArray,
-                                                      rapidjson::Value &headObject)
+                            std::vector<std::string> &canvasPropertyList,
+                            rapidjson::Value &shapesArray,
+                            rapidjson::Value &headObject)
   {
     assertThrow(parseTarget.HasMember("head"), "\"head\" not found.");
     assertThrow(parseTarget["head"].IsObject(), "Invalid \"head\" type: not object.");
@@ -427,21 +439,21 @@ namespace lc2kicad
     // Resolve pad shape
     switch (paramList[1][0])
     {
-    case 'E': // ELLIPSE, ROUND
-      result->padShape = PCBPadShape::circle;
-      break;
-    case 'O': // OVAL
-      result->padShape = PCBPadShape::oval;
-      break;
-    case 'R': // RECT
-      result->padShape = PCBPadShape::rectangle;
-      break;
-    case 'P': // POLYGON
-      result->padShape = PCBPadShape::polygon;
-      break;
-    default:
-      assertThrow(false, result->id + string(": Invalid pad shape: ") + paramList[12]);
-      break;
+      case 'E': // ELLIPSE, ROUND
+        result->padShape = PCBPadShape::circle;
+        break;
+      case 'O': // OVAL
+        result->padShape = PCBPadShape::oval;
+        break;
+      case 'R': // RECT
+        result->padShape = PCBPadShape::rectangle;
+        break;
+      case 'P': // POLYGON
+        result->padShape = PCBPadShape::polygon;
+        break;
+      default:
+        assertThrow(false, result->id + string(": Invalid pad shape: ") + paramList[12]);
+        break;
     }
 
     // Resolve pad coordinates
@@ -493,10 +505,10 @@ namespace lc2kicad
       else
         result->padType = PCBPadType::noplating;
     else
-      if(padTypeTemp == 1)
-        result->padType = PCBPadType::top;
-      else if(padTypeTemp == 2)
-        result->padType = PCBPadType::bottom;
+    if(padTypeTemp == 1)
+      result->padType = PCBPadType::top;
+    else if(padTypeTemp == 2)
+      result->padType = PCBPadType::bottom;
     if(padTypeTemp == 11) // Fix: Only parse hole size when the pad is a through-hole pad.
     {
       // Resolve hole shape size
@@ -671,7 +683,7 @@ namespace lc2kicad
       {
         it++;
         if(*it != ' ')
-        it = pointsStr.insert(it, ' ');
+          it = pointsStr.insert(it, ' ');
       }
     }
     stringlist pointsStrList = splitString(pointsStr, ' ');
@@ -686,7 +698,7 @@ namespace lc2kicad
 
     result->clearanceWidth = stod(paramList[5]) * tenmils_to_mm_coefficient; // Resolve clearance width
     result->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
-      // Resolve fill style
+    // Resolve fill style
     result->isSpokeConnection = (paramList[8] == "spoke" ? true : false); // Resolve connection type
     result->isPreservingIslands = (paramList[9] == "yes" ? true : false); // Resolve island keep
     result->minimumWidth = 0.254; // 20 mils; KiCad default.
@@ -700,7 +712,63 @@ namespace lc2kicad
     {
       result->minimumWidth = result->spokeWidth;
       Warn(result->id + ": Flood fill area spoke width seems low (" + to_string(result->spokeWidth) + "mm). "
-           "Minimum width was set to the spoke width automatically from 0.254mm.");
+                                                      "Minimum width was set to the spoke width automatically from 0.254mm.");
+    }
+
+    return !++result;
+  }
+
+  PCB_KeepoutRegion *LCJSONSerializer::parsePCBKeepoutRegionString(const std::string &)
+  {
+    Warn("Stub: A PCB Keepout Region has been ignored."); // TODO implement this
+    return nullptr;
+  }
+
+  PCB_GraphicalTrack *LCJSONSerializer::parsePCBNpthRegionString(const std::string &)
+  {
+    Warn("Stub: A PCB NPTH Region has been ignored."); // TODO implement this
+    return nullptr;
+  }
+
+  PCB_GraphicalSolidRegion *LCJSONSerializer::parsePCBGraphicalSolidRegionString(const std::string &)
+  {
+    RAIIC<PCB_GraphicalSolidRegion> result;
+
+    return !++result;
+  }
+
+  PCB_FloodFill* LCJSONSerializer::parsePCBCopperSolidRegionString(const string &LCJSONString)
+  {
+    RAIIC<PCB_FloodFill> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[5];
+    // Resolve layer ID and net name
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[2], result->net);
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
+    // Throw error with gge ID if layer is invalid
+    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION " + paramList[5]);
+
+    // Resolve track points
+    string pointsStr = paramList[4];
+    for(auto it = pointsStr.begin(); it != pointsStr.end(); it++)
+    {
+      if(*it == ',')
+        *it = ' ';
+      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
+      {
+        it++;
+        if(*it != ' ')
+          it = pointsStr.insert(it, ' ');
+      }
+    }
+    stringlist pointsStrList = splitString(pointsStr, ' ');
+    coordinates tempCoord;
+    for(unsigned int i = 0; i < pointsStrList.size() - 1; i += 3)
+    {
+      tempCoord.X = (stod(pointsStrList[i + 1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
+      tempCoord.Y = (stod(pointsStrList[i + 2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
+      result->fillAreaPolygonPoints.push_back(tempCoord);
     }
 
     return !++result;
@@ -740,8 +808,8 @@ namespace lc2kicad
   }
 
   /*
-      The arc serialization code is ported from wokwi/easyeda2kicad.
-      Original: https://github.com/wokwi/easyeda2kicad/blob/master/src/board.ts
+    The arc serialization code is ported from wokwi/easyeda2kicad.
+    Original: https://github.com/wokwi/easyeda2kicad/blob/master/src/board.ts
   */
 
   PCB_CopperArc *LCJSONSerializer::parsePCBCopperArcString(const string &LCJSONString)
@@ -765,11 +833,11 @@ namespace lc2kicad
     movetoCmdParams = splitString(movetoCmd, ' ');
 
     coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
 
     centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-          stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+                            stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
 
     result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
     result->angle = std::abs(resultArc.angleExtend);
@@ -799,11 +867,11 @@ namespace lc2kicad
     movetoCmdParams = splitString(movetoCmd, ' ');
 
     coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
 
     centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-          stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+                            stod(arcCmdParams[0]), stod(arcCmdParams[1]), stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
 
     result->center = (resultArc.center - workingDocument->origin) * tenmils_to_mm_coefficient;
     result->angle = std::abs(resultArc.angleExtend);
@@ -838,14 +906,14 @@ namespace lc2kicad
     result->height = stod(paramList[9]) * tenmils_to_mm_coefficient;
     result->orientation = stod(paramList[5]);
     result->midLeftPos = (coordinates(stod(paramList[2]) - (result->height - 2) * cos(toRadians(result->orientation + 90)),
-                                      stod(paramList[3]) - (result->height + 2) * sin(toRadians(result->orientation + 90)))
-                          - workingDocument->origin) * tenmils_to_mm_coefficient;
+                    stod(paramList[3]) - (result->height + 2) * sin(toRadians(result->orientation + 90)))
+              - workingDocument->origin) * tenmils_to_mm_coefficient;
 
     // Crude fix for shift down issue
     //result->midLeftPos.Y -= 0.5;
 
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->mirrored = paramList[6] == "" ? false : true;
+    result->mirrored = paramList[6] == "0" ? false : true;
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[7])];
     result->text = paramList[10];
     if(paramList[1].length() == 1)
@@ -861,11 +929,22 @@ namespace lc2kicad
     else
       result->type = PCBTextTypes::StandardText;
 
+    if(paramList[14] != "")
+    {
+      result->height *= 0.75;
+      result->width = 0.1;
+    }
+
+    if(paramList[12] == "none")
+      result->visibility = false;
+    else
+      result->visibility = true;
+
     return !++result;
   }
 
   PCB_Module* LCJSONSerializer::parsePCBModuleString(const string &LCJSONString, EDADocument *parent,
-                                                     map<string, RAIIC<EDADocument>> *exportedList)
+                           map<string, RAIIC<EDADocument>> *exportedList)
   {
     RAIIC<PCB_Module> result;
     string copyJSONString = string(LCJSONString);
@@ -891,12 +970,12 @@ namespace lc2kicad
         if(i->first == result->uuid) // If found one with exact UUID then go out
           return nullptr;
         else
-          if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
-          { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
-            Warn("More than one footprint on this board was found called <<<" + result->name + ">>>(" + 
-                 result->id + "), gID will be added to the name.");
-            result->name += ("__" + result->id); // Modify the name for clarification
-          }
+        if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
+        { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
+          Warn("More than one footprint on this board was found called <<<" + result->name + ">>>(" +
+             result->id + "), gID will be added to the name.");
+          result->name += ("__" + result->id); // Modify the name for clarification
+        }
       }
 
     result->moduleCoords =
@@ -932,24 +1011,24 @@ namespace lc2kicad
   /**
    * This part is for schematic elements serializing.
    */
-  
+
   Schematic_Pin* LCJSONSerializer::parseSchPin(const string &LCJSONString) const
   {
     RAIIC<Schematic_Pin> result;
     string pinString = LCJSONString;
     findAndReplaceString(pinString, "^^", "~"); //Double circumflex is bad design for us. We simply replace them
     stringlist paramList = splitString(pinString, '~');
-    
+
     result->id = paramList[7]; //GGE ID.
-    
+
     //KiCad schematics uses mils for now. S-expression versions might take metric units.
     //EasyEDA uses the inversed direction in schematics against KiCad.
     result->pinCoord = { (stod(paramList[4]) - workingDocument->origin.X) * schematic_unit_coefficient,
-                         (stod(paramList[5]) - workingDocument->origin.Y) * -1 * schematic_unit_coefficient };
+               (stod(paramList[5]) - workingDocument->origin.Y) * -1 * schematic_unit_coefficient };
 
     // Pin electric property on EasyEDA didn't split power in and power out, so power would be treated as passive.
     result->electricProperty = SchPinElectricProperty(stoi(paramList[2]));
-    
+
     //Resolve pin rotation
     if(paramList[6] == "")
       result->pinRotation = SchematicRotations::Deg0;
@@ -966,13 +1045,13 @@ namespace lc2kicad
         case '0':
           result->pinRotation = SchematicRotations::Deg0; break;
       }
-    
+
     result->pinName = paramList[17];
     result->pinNumber = paramList[26];
-    
+
     result->clock = paramList[34][0] == '1' ? true : false ;
     result->inverted = paramList[31][0] == '1' ? true : false ;
-    
+
     if(paramList[20] != "")
       result->fontSize = 50;
     else
@@ -980,7 +1059,7 @@ namespace lc2kicad
       findAndReplaceString(paramList[20], "pt", "");
       result->fontSize = paramList[20] == "" ? 50 : int (stod(paramList[20]) * (50.0f / 7.0f));
     }
-    
+
     auto pinLengthTemp = splitString(paramList[11], 'h'); // h or v? I have to reimplement this later.
     if(pinLengthTemp.size() == 1)
       pinLengthTemp = splitString(paramList[11], 'v');
@@ -991,81 +1070,82 @@ namespace lc2kicad
     if(pinLengthTemp[1][0] == '-') // Get rid of potential negative signs
       pinLengthTemp[1][0] = ' ';
     result->pinLength = (stoi(pinLengthTemp[1]) + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
-    
+
     return !++result;
   }
-  
+
   Schematic_Polyline* LCJSONSerializer::parseSchPolyline(const string &LCJSONString) const
   {
     RAIIC<Schematic_Polyline> result;
     stringlist paramList = splitString(LCJSONString, '~');
-    
+
     result->id = paramList[6];
-    
+
     auto pointTemp = splitString(paramList[1], ' ');
     for(unsigned int i = 0; i < pointTemp.size(); i += 2)
       result->polylinePoints.push_back(
-            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
-                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
-    
+          coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
+                (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
+
     result->isFilled = paramList[5] == "none" ? false : true;
     result->lineWidth = int (stoi(paramList[3]) * schematic_unit_coefficient);
-    
+
     return !++result;
   }
-  
+
   Schematic_Polygon* LCJSONSerializer::parseSchPolygon(const string &LCJSONString) const
   {
     RAIIC<Schematic_Polygon> result;
     stringlist paramList = splitString(LCJSONString, '~');
-    
+
     result->id = paramList[6];
-    
+
     auto pointTemp = splitString(paramList[1], ' ');
     for(unsigned int i = 0; i < pointTemp.size(); i += 2)
       result->polylinePoints.push_back(
-            coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
-                        (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
-    
+          coordinates((stod(pointTemp[i]) - workingDocument->origin.X) * schematic_unit_coefficient,
+                (stod(pointTemp[i + 1]) - workingDocument->origin.Y) * schematic_unit_coefficient * -1));
+
     result->isFilled = paramList[5] == "none" ? false : true;
     result->lineWidth = int (stoi(paramList[3]) * schematic_unit_coefficient);
-    
+
     return !++result;
   }
-  
+
   Schematic_Text* LCJSONSerializer::parseSchText(const string &LCJSONString) const
   {
     RAIIC<Schematic_Text> result;
     stringlist paramList = splitString(LCJSONString, '~');
-    
+
     result->id = paramList[15];
-    
+
     result->text = paramList[12];
     result->bold = (paramList[9] == "normal" | paramList[9] == "") ? false : true;
     result->italic = (paramList[10] == "normal" | paramList[10] == "") ? false : true;
-    
+
     paramList[7].erase(paramList[7].end() - 2); //Remove "pt" characters
     result->fontSize = stoi(paramList[7]);
-    
+
     result->position = { stod(paramList[2]) * schematic_unit_coefficient, //We output the file as left justified, so this is fine.
-                        (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * schematic_unit_coefficient };
+               (stod(paramList[3]) - 0.5 * result->fontSize) * -1 * schematic_unit_coefficient };
 
     return !++result;
   }
-  
+
   Schematic_Rect* LCJSONSerializer::parseSchRect(const string &LCJSONString) const
   {
     RAIIC<Schematic_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
-    
+
     result->position = { (stoi(paramList[1]) - static_cast<int>(workingDocument->origin.X)) * schematic_unit_coefficient,
-                         (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
+               (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
     result->size = { stoi(paramList[5]) * schematic_unit_coefficient, stoi(paramList[6]) * schematic_unit_coefficient };
     result->isFilled = paramList[10] == "none" ? false : true;
     result->width = int (stoi(paramList[8]) * schematic_unit_coefficient);
-    
+
     return !++result;
   }
+
 
   Schematic_Arc *LCJSONSerializer::parseSchArc(const string &LCJSONString) const
   {
@@ -1085,12 +1165,12 @@ namespace lc2kicad
     movetoCmdParams = splitString(movetoCmd, ' ');
 
     coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-                startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
+        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
     sizeXY size = { stod(arcCmdParams[0]), stod(arcCmdParams[1]) };
 
     centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-          size.X, size.Y, stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-        stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+                            size.X, size.Y, stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
+                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
 
     double angle1 = resultArc.angleStart, angle2 = fmod(resultArc.angleStart + resultArc.angleExtend, 360.0);
 
