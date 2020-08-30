@@ -10,3 +10,4 @@ out/
 .vs/
 testfolder/
 CMakeLists.txt.user
+.idea/*
