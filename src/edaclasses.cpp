@@ -159,18 +159,20 @@ namespace lc2kicad
   string* PCB_CopperSolidRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperSolidRegion(*this); }
   string* PCB_GraphicalSolidRegion::deserializeSelf(KiCad_5_Deserializer &deserializer) const { return deserializer.outputPCBGraphicalSolidRegion(*this); }
   string* PCB_FloodFill::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBFloodFill(*this); }
+  string* PCB_KeepoutRegion::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBKeepoutRegion(*this); }
   string* PCB_GraphicalCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalCircle(*this); }
   string* PCB_CopperCircle::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperCircle(*this); }
   string* PCB_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBRect(*this); }
   string* PCB_GraphicalArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBGraphicalArc(*this); }
-  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); }
 
+  string* PCB_CopperArc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBCopperArc(*this); }
   string* PCB_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputPCBText(*this); }
   string* Schematic_Module::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchModule(*this); }
   string* Schematic_Pin::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPin(*this); }
   string* Schematic_Polyline::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolyline(*this); }
   string* Schematic_Rect::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchRect(*this); }
   string* Schematic_Polygon::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchPolygon(*this); }
+
   string* Schematic_Arc::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchArc(*this); }
 
   string* Schematic_Text::deserializeSelf(KiCad_5_Deserializer& deserializer) const { return deserializer.outputSchText(*this); }

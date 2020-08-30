@@ -705,16 +705,46 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_KeepoutRegion *LCJSONSerializer::parsePCBKeepoutRegionString(const std::string &)
+  PCB_KeepoutRegion *LCJSONSerializer::parsePCBKeepoutRegionString(const string &LCJSONString)
   {
-    Warn("Stub: A PCB Keepout Region has been ignored."); // TODO implement this
-    return nullptr;
+    RAIIC<PCB_KeepoutRegion> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[5];
+
+    result->allowRouting = result->allowVias = true;
+    result->allowFloodFill = false;
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
+
+    auto path = SmolSVG::readPathString(paramList[3]);
+    for(auto &i : path)
+      result->fillAreaPolygonPoints.emplace_back(
+              (i->getConstStartPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+
+    Warn(result->id + ": Flood fill keepout regions will prevent all fills rather than just flood fills with "
+                      "lower priority. You've been warned.");
+    return !++result;
   }
 
-  PCB_GraphicalTrack *LCJSONSerializer::parsePCBNpthRegionString(const std::string &)
+  PCB_GraphicalTrack *LCJSONSerializer::parsePCBNpthRegionString(const string &LCJSONString)
   {
-    Warn("Stub: A PCB NPTH Region has been ignored."); // TODO implement this
-    return nullptr;
+    RAIIC<PCB_GraphicalTrack> result;
+    stringlist paramList = splitString(LCJSONString, '~');
+
+    result->id = paramList[5];
+    result->layerKiCad = Edge_Cuts;
+
+    // Resolve track points
+    auto path = SmolSVG::readPathString(paramList[3]);
+
+    for(auto &i : path)
+      result->trackPoints.emplace_back(
+              (i->getConstStartPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    result->trackPoints.emplace_back(
+            (path.getLastCommand()->getConstEndPoint().lc2kicadCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    result->width = 0.1;
+
+    return !++result;
   }
 
   PCB_GraphicalSolidRegion *LCJSONSerializer::parsePCBGraphicalSolidRegionString(const std::string &LCJSONString)

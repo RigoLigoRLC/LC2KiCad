@@ -257,7 +257,6 @@ namespace lc2kicad
 
   string* KiCad_5_Deserializer::outputPCBFloodFill(const PCB_FloodFill& target) const
   {
-    // untested
     RAIIC<string> ret;
 
     *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name " + target.net.second
@@ -283,6 +282,29 @@ namespace lc2kicad
       *ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";
 
     *ret += indent + string("    )\n") + indent + "  )\n" + indent + ")";
+
+    return !++ret;
+  }
+
+  string* KiCad_5_Deserializer::outputPCBKeepoutRegion(const PCB_KeepoutRegion& target) const
+  {
+    RAIIC<string> ret;
+
+    *ret += indent + "(zone (net 0) (net_name \"\") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
+          + indent + "  (connect_pads (clearance 0.508))\n"
+          + indent + "  (min_thickness 0.254)\n"
+          + indent + "  (keepout (tracks " + (target.allowRouting ? "allowed" : "not_allowed")
+                   + ") (vias " + (target.allowVias ? "allowed" : "not_allowed")
+                   + ") (copperpour " + (target.allowFloodFill ? "allowed" : "not_allowed") + "))\n"
+          + indent + "  (fill (arc_segments 32) (thermal_gap 0.508) (thermal_bridge_width 0.508))\n"
+          + indent + "  (polygon\n"
+          + indent + "    (pts\n"
+          + indent + "      ";
+    for(coordinates i : target.fillAreaPolygonPoints)
+      *ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";
+    *ret += indent + "    )\n"
+          + indent + "  )\n"
+          + indent + ")";
 
     return !++ret;
   }
