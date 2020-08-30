@@ -124,14 +124,19 @@ namespace lc2kicad
     }
   }
 
-  inline double toRadians(double degree)
+  inline double toRadians(const double degree)
   {
     return (degree / 180.0) * M_PI;
   }
 
-  inline double toDegrees(double radian)
+  inline double toDegrees(const double radian)
   {
     return (radian / M_PI) * 180.0;
+  }
+
+  bool fuzzyCompare(const double a, const double b)
+  {
+    return std::abs(a - b) < 1e8;
   }
 
   centerArc svgEllipticalArcComputation(double x0, double y0, double rx, double ry, double angle,
@@ -142,6 +147,9 @@ namespace lc2kicad
     //
     // This function is ported from wokwi/easyeda2kicad project.
     // Original: https://github.com/wokwi/easyeda2kicad/blob/master/src/svg-arc.ts
+
+    if(fuzzyCompare(x0, x) && fuzzyCompare(y0, y))
+      return {{ x0, y0 }, { 0, 0 }, 0, 360 };
 
     // Compute the half distance between the current and the final point
     double dx2 = (x0 - x) / 2.0,
