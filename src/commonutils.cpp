@@ -124,6 +124,22 @@ namespace lc2kicad
     }
   }
 
+  int tolStoi(const std::string &c1, const int fail)
+  {
+    if(c1.size())
+      return std::stoi(c1);
+    else
+      return fail;
+  }
+
+  double tolStod(const std::string &c1, const double fail)
+  {
+    if(c1.size())
+      return std::stod(c1);
+    else
+      return fail;
+  }
+
   inline double toRadians(const double degree)
   {
     return (degree / 180.0) * M_PI;

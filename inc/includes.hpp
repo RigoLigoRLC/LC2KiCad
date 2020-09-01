@@ -135,6 +135,8 @@
     std::string decToHex(const unsigned long long _decimal);
     void findAndReplaceString(std::string& subject, const std::string& search,const std::string& replace);
     std::string loadNthSeparated(std::string &s, char delimiter, unsigned int nth);
+    int tolStoi(const std::string &, const int fail = 0);
+    double tolStod(const std::string &, const double fail = 0.0);
     double toRadians(double degree);
     double toDegrees(double radian);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);

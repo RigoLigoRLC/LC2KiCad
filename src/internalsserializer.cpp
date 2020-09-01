@@ -1034,7 +1034,7 @@ namespace lc2kicad
                (stod(paramList[5]) - workingDocument->origin.Y) * -1 * schematic_unit_coefficient };
 
     // Pin electric property on EasyEDA didn't split power in and power out, so power would be treated as passive.
-    result->electricProperty = SchPinElectricProperty(stoi(paramList[2]));
+    result->electricProperty = SchPinElectricProperty(tolStoi(paramList[2]));
 
     //Resolve pin rotation
     if(paramList[6] == "")
