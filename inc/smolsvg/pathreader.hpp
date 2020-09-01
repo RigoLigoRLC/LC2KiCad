@@ -61,7 +61,7 @@ namespace SmolSVG
             else
               throw std::logic_error("Unexpected command amongst arguments");
           }
-          else if(*i >= '.' && *i <= '9')
+          else if(*i >= '-' && *i <= '9')
           {
             if(!remainingArgCount)
             {
@@ -226,7 +226,7 @@ namespace SmolSVG
           break;
 
         case ReadArgs:
-          while(*i >= '.' && *i <= '9')
+          while(*i >= '-' && *i <= '9')
             i++;
           argCache.emplace_back(std::stod(std::string(cutBegin, i)));
           remainingArgCount--;
