@@ -241,7 +241,11 @@ namespace lc2kicad
     assertThrow(head.HasMember("c_para"), "\"c_para\" not found.");
     assertThrow(head["c_para"].IsObject(), "Invalid \"c_para\" type: not object.");
     Value &headlist = head["c_para"];
-    footprintName = headlist.HasMember("name") ? headlist["name"].IsString() ? headlist["name"].GetString() : "" : ""; \
+    footprintName = headlist.HasMember("package") ?
+                      headlist["package"].IsString() ?
+                        headlist["package"].GetString() :
+                      "" :
+                    "";
 
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
