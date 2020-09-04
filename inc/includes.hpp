@@ -28,7 +28,7 @@
   #include <string>
   #include <map>
   #include <stdexcept>
-  
+
   namespace lc2kicad
   {
     template <typename T> class RAIIC

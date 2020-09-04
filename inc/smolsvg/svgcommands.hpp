@@ -10,6 +10,7 @@
 
     You can obtain a copy of MIT License here: https://opensource.org/licenses/MIT
 */
+
 #ifndef SMOLSVG_SVGCOMMANDS_HPP_
 #define SMOLSVG_SVGCOMMANDS_HPP_
 
@@ -18,6 +19,9 @@
 
 namespace SmolSVG
 {
+  enum commandType
+  { Invalid, MoveTo, ClosePath, LineTo, HorizontalTo, VerticalTo, CurveTo, SmoothTo, QuadTo, SmoothQuadTo, ArcTo };
+
   struct SmolCoord
   {
     double X, Y;
@@ -27,35 +31,38 @@ namespace SmolSVG
     void operator+=(const double &o) { X += o, Y += o; }
     void operator-=(const double &o) { X -= o; Y -= o; }
     void operator*=(const double &o) { X *= o, Y *= o; }
+    operator lc2kicad::coordinates() const { return {X, Y}; }
     double lengthToOrigin() const { return std::sqrt(X * X + Y * Y); }
-    lc2kicad::coordinates lc2kicadCoord() { return lc2kicad::coordinates(X, Y); }
+    lc2kicad::coordinates nativeCoord() const { return lc2kicad::coordinates(X, Y); }
     SmolCoord(const double x, const double y) { X = x, Y = y; }
     SmolCoord() { X = Y = 0.0; }
-    SmolCoord(lc2kicad::coordinates o) { X = o.X, Y = o.Y; } // Conversion constructor
   };
 
   class baseCommand
   {
       virtual std::vector<SmolCoord> linearize() = 0;
 
-    public:
-      baseCommand() { relative = false; }
-      virtual ~baseCommand() = default;
-      SmolCoord getConstStartPoint() { return pointFrom; }
-      SmolCoord getConstEndPoint() { return pointTo; }
-      virtual void scaleToOrigin(const double coeff) { pointFrom *= coeff, pointTo *= coeff; }
-
     protected:
       SmolCoord pointFrom, pointTo;
       bool relative;
+      commandType cmdType = Invalid;
+    public:
+      baseCommand() { relative = false; }
+      virtual ~baseCommand() = default;
+      const SmolCoord& getConstStartPoint() { return pointFrom; }
+      const SmolCoord& getConstEndPoint() { return pointTo; }
+      virtual void scaleToOrigin(const double coeff) { pointFrom *= coeff, pointTo *= coeff; }
+      const commandType type() { return cmdType; }
+
   };
 
   class commandLineTo : public baseCommand
   {
     public:
       commandLineTo(const double pFromX, const double pFromY, const double pToX, const double pToY)
-        { pointFrom.X = pFromX, pointFrom.Y = pFromY, pointTo.X = pToX, pointTo.Y = pToY; }
-      commandLineTo(const SmolCoord &pFrom,  const SmolCoord &pTo) { pointFrom = pFrom, pointTo = pTo; }
+        { pointFrom.X = pFromX, pointFrom.Y = pFromY, pointTo.X = pToX, pointTo.Y = pToY; cmdType = LineTo; }
+      commandLineTo(const SmolCoord &pFrom, const SmolCoord &pTo)
+        { pointFrom = pFrom, pointTo = pTo; cmdType = LineTo; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -73,10 +80,14 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, pointHandle.X = pHandleX, pointHandle.Y = pHandleY,
         pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = QuadTo;
       }
+
       commandQuadraticBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandle, const SmolCoord &pTo)
-        { pointFrom = pFrom, pointHandle = pHandle, pointTo = pTo; }
+        { pointFrom = pFrom, pointHandle = pHandle, pointTo = pTo; cmdType = QuadTo; }
         void scaleToOrigin(const double coeff) override { pointFrom *= coeff, pointTo *= coeff, pointHandle *= coeff; }
+
+      const SmolCoord getHandle() const { return pointHandle; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -103,12 +114,18 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, pointHandleA.X = pHandleAX, pointHandleA.Y = pHandleAY,
         pointHandleB.X = pHandleBX, pointHandleB.Y = pHandleBY, pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = CurveTo;
       }
+
       commandCubicBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandleA, const SmolCoord &pHandleB,
                            const SmolCoord &pTo)
-      { pointFrom = pFrom, pointHandleA = pHandleA, pointHandleB = pHandleB, pointTo = pTo; }
+      { pointFrom = pFrom, pointHandleA = pHandleA, pointHandleB = pHandleB, pointTo = pTo; cmdType = CurveTo; }
+
       void scaleToOrigin(const double coeff) override
       { pointFrom *= coeff, pointTo *= coeff, pointHandleA *= coeff, pointHandleB *= coeff; }
+
+      const SmolCoord getHandleA() const { return pointHandleA; }
+      const SmolCoord getHandleB() const { return pointHandleB; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -141,12 +158,14 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, radii.X = pRadiiX, radii.Y = pRadiiY, XAxisRotation = XAxisRot,
         flagLargeArc = largeArc, flagSweep = sweep, pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = ArcTo;
       }
       commandEllipticalArcTo(const SmolCoord &pFrom, const SmolCoord pRadii, const double XAxisRot, const bool largeArc,
                              const bool sweep, const SmolCoord pTo)
       {
         pointFrom = pFrom, radii = pRadii, XAxisRotation = XAxisRot, flagLargeArc = largeArc, flagSweep = sweep,
         pointTo = pTo;
+        cmdType = ArcTo;
       }
 
       const SmolCoord getRadii() { return radii; }
