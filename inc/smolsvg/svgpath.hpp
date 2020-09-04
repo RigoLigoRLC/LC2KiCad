@@ -20,17 +20,17 @@ namespace SmolSVG
 {
   class SVGRawPath
   {
-      std::vector<baseCommand*> commandStorage;
+      std::list<baseCommand*> commandStorage;
     public:
-      std::vector<baseCommand*>::iterator begin() { return commandStorage.begin(); }
-      std::vector<baseCommand*>::iterator end() { return commandStorage.end(); }
+      std::list<baseCommand*>::iterator begin() { return commandStorage.begin(); }
+      std::list<baseCommand*>::iterator end() { return commandStorage.end(); }
       void addRawCommand(baseCommand* cmd) { commandStorage.emplace_back(cmd); }
       baseCommand* getLastCommand() { return commandStorage.back(); };
       void purgeLastCommand() { commandStorage.pop_back(); }
       void purgeDestroyLastCommand()
       {
         if(commandStorage.size())
-          delete *(commandStorage.end() - 1), purgeLastCommand();
+          delete commandStorage.back(), purgeLastCommand();
       }
       SVGRawPath()
       {

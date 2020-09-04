@@ -14,7 +14,7 @@
 #ifndef SMOLSVG_SVGCOMMANDS_HPP_
 #define SMOLSVG_SVGCOMMANDS_HPP_
 
-#include <vector>
+#include <list>
 #include <cmath>
 
 namespace SmolSVG
@@ -40,7 +40,7 @@ namespace SmolSVG
 
   class baseCommand
   {
-      virtual std::vector<SmolCoord> linearize() = 0;
+      virtual std::list<SmolCoord> linearize() = 0;
 
     protected:
       SmolCoord pointFrom, pointTo;
@@ -64,9 +64,9 @@ namespace SmolSVG
       commandLineTo(const SmolCoord &pFrom, const SmolCoord &pTo)
         { pointFrom = pFrom, pointTo = pTo; cmdType = LineTo; }
 
-      std::vector<SmolCoord> linearize()
+      std::list<SmolCoord> linearize()
       {
-        std::vector<SmolCoord> ret { pointFrom, pointTo };
+        std::list<SmolCoord> ret { pointFrom, pointTo };
         return ret;
       }
   };
@@ -89,9 +89,9 @@ namespace SmolSVG
 
       const SmolCoord getHandle() const { return pointHandle; }
 
-      std::vector<SmolCoord> linearize()
+      std::list<SmolCoord> linearize()
       {
-        std::vector<SmolCoord> ret; // TODO stub quadratic bezier
+        std::list<SmolCoord> ret; // TODO stub quadratic bezier
         unsigned long segmentCount = (pointHandle - pointFrom).lengthToOrigin() + (pointTo - pointFrom).lengthToOrigin();
         ret.emplace_back(pointFrom);
         for(double t = 1 / segmentCount; t < 1; t += 1 / segmentCount)
@@ -127,9 +127,9 @@ namespace SmolSVG
       const SmolCoord getHandleA() const { return pointHandleA; }
       const SmolCoord getHandleB() const { return pointHandleB; }
 
-      std::vector<SmolCoord> linearize()
+      std::list<SmolCoord> linearize()
       {
-        std::vector<SmolCoord> ret; // TODO stub cubic bezier
+        std::list<SmolCoord> ret; // TODO stub cubic bezier
         unsigned long segmentCount =  (pointHandleA - pointFrom).lengthToOrigin() + // Begin-A distance
                                       (pointHandleB - pointHandleA).lengthToOrigin() + // A-B distance
                                       (pointTo - pointHandleB).lengthToOrigin(); // B-End distance
@@ -173,9 +173,9 @@ namespace SmolSVG
       const bool getLargeArc() { return flagLargeArc; }
       const bool getFlagSweep() { return flagSweep; }
 
-      std::vector<SmolCoord> linearize()
+      std::list<SmolCoord> linearize()
       {
-        std::vector<SmolCoord> ret; // TODO stub elliptical arc
+        std::list<SmolCoord> ret; // TODO stub elliptical arc
         unsigned long segmentCount = radii.lengthToOrigin();
 
         return ret;
