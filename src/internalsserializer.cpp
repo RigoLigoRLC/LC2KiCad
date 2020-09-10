@@ -1095,9 +1095,9 @@ namespace lc2kicad
       const_cast<SmolSVG::SmolCoord &>(drawPath->getConstEndPoint()) -
       const_cast<SmolSVG::SmolCoord &>(drawPath->getConstStartPoint());
     if(fuzzyCompare(lengthVec.X, 0.0)) // X direction difference is 0
-      pinLength = lengthVec.Y;
+      pinLength = abs(lengthVec.Y);
     else
-      pinLength = lengthVec.X;
+      pinLength = abs(lengthVec.X);
 
     result->pinLength = (pinLength + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
 
