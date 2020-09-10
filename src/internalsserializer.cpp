@@ -994,7 +994,7 @@ namespace lc2kicad
     result->orientation = stod(moduleHeader[4] == "" ? "0" : moduleHeader[4]);
     result->topLayer = stoi(moduleHeader[7]) == 1;
     result->layer = result->topLayer ? KiCadLayerIndex::F_Cu : KiCadLayerIndex::B_Cu;
-    result->updateTime = (time_t)stoi(moduleHeader[9]);
+    result->updateTime = (time_t)tolStoi(moduleHeader[9]);
 
 
 
@@ -1075,6 +1075,7 @@ namespace lc2kicad
       result->fontSize = paramList[20] == "" ? 50 : int (stod(paramList[20]) * (50.0f / 7.0f));
     }
 
+    /*
     auto pinLengthTemp = splitString(paramList[11], 'h'); // h or v? I have to reimplement this later.
     if(pinLengthTemp.size() == 1)
       pinLengthTemp = splitString(paramList[11], 'v');
@@ -1084,7 +1085,21 @@ namespace lc2kicad
 
     if(pinLengthTemp[1][0] == '-') // Get rid of potential negative signs
       pinLengthTemp[1][0] = ' ';
-    result->pinLength = (stoi(pinLengthTemp[1]) + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
+    */
+
+    double pinLength = 0.0;
+
+    auto pinPath = SmolSVG::readPathString(paramList[11]);
+    const auto &drawPath = pinPath.getLastCommand();
+    SmolSVG::SmolCoord lengthVec = 
+      const_cast<SmolSVG::SmolCoord &>(drawPath->getConstEndPoint()) -
+      const_cast<SmolSVG::SmolCoord &>(drawPath->getConstStartPoint());
+    if(fuzzyCompare(lengthVec.X, 0.0)) // X direction difference is 0
+      pinLength = lengthVec.Y;
+    else
+      pinLength = lengthVec.X;
+
+    result->pinLength = (pinLength + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
 
     return !++result;
   }
