@@ -139,6 +139,7 @@
     double tolStod(const std::string &, const double fail = 0.0);
     double toRadians(double degree);
     double toDegrees(double radian);
+    bool fuzzyCompare(const double, const double);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(std::string&, std::string&&);
 

@@ -25,9 +25,9 @@ namespace SmolSVG
   struct SmolCoord
   {
     double X, Y;
-    SmolCoord operator+(const SmolCoord &o) { return { this->X + o.X, this->Y + o.Y }; }
-    SmolCoord operator-(const SmolCoord &o) { return { this->X - o.X, this->Y - o.Y }; }
-    SmolCoord operator*(const double &o) { return { this->X * o, this->Y * o }; }
+    SmolCoord operator+(const SmolCoord &o) const { return { this->X + o.X, this->Y + o.Y }; }
+    SmolCoord operator-(const SmolCoord &o) const { return { this->X - o.X, this->Y - o.Y }; }
+    SmolCoord operator*(const double &o) const { return { this->X * o, this->Y * o }; }
     void operator+=(const double &o) { X += o, Y += o; }
     void operator-=(const double &o) { X -= o; Y -= o; }
     void operator*=(const double &o) { X *= o, Y *= o; }
