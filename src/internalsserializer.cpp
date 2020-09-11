@@ -26,7 +26,7 @@
 #include <string>
 #include <fstream>
 #include <cmath>
-#include <time.h> //Windows build fail workaround
+#include <ctime>
 
 #include "includes.hpp"
 #include "rapidjson.hpp"
@@ -61,8 +61,9 @@ namespace lc2kicad
       case 0: // Default
       case 1: // KiCad 5, imperial
         schematic_unit_coefficient = 10; break;
-      case 2: // KiCad 6, metric
-        schematic_unit_coefficient = 25.4; break;
+      //case 2: // KiCad 6, metric
+      //  schematic_unit_coefficient = 25.4; break;
+      // temporarily disabled, not implemented.
     }
   }
 
@@ -1091,9 +1092,7 @@ namespace lc2kicad
 
     auto pinPath = SmolSVG::readPathString(paramList[11]);
     const auto &drawPath = pinPath.getLastCommand();
-    SmolSVG::SmolCoord lengthVec = 
-      const_cast<SmolSVG::SmolCoord &>(drawPath->getConstEndPoint()) -
-      const_cast<SmolSVG::SmolCoord &>(drawPath->getConstStartPoint());
+    SmolSVG::SmolCoord lengthVec = drawPath->getConstEndPoint() - drawPath->getConstStartPoint();
     if(fuzzyCompare(lengthVec.X, 0.0)) // X direction difference is 0
       pinLength = abs(lengthVec.Y);
     else
@@ -1185,26 +1184,19 @@ namespace lc2kicad
     result->isFilled = paramList[6] == "none" ? false : true;
     result->width = int (stoi(paramList[4]) * schematic_unit_coefficient);
 
-    string arcpath = paramList[1];
-    findAndReplaceString(arcpath, ",", " "); // Replace periods with spaces
-    string movetoCmd = arcpath.substr(arcpath.find('M') + 1, arcpath.find('A') - 1); // Get 'M' command
-    arcpath = arcpath.substr(arcpath.find('A') + 1); // Get everything after 'A' token
-    arcpath[0] == ' ' ? arcpath[0] = '0' : 0 ; // Command token could either be split by space or not.
-    movetoCmd[0] == ' ' ? movetoCmd[0] = '0' : 0 ;
-    arcCmdParams = splitString(arcpath, ' ');
-    movetoCmdParams = splitString(movetoCmd, ' ');
+    auto path = SmolSVG::readPathString(paramList[1]);
+    coordinates startpoint = path.getLastCommand()->getConstStartPoint(),
+            endpoint = path.getLastCommand()->getConstEndPoint();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
+    auto &size = smolArcCmd.getRadii();
 
-    coordinates endpoint = { stod(arcCmdParams[5]), stod(arcCmdParams[6]) },
-        startpoint = { stod(movetoCmdParams[0]), stod(movetoCmdParams[1]) };
-    sizeXY size = { stod(arcCmdParams[0]), stod(arcCmdParams[1]) };
+    centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
+                                                      smolArcCmd.getRadii().Y, smolArcCmd.getXAxisRotation(), smolArcCmd.getLargeArc(),
+                                                      smolArcCmd.getFlagSweep(), endpoint.X, endpoint.Y);
 
-    centerArc resultArc = svgEllipticalArcComputation(stod(movetoCmdParams[0]), stod(movetoCmdParams[1]),
-                            size.X, size.Y, stod(arcCmdParams[2]), stoi(arcCmdParams[3]),
-                            stoi(arcCmdParams[4]), endpoint.X, endpoint.Y);
+    double angle1 = fmod(resultArc.angleStart, 360.0), angle2 = fmod(resultArc.angleStart + resultArc.angleExtend, 360.0);
 
-    double angle1 = resultArc.angleStart, angle2 = fmod(resultArc.angleStart + resultArc.angleExtend, 360.0);
-
-    result->elliptical = !(size.X == size.Y);
+    result->elliptical = fuzzyCompare(size.X, size.Y);
     result->center = (resultArc.center - workingDocument->origin) * schematic_unit_coefficient;
     result->startAngle = angle1 > angle2 ? angle2 : angle1;
     result->endAngle = angle1 > angle2 ? angle1 : angle2;

@@ -238,7 +238,11 @@ namespace SmolSVG
 
         case GenerateCommandObject:
         {
-          baseCommand* lastCommand = ret.getLastCommand();
+          baseCommand* lastCommand;
+
+          if(commandToken > ClosePath)
+            lastCommand = ret.getLastCommand();
+
           switch(commandToken)
           {
             case MoveTo:
@@ -315,6 +319,7 @@ namespace SmolSVG
         }
         default: ;
       }
+      
     }
 
     return ret;
