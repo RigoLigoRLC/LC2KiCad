@@ -7,10 +7,12 @@ set(EXEC lc2kicad)
 set(CMAKE_CXX_STANDARD 14)
 
 IF (MINGW OR CYGWIN)
-
-set(CMAKE_EXE_LINKER_FLAGS -static)
-
+	add_link_options(-static)
 ENDIF ()
+
+IF (CMAKE_BUILD_TYPE EQUAL "DEBUG" AND MSVC)
+    add_link_options(/ZI) # Edit and continue
+ENDIF()
 
 include_directories(inc)
 

@@ -683,10 +683,10 @@ namespace lc2kicad
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[4]);
 
-    for(auto &i : path)
+    for(auto &i : *path)
       result->fillAreaPolygonPoints.emplace_back(
               (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
-
+    delete path;
 
     result->clearanceWidth = stod(paramList[5]) * tenmils_to_mm_coefficient; // Resolve clearance width
     result->fillStyle = (paramList[6] == "solid" ? floodFillStyle::solidFill : floodFillStyle::noFill);
@@ -722,9 +722,10 @@ namespace lc2kicad
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
 
     auto path = SmolSVG::readPathString(paramList[3]);
-    for(auto &i : path)
+    for(auto &i : *path)
       result->fillAreaPolygonPoints.emplace_back(
               (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    delete path;
 
     Warn(result->id + ": Flood fill keepout regions will prevent all fills rather than just flood fills with "
                       "lower priority. You've been warned.");
@@ -742,11 +743,13 @@ namespace lc2kicad
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[3]);
 
-    for(auto &i : path)
+    for(auto &i : *path)
       result->trackPoints.emplace_back(
               (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
     result->trackPoints.emplace_back(
-            (path.getLastCommand()->getConstEndPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+            (path->getLastCommand()->getConstEndPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    delete path;
+
     result->width = 0.1;
 
     return !++result;
@@ -766,9 +769,10 @@ namespace lc2kicad
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[3]);
 
-    for(auto &i : path)
+    for(auto &i : *path)
       result->fillAreaPolygonPoints.emplace_back(
               (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    delete path;
 
     return !++result;
 
@@ -791,9 +795,10 @@ namespace lc2kicad
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[3]);
 
-    for(auto &i : path)
+    for(auto &i : *path)
       result->fillAreaPolygonPoints.emplace_back(
                   (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
+    delete path;
 
     return !++result;
   }
@@ -849,9 +854,9 @@ namespace lc2kicad
 
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[4]);
-    coordinates startpoint = path.getLastCommand()->getConstStartPoint(),
-            endpoint = path.getLastCommand()->getConstEndPoint();
-    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
+    coordinates startpoint = path->getLastCommand()->getConstStartPoint(),
+            endpoint = path->getLastCommand()->getConstEndPoint();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path->getLastCommand()));
 
     centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
                                                       smolArcCmd.getRadii().Y, smolArcCmd.getXAxisRotation(), smolArcCmd.getLargeArc(),
@@ -877,9 +882,9 @@ namespace lc2kicad
 
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[4]);
-    coordinates startpoint = path.getLastCommand()->getConstStartPoint(),
-                endpoint = path.getLastCommand()->getConstEndPoint();
-    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
+    coordinates startpoint = path->getLastCommand()->getConstStartPoint(),
+                endpoint = path->getLastCommand()->getConstEndPoint();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path->getLastCommand()));
 
     centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
                             smolArcCmd.getRadii().Y, smolArcCmd.getXAxisRotation(), smolArcCmd.getLargeArc(),
@@ -1091,7 +1096,7 @@ namespace lc2kicad
     double pinLength = 0.0;
 
     auto pinPath = SmolSVG::readPathString(paramList[11]);
-    const auto &drawPath = pinPath.getLastCommand();
+    const auto &drawPath = pinPath->getLastCommand();
     SmolSVG::SmolCoord lengthVec = drawPath->getConstEndPoint() - drawPath->getConstStartPoint();
     if(fuzzyCompare(lengthVec.X, 0.0)) // X direction difference is 0
       pinLength = abs(lengthVec.Y);
@@ -1185,9 +1190,9 @@ namespace lc2kicad
     result->width = int (stoi(paramList[4]) * schematic_unit_coefficient);
 
     auto path = SmolSVG::readPathString(paramList[1]);
-    coordinates startpoint = path.getLastCommand()->getConstStartPoint(),
-            endpoint = path.getLastCommand()->getConstEndPoint();
-    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path.getLastCommand()));
+    coordinates startpoint = path->getLastCommand()->getConstStartPoint(),
+            endpoint = path->getLastCommand()->getConstEndPoint();
+    auto &smolArcCmd = *(static_cast<SmolSVG::commandEllipticalArcTo*>(path->getLastCommand()));
     auto &size = smolArcCmd.getRadii();
 
     centerArc resultArc = svgEllipticalArcComputation(startpoint.X, startpoint.Y, smolArcCmd.getRadii().X,
