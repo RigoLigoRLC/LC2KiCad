@@ -22,8 +22,10 @@ namespace SmolSVG
   {
       std::list<baseCommand*> commandStorage;
     public:
-      std::list<baseCommand*>::iterator begin() { return commandStorage.begin(); }
-      std::list<baseCommand*>::iterator end() { return commandStorage.end(); }
+      std::list<baseCommand *>::const_iterator begin() const { return commandStorage.cbegin(); }
+      std::list<baseCommand *>::const_iterator end() const { return commandStorage.cend(); }
+      std::list<baseCommand *>::iterator mbegin() { return commandStorage.begin();  } // Mutable iterator
+      std::list<baseCommand *>::iterator mend() { return commandStorage.end(); }
       void addRawCommand(baseCommand* cmd) { commandStorage.emplace_back(cmd); }
       baseCommand* getLastCommand() { return commandStorage.back(); };
       void purgeLastCommand() { commandStorage.pop_back(); }
@@ -39,8 +41,10 @@ namespace SmolSVG
       ~SVGRawPath()
       {
         for (auto &i : commandStorage)
-          if (i)
+        {
+          if (i != nullptr)
             delete i, i = nullptr;
+        }
       }
   };
 }

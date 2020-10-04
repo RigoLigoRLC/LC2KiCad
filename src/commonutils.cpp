@@ -23,16 +23,12 @@
     based on Apache Batik code. See function implementation for details.
     This part of code is licensed under Apache 2.0 license.
 */
-#ifdef _MSVC_LANG
-  #define _USE_MATH_DEFINES
-#endif
 #include <cstring>
 #include <string>
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include <cmath>
 
 #include "consts.hpp"
 #include "includes.hpp"
@@ -138,16 +134,6 @@ namespace lc2kicad
       return std::stod(c1);
     else
       return fail;
-  }
-
-  inline double toRadians(const double degree)
-  {
-    return (degree / 180.0) * M_PI;
-  }
-
-  inline double toDegrees(const double radian)
-  {
-    return (radian / M_PI) * 180.0;
   }
 
   bool fuzzyCompare(const double a, const double b)

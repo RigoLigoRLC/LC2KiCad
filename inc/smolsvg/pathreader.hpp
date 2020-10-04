@@ -20,7 +20,7 @@
 
 namespace SmolSVG
 {
-  SVGRawPath readPathString(std::string &pathStr);
+  SVGRawPath *readPathString(std::string &pathStr);
 
   static SmolCoord realCoord(const bool relative, const SmolCoord &pen, const double X, const double Y)
   {
@@ -35,19 +35,22 @@ namespace SmolSVG
                       SmolCoord(argCache[coordPos], argCache[coordPos + 1]);
   }
 
-  SVGRawPath readPathString(std::string &pathStr)
+  SVGRawPath *readPathString(std::string &pathStr)
   {
-    SVGRawPath ret;
+    SVGRawPath *retptr = new SVGRawPath;
+    SVGRawPath &ret = *retptr;
     SmolCoord PenLocation, CloseAt;
     std::vector<double> argCache;
 
     std::string::const_iterator cutBegin;
     unsigned int remainingArgCount = 0, commandArgCount = 0;
-    bool relativeToken = false;
+    bool relativeToken = false, finishAfterGeneration = false;
     enum { SkipSpacer, ReadCommand, ReadArgs, GenerateCommandObject } status = SkipSpacer;
     commandType commandToken;
 
-    for(std::string::const_iterator i = pathStr.cbegin(); i <= pathStr.cend(); )
+    auto endByte = pathStr.cend() - 1;
+
+    for(std::string::const_iterator i = pathStr.cbegin(); i < pathStr.cend(); )
     {
       switch(status)
       {
@@ -63,7 +66,7 @@ namespace SmolSVG
           }
           else if(*i >= '-' && *i <= '9')
           {
-            if(!remainingArgCount)
+            if(remainingArgCount == 0)
             {
               remainingArgCount = commandArgCount;
               argCache.clear();
@@ -71,8 +74,6 @@ namespace SmolSVG
             status = ReadArgs;
             cutBegin = i;
           }
-          else if(*i == '\0') // We're at the end
-            i++;
           break;
 
         case ReadCommand:
@@ -222,23 +223,39 @@ namespace SmolSVG
             default:
               throw std::logic_error("Unknown or invalid SVG command");
           }
-          i++;
+
+          if(i + 1 == pathStr.cend())
+            status = GenerateCommandObject;
+          else
+            i++;
+
           break;
 
         case ReadArgs:
+        {
+          bool exitSwitch = false;
           while(*i >= '-' && *i <= '9')
-            i++;
-          argCache.emplace_back(std::stod(std::string(cutBegin, i)));
+            if(i == endByte)
+            {
+              status = GenerateCommandObject;
+              finishAfterGeneration = true;
+              break;
+            }
+            else
+              i++;
+          argCache.emplace_back(std::stod(std::string(cutBegin, i + 1)));
           remainingArgCount--;
           if(remainingArgCount)
             status = SkipSpacer;
           else
             status = GenerateCommandObject;
           break;
+        }
 
         case GenerateCommandObject:
         {
-          baseCommand* lastCommand = ret.getLastCommand();
+          baseCommand *lastCommand;
+
           switch(commandToken)
           {
             case MoveTo:
@@ -247,77 +264,83 @@ namespace SmolSVG
             case ClosePath:
               ret.addRawCommand(new commandLineTo(PenLocation, CloseAt));
               PenLocation = CloseAt;
+              i++; // Because it doesn't have args, no one will increment i for it
               break;
             case LineTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
-                      realCoord(relativeToken, PenLocation, argCache, 0)));
+                                          realCoord(relativeToken, PenLocation, argCache, 0)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case VerticalTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
-                      realCoord(relativeToken, PenLocation, relativeToken ? 0 : PenLocation.X, argCache[0])));
+                                          realCoord(relativeToken, PenLocation, relativeToken ? 0 : PenLocation.X, argCache[0])));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case HorizontalTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
-                      realCoord(relativeToken, PenLocation, argCache[0], relativeToken ? 0 : PenLocation.Y)));
+                                          realCoord(relativeToken, PenLocation, argCache[0], relativeToken ? 0 : PenLocation.Y)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case CurveTo:
               ret.addRawCommand(new commandCubicBezierTo(PenLocation,
-                      realCoord(relativeToken, PenLocation, argCache, 0),
-                      realCoord(relativeToken, PenLocation, argCache, 2),
-                      realCoord(relativeToken, PenLocation, argCache, 4)));
+                                                 realCoord(relativeToken, PenLocation, argCache, 0),
+                                                 realCoord(relativeToken, PenLocation, argCache, 2),
+                                                 realCoord(relativeToken, PenLocation, argCache, 4)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case SmoothTo:
+              lastCommand = ret.getLastCommand();
               if(lastCommand->type() == CurveTo)
                 ret.addRawCommand(new commandCubicBezierTo(PenLocation,
-                        PenLocation * 2 - dynamic_cast<commandCubicBezierTo*>(lastCommand)->getHandleB(),
-                        realCoord(relativeToken, PenLocation, argCache, 0),
-                        realCoord(relativeToken, PenLocation, argCache, 2)));
+                                                   PenLocation * 2 - dynamic_cast<commandCubicBezierTo *>(lastCommand)->getHandleB(),
+                                                   realCoord(relativeToken, PenLocation, argCache, 0),
+                                                   realCoord(relativeToken, PenLocation, argCache, 2)));
               else
                 ret.addRawCommand(new commandCubicBezierTo(PenLocation,
-                        PenLocation * 2 - lastCommand->getConstEndPoint(),
-                        realCoord(relativeToken, PenLocation, argCache, 0),
-                        realCoord(relativeToken, PenLocation, argCache, 2)));
+                                                   PenLocation * 2 - lastCommand->getConstEndPoint(),
+                                                   realCoord(relativeToken, PenLocation, argCache, 0),
+                                                   realCoord(relativeToken, PenLocation, argCache, 2)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case QuadTo:
               ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
-                      realCoord(relativeToken, PenLocation, argCache, 0),
-                      realCoord(relativeToken, PenLocation, argCache, 2)));
+                                                     realCoord(relativeToken, PenLocation, argCache, 0),
+                                                     realCoord(relativeToken, PenLocation, argCache, 2)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case SmoothQuadTo:
+              lastCommand = ret.getLastCommand();
               if(lastCommand->type() == QuadTo)
                 ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
-                        PenLocation * 2 - dynamic_cast<commandQuadraticBezierTo*>(lastCommand)->getHandle(),
-                        realCoord(relativeToken, PenLocation, argCache, 0)));
+                                                       PenLocation * 2 - dynamic_cast<commandQuadraticBezierTo *>(lastCommand)->getHandle(),
+                                                       realCoord(relativeToken, PenLocation, argCache, 0)));
               else
                 ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
-                        PenLocation * 2 - lastCommand->getConstEndPoint(),
-                        realCoord(relativeToken, PenLocation, argCache, 0)));
+                                                       PenLocation * 2 - lastCommand->getConstEndPoint(),
+                                                       realCoord(relativeToken, PenLocation, argCache, 0)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             case ArcTo:
               ret.addRawCommand(new commandEllipticalArcTo(PenLocation,
-                      {argCache[0], argCache[1]},
-                      argCache[2], argCache[3] == 1.0, argCache[4] == 1.0,
-                      realCoord(relativeToken, PenLocation, argCache, 5)));
+                                                   { argCache[0], argCache[1] },
+                                                   argCache[2], argCache[3] == 1.0, argCache[4] == 1.0,
+                                                   realCoord(relativeToken, PenLocation, argCache, 5)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
               break;
             default:
               throw std::logic_error("Unknown token enumeration");
           }
           status = SkipSpacer;
+          if(finishAfterGeneration)
+            i++; // Args at end
           break;
         }
-        default: ;
+        default:;
       }
+
     }
 
-    return ret;
+    return retptr;
   }
 }
 

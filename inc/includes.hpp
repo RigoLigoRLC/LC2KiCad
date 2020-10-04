@@ -23,11 +23,14 @@
   #ifdef _WIN32
     #define USE_WINAPI_FOR_TEXT_COLOR // Comment this line out to use ANSI escape code coloring for Windows too
   #endif
+
+  #define PI 3.14159265358979323846
   
   #include <vector>
   #include <string>
   #include <map>
   #include <stdexcept>
+  #include <cmath>
 
   namespace lc2kicad
   {
@@ -137,8 +140,8 @@
     std::string loadNthSeparated(std::string &s, char delimiter, unsigned int nth);
     int tolStoi(const std::string &, const int fail = 0);
     double tolStod(const std::string &, const double fail = 0.0);
-    double toRadians(double degree);
-    double toDegrees(double radian);
+    inline double toRadians(double degree) { return (degree / 180.0) * PI; }
+    inline double toDegrees(double radian) { return (radian / PI) * 180.0; }
     bool fuzzyCompare(const double, const double);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(std::string&, std::string&&);
