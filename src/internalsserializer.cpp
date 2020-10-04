@@ -924,7 +924,7 @@ namespace lc2kicad
     //result->midLeftPos.Y -= 0.5;
 
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->mirrored = paramList[6] == "0" ? false : true;
+    result->mirrored = tolStoi(paramList[6]);
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[7])];
     result->text = paramList[10];
     if(paramList[1].length() == 1)
