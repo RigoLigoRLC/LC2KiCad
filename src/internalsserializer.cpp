@@ -104,7 +104,12 @@ namespace lc2kicad
       docInfo["documentname"] = symbolName;
     prefix = headlist.HasMember("pre") ? headlist["pre"].IsString() ? headlist["pre"].GetString() : "U" : "U";
     prefix.pop_back();
-    docInfo["prefix"] = prefix;
+    if(prefix.size()) docInfo["prefix"] = prefix;
+    else
+    {
+      Warn("This symbol library has an empty prefix. It's replaced with UNK now.");
+      docInfo["prefix"] = "UNK"; // Prefix could be empty after popping trailing '?', therefore we add UNK for those.
+    }
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
                                    headlist["Contributor"].GetString() : "" : "" ;
 
