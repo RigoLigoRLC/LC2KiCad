@@ -1,1 +1,4 @@
 theme: jekyll-theme-modernist
+
+- name: AUR publish docker
+  uses: guumaster/aur-publish-docker-action@v1
