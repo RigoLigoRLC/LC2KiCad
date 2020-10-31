@@ -1,0 +1,19 @@
+
+name: aur-publish
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  aur-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish AUR package
+        uses: guumaster/aur-publish-docker-action@v1
+        with:
+          package_name: lc2kicad
+          commit_username: 'Github Action Bot'
+          commit_email: rigoligo03@gmail.com
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
