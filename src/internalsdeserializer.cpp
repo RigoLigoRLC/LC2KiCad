@@ -229,6 +229,7 @@ namespace lc2kicad
       Warn(target.id + ": Copper track on footprint. This is not recommended.");
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
+    {
       *ret += indent + string(isInFootprint ? "(fp_line (start " : "(segment (start ") + to_string(target.trackPoints[i].X) + ' '
            + to_string(target.trackPoints[i].Y) + ") (end " + to_string(target.trackPoints[i + 1].X) + ' '
            + to_string(target.trackPoints[i + 1].Y) + ") (width " + to_string(target.width) + ") (layer "
@@ -236,6 +237,7 @@ namespace lc2kicad
       if(!isInFootprint)
         *ret += "(net " + to_string(target.net.first) + ")";
       *ret += ")\n";
+    }
 
     ret->pop_back(); // Remove the last '\n' because no end-of-line is needed at the end right there
     
