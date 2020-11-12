@@ -88,7 +88,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
@@ -211,7 +211,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     for(unsigned int i = 0; i < shape.Size(); i++)
@@ -240,7 +240,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
@@ -284,7 +284,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    InfoVerbose(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) +
+    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     stringlist shapesList;

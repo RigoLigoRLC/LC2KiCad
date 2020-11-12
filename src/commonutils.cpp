@@ -232,71 +232,6 @@ namespace lc2kicad
     return { { cx, cy }, { rx * 2.0, ry * 2.0 }, angleStart, angleExtent };
   }
   
-  coordslist* simpleLCSVGSegmentizer(const std::string &SVGPath, int arcResolution)
-  {
-    RAIIC<coordslist> ret;
-    std::string workingPath = SVGPath; //Duplicate the original path
-    size_t indexer = 0;
-    coordinates subpathHead {0, 0}, penLocation {0, 0};
-    bool relative = false;
-    
-    arcResolution < 2 ? arcResolution = 2 : 0;
-    
-    //Pre-processing for convenience
-    //Add white space for the commands if needed. Also replace commas with white spaces.
-    for(std::string::iterator it = workingPath.begin(); it != workingPath.end(); it++)
-    {
-      if(*it == ',')
-        *it = ' ';
-      if(std::strchr("AaCcHhLlMmQqSsTtVvZz", *it))
-      {
-        it++;
-        it = workingPath.insert(it, ' ');
-      }
-    }
-    
-    std::cout << workingPath << std::endl;
-    
-    
-    while(indexer < workingPath.size())
-    {
-      switch(workingPath[indexer])
-      {
-        case ' ': //Blank space, fetch next character
-          indexer++;
-          continue;
-
-        case 'm': //Move to, relative
-          relative = true;
-        case 'M': //Move to, absolute
-        {
-          coordinates moveTo {0, 0};
-          size_t xbegin = workingPath.find_first_not_of(' ', indexer), xend = workingPath.find_first_of(' ', xbegin) - 1;
-          size_t ybegin = workingPath.find_first_not_of(' ', xend), yend = workingPath.find_first_of(' ', ybegin) - 1;
-          indexer = yend + 1;
-          moveTo.X = atof(workingPath.substr(xbegin, xend - xbegin + 1).c_str());
-          moveTo.Y = atof(workingPath.substr(ybegin, yend - ybegin + 1).c_str());
-          subpathHead = penLocation = (relative ? penLocation + moveTo : moveTo);
-          break;
-        }
-        case 'l': //Line to, relative
-          relative = true;
-        case 'L': //Lint to, absolute
-        {
-          break;
-        }
-        default: //Unknown situation
-          Error(">>>Error executing SVG path graph conversion, offset " + std::to_string(indexer) +
-                " of path \"" + workingPath + "\". This may cause problem.");
-          indexer++;
-          break;
-        relative = false;
-      }
-    }
-    
-    return !++ret;
-  }
-
   void Error(std::string s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
@@ -325,9 +260,8 @@ namespace lc2kicad
     warningCount++;
   }
 
-  void InfoVerbose(std::string s)
+  void Info(std::string s)
   {
-    if(!argParseResult.verboseInfo) return;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
@@ -337,5 +271,11 @@ namespace lc2kicad
 #else
     std::cout << "\033[1;96mInfo: " << s << "\033[39m\n";
 #endif
+  }
+
+  void InfoVerbose(std::function<std::string()> sf)
+  {
+    if(!argParseResult.verboseInfo) return;
+    Info(sf());
   }
 }

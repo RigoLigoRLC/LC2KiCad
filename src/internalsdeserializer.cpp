@@ -264,6 +264,12 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
+    if(isProcessingModules())
+    {
+      Warn(target.id + ": Fill areas are not allowed within footprint. This area was discarded.");
+      return nullptr;
+    }
+
     *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name " + target.net.second
         + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
 
@@ -294,6 +300,13 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBKeepoutRegion(const PCB_KeepoutRegion& target) const
   {
     RAIIC<string> ret;
+
+    // TODO: allow if output KiCad 6, and also treat footprints specially
+    if(isProcessingModules())
+    {
+      Warn(target.id + ": Keepout areas are not allowed within footprint. This area was discarded.");
+      return nullptr;
+    }
 
     *ret += indent + "(zone (net 0) (net_name \"\") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
           + indent + "  (connect_pads (clearance 0.508))\n"

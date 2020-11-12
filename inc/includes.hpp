@@ -31,6 +31,7 @@
   #include <map>
   #include <stdexcept>
   #include <cmath>
+  #include <functional>
 
   namespace lc2kicad
   {
@@ -131,7 +132,6 @@
     //int EasyEdaToKiCadLayerMap\[\];
     std::string LCLayerToKiCadName(const int&);
 
-    coordslist* simpleLCSVGSegmentizer(const std::string&, int);
     stringlist splitString(std::string sourceString, char delimeter);
     std::string base_name(const std::string& path);
     void sanitizeFileName(std::string &filename);
@@ -148,7 +148,10 @@
 
     void Error(std::string s);
     void Warn(std::string s);
-    void InfoVerbose(std::string s);
+    void Info(std::string s);
+    void InfoVerbose(std::function<std::string()> sf);
+
+    #define VERBOSEMSG(X) InfoVerbose([&]() -> std::string { return X; })
   }
 
 #endif

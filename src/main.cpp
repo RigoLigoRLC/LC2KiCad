@@ -33,7 +33,7 @@
   #include <Windows.h>
 #endif
 
-//#define MAKE_CUSTOM_TEST_OF_FUNCS
+#define MAKE_CUSTOM_TEST_OF_FUNCS
 
 using std::cout;
 using std::cerr;
@@ -61,14 +61,15 @@ int main(int argc, const char** argv)
   hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 
-#ifdef MAKE_CUSTOM_TEST_OF_FUNCS
-
-#endif
-
-
 
   try { argParseResult = programArgumentParser(argc, argv);}
   catch (std::exception &e) { Error(string("Argument parsing failed with exception: ") + e.what()); };
+
+#ifdef MAKE_CUSTOM_TEST_OF_FUNCS
+  VERBOSEMSG("Hello?");
+  return 0;
+#endif
+
 
   if(argParseResult.verboseInfo)
     argParseResult.verboseOutputArgParseResult(&argParseResult);

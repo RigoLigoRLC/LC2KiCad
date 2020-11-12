@@ -152,20 +152,20 @@ namespace lc2kicad
 
   void programArgumentParseResult::verboseOutputArgParseResult(const programArgumentParseResult *result)
   {
-    InfoVerbose(string("Invoke help: ") + (result->invokeHelp ? "true" : "false"));
-    InfoVerbose(string("Invoke version: ") + (result->invokeVersionInfo ? "true" : "false"));
-    InfoVerbose(string("Convert as project: ") + (result->convertAsProject ? "true" : "false"));
+    VERBOSEMSG(string("Invoke help: ") + (result->invokeHelp ? "true" : "false"));
+    VERBOSEMSG(string("Invoke version: ") + (result->invokeVersionInfo ? "true" : "false"));
+    VERBOSEMSG(string("Convert as project: ") + (result->convertAsProject ? "true" : "false"));
     if(result->configFile.size())
-      InfoVerbose(string("Explicitly specified config file: ") + result->configFile);
+      VERBOSEMSG(string("Explicitly specified config file: ") + result->configFile);
     if(result->outputDirectory.size())
-      InfoVerbose(string("Specified output directory: ") + result->outputDirectory);
+      VERBOSEMSG(string("Specified output directory: ") + result->outputDirectory);
     if(result->parserArguments.size())
     {
       string parserArgumentsList("Specified parser arguments:\n");
       for(auto &i : result->parserArguments)
         parserArgumentsList += "Arg \"" + i.first + "\" = " + std::to_string(i.second) + "\n";
       parserArgumentsList.pop_back(); // Remove excess '\n'. Same for next one.
-      InfoVerbose(parserArgumentsList);
+      VERBOSEMSG(parserArgumentsList);
     }
     if(result->filenames.size())
     {
@@ -173,7 +173,7 @@ namespace lc2kicad
       for(auto &i : result->filenames)
         filenameList += i + "\n";
       filenameList.pop_back();
-      InfoVerbose(filenameList);
+      VERBOSEMSG(filenameList);
     }
   }
 }
