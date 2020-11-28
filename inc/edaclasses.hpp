@@ -38,7 +38,7 @@
   /**
    * This section is dedicated for class definitions of EDA documents.
    * 
-   * Path to the actual file should be specified before thrown into serialibuglist.cgi?quicksearch=plasma notezer.
+   * Path to the actual file should be specified before thrown into serializer.
    * Serializer will have to determine the file type and use the corresponding parser.
    * At the time of development, EasyEDA is still using its old format, but it would
    * change its format in about a year, so it's important to make the serializer a
@@ -67,13 +67,23 @@
         PCBNetManager();
     };
 
+    /*
+     * EasyEDA currently uses "ordering" for fill priority. That means if you have two fill areas
+     * of different nets, overlapping with each other, the one on the higher position of EasyEDA
+     * fill manager gets filled last (with highest priority), like how paper overlaps.
+     * This works completely different from KiCad; KiCad has a priority number for fill areas; an
+     * area with higher priority gets filled last.
+     *
+     * This class will keep track of EasyEDA fill "order" number, and MUST NOT be used before the
+     * entire document gets resolved by Core, since the maximumPriority can change at any time.
+     */
     class PCBFloodFillPriorityManager
     {
       private:
-        unsigned int maximumPriority;
+        unsigned int maximumPriority; //< The greatest EasyEDA fill order number
       public:
-        void logPriority(unsigned int);
-        unsigned int getKiCadPriority(unsigned int);
+        void logPriority(unsigned int); //< Use this when you need to add a fill to the beloging document
+        unsigned int getKiCadPriority(unsigned int); //< Use this when obtaining KiCad priority on output
     };
 
     struct EDAElement;
@@ -132,14 +142,6 @@
     /**
      * This section is dedicated for elements on the PCBs and footprints.
      */
-
-    /*
-    struct PCBNet
-    {
-      string netName;
-      unsigned int netCode;
-    };
-    */
 
     /**
      * LCEDA flood fill (COPPERAREA) fill style. KiCad does not support grid fill yet,
@@ -277,7 +279,7 @@
     };
 
     /**
-     * RECTs on footprints are hollow, and on PCBs are solid regions.
+     * NOTE: RECTs on footprints are hollow, and on PCBs are solid regions.
      * We decided to treat this specific object differently. Because its behavior doesn't differ
      * when it's on different layers, but rather in different files.
      * 
@@ -296,7 +298,7 @@
     struct PCB_GraphicalArc : public PCBElement
     {
       coordinates center, endPoint;
-      //For default, use right deirection as 0 deg point. Use degrees not radians.
+      //For default, use right direction as 0 deg point. Use degrees not radians.
       double angle, width;
       enum KiCadLayerIndex layerKiCad;
       string* deserializeSelf(KiCad_5_Deserializer&) const;

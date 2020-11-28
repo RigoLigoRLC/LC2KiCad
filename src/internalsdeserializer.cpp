@@ -44,7 +44,6 @@ namespace lc2kicad
   { 
     indent = "  "; 
     workingDocument = _workingDocument;
-    //TODO: Evaluate the flood fill region priorities
   }
   void KiCad_5_Deserializer::deinitWorkingDocument() { indent = ""; workingDocument = nullptr; }
   void KiCad_5_Deserializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw) { internalCompatibilitySwitches = _compatibSw; }

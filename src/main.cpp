@@ -33,7 +33,7 @@
   #include <Windows.h>
 #endif
 
-#define MAKE_CUSTOM_TEST_OF_FUNCS
+// #define MAKE_CUSTOM_TEST_OF_FUNCS
 
 using std::cout;
 using std::cerr;
@@ -112,11 +112,11 @@ int main(int argc, const char** argv)
     if(i)
       core.deserializeFile(i, &path), delete i;
 
-  cout << endl;
+  cerr << endl;
   if(errorCount | warningCount)
     Warn(string("Error(s): ") + to_string(errorCount) + ", warning(s): " + to_string(warningCount) + ".");
   else
-    cout << "Error(s): " << errorCount << ", warning(s): " << warningCount << ".\n";
+    cerr << "Error(s): " << errorCount << ", warning(s): " << warningCount << ".\n";
 
   return 0;
 }
@@ -126,7 +126,7 @@ namespace lc2kicad
 {
   void displayUsage()
   {
-  cout << "Usage: lc2kicad [OPTION] [--] FILENAME\n\n"
+  cerr << "Usage: lc2kicad [OPTION] [--] FILENAME\n\n"
           "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
           "          via EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
           "  -h, --help:     Display this help message and quit.\n"
@@ -137,7 +137,7 @@ namespace lc2kicad
 
   void displayAbout()
   {
-    cout  << "LC2KiCad version " << SOFTWARE_VERSION << endl 
+    cerr  << "LC2KiCad version " << SOFTWARE_VERSION << endl
           //<< "Compiled from " << gitCommitHash << endl
           << "This program is an utility that allows you to convert your EasyEDA documents\n"
           << "into the KiCad 5 version document, so that you will be able to move your\n"

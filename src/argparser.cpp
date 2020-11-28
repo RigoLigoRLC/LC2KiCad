@@ -144,28 +144,30 @@ namespace lc2kicad
       for(int i = endpos + 1; i < argc; i++)
         ret.filenames.push_back(argv[i]); // If we got double dash, parse all args after the double dash as filenames.
 
+    // Check ENL in advance
     if(ret.exportNestedLibs)
       ret.parserArguments["ENL"] = 1;
+    // Check if is using pipe
 
     return ret;
   }
 
   void programArgumentParseResult::verboseOutputArgParseResult(const programArgumentParseResult *result)
   {
-    VERBOSEMSG(string("Invoke help: ") + (result->invokeHelp ? "true" : "false"));
-    VERBOSEMSG(string("Invoke version: ") + (result->invokeVersionInfo ? "true" : "false"));
-    VERBOSEMSG(string("Convert as project: ") + (result->convertAsProject ? "true" : "false"));
+    VERBOSE_INFO(string("Invoke help: ") + (result->invokeHelp ? "true" : "false"));
+    VERBOSE_INFO(string("Invoke version: ") + (result->invokeVersionInfo ? "true" : "false"));
+    VERBOSE_INFO(string("Convert as project: ") + (result->convertAsProject ? "true" : "false"));
     if(result->configFile.size())
-      VERBOSEMSG(string("Explicitly specified config file: ") + result->configFile);
+      VERBOSE_INFO(string("Explicitly specified config file: ") + result->configFile);
     if(result->outputDirectory.size())
-      VERBOSEMSG(string("Specified output directory: ") + result->outputDirectory);
+      VERBOSE_INFO(string("Specified output directory: ") + result->outputDirectory);
     if(result->parserArguments.size())
     {
       string parserArgumentsList("Specified parser arguments:\n");
       for(auto &i : result->parserArguments)
         parserArgumentsList += "Arg \"" + i.first + "\" = " + std::to_string(i.second) + "\n";
       parserArgumentsList.pop_back(); // Remove excess '\n'. Same for next one.
-      VERBOSEMSG(parserArgumentsList);
+      VERBOSE_INFO(parserArgumentsList);
     }
     if(result->filenames.size())
     {
@@ -173,7 +175,7 @@ namespace lc2kicad
       for(auto &i : result->filenames)
         filenameList += i + "\n";
       filenameList.pop_back();
-      VERBOSEMSG(filenameList);
+      VERBOSE_INFO(filenameList);
     }
   }
 }

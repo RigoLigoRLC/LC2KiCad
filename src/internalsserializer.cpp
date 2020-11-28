@@ -88,7 +88,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
+    VERBOSE_INFO(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
@@ -107,7 +107,7 @@ namespace lc2kicad
     if(prefix.size()) docInfo["prefix"] = prefix;
     else
     {
-      Warn("This symbol library has an empty prefix. It's replaced with UNK now.");
+      Info("This symbol library has an empty prefix. It's replaced with UNK now.");
       docInfo["prefix"] = "UNK"; // Prefix could be empty after popping trailing '?', therefore we add UNK for those.
     }
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
@@ -211,7 +211,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
+    VERBOSE_INFO(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     for(unsigned int i = 0; i < shape.Size(); i++)
@@ -240,7 +240,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
+    VERBOSE_INFO(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     // Write Prefix and contributor
@@ -284,7 +284,7 @@ namespace lc2kicad
     workingDocument->gridSize = stod(canvasPropertyList[6]);
     coordinates origin = workingDocument->origin;
 
-    VERBOSEMSG(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
+    VERBOSE_INFO(string("Document origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
           ", grid size " + to_string(workingDocument->gridSize));
 
     stringlist shapesList;
@@ -703,12 +703,12 @@ namespace lc2kicad
     if(result->spokeWidth <= 0)
     {
       result->spokeWidth = 0.508;
-      Warn(result->id + ": Flood fill area spoke width was not set; it is now 0.508mm.");
+      Info(result->id + ": Flood fill area spoke width was not set; it is now 0.508mm.");
     }
     if(result->spokeWidth <= 0.254)
     {
       result->minimumWidth = result->spokeWidth;
-      Warn(result->id + ": Flood fill area spoke width seems low (" + to_string(result->spokeWidth) + "mm). "
+      Info(result->id + ": Flood fill area spoke width seems low (" + to_string(result->spokeWidth) + "mm). "
                                                       "Minimum width was set to the spoke width automatically from 0.254mm.");
     }
 
@@ -733,7 +733,7 @@ namespace lc2kicad
     delete path;
 
     Warn(result->id + ": Flood fill keepout regions will prevent all fills rather than just flood fills with "
-                      "lower priority. You've been warned.");
+                      "lower priority. This is a behavior difference. You've been warned.");
     return !++result;
   }
 
@@ -994,7 +994,7 @@ namespace lc2kicad
         else
         if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
         { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
-          Warn("More than one footprint on this board was found called <<<" + result->name + ">>>(" +
+          Info("More than one footprint on this board was found called <<<" + result->name + ">>>(" +
              result->id + "), gID will be added to the name.");
           result->name += ("__" + result->id); // Modify the name for clarification
         }

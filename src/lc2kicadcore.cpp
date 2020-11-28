@@ -86,7 +86,7 @@ namespace lc2kicad
     targetInternalDoc.pathToFile = filePath; //Just for storage; not being used now.
     targetInternalDoc.parent = this; // Set parent. Currently used for deserializer referencing.
 
-    cout << "Auto Parse Processor: Read file " << filePath << ".\n";
+    cerr << "Auto Parse Processor: Read file " << filePath << ".\n";
     char readBuffer[BUFSIZ]; // Create the buffer for RapidJSON to read the file
     std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
     assertThrow(parseTarget != 0, "File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
@@ -130,11 +130,11 @@ namespace lc2kicad
     }
     assertThrow((documentType >= 1 && documentType <= 7),
                 string("Unsupported document type ID ") + to_string(documentType) + ".");
-    cout << "Auto Parse Processor: Document " << filePath <<  " is a " << documentTypeName[documentType] << " file";
+    cerr << "Auto Parse Processor: Document " << filePath <<  " is a " << documentTypeName[documentType] << " file";
     if(editorVer != "")
-      cout << ", exported by EasyEDA Editor " << editorVer << ".\n";
+      cerr << ", exported by EasyEDA Editor " << editorVer << ".\n";
     else
-      cout << ". EasyEDA Editor version unknown.\n";
+      cerr << ". EasyEDA Editor version unknown.\n";
 
     targetInternalDoc.docInfo["filename"] = filename;
     targetInternalDoc.docInfo["documentname"] = filename;
@@ -192,7 +192,7 @@ namespace lc2kicad
         Error(string("The document type \"") + documentTypeName[documentType] + "\" is not supported yet.");
         ret.push_back(nullptr);
     }
-    cout << "Auto Parse Processor: processing for " << filePath << " is done.\n";
+    cerr << "Auto Parse Processor: processing for " << filePath << " is done.\n";
     return ret;
   }
 
@@ -218,7 +218,7 @@ namespace lc2kicad
 
     sanitizeFileName(outputFileName);
 
-    cout  << "Deserializer: Create output file " << outputFileName << ".\n";
+    cerr  << "Deserializer: Create output file " << outputFileName << ".\n";
 
     outputfile.open(outputFileName, std::ios::out);
 
@@ -239,7 +239,12 @@ namespace lc2kicad
     for(auto &i : target->containedElements)
     {
       if(!i) continue;
-      tempResult = i->deserializeSelf(*internalDeserializer);
+      try { tempResult = i->deserializeSelf(*internalDeserializer); }
+      catch(std::runtime_error &e)
+      {
+        Error(string("Unexpected error converting a component: ") + e.what());
+      }
+
       *outputStream << *tempResult << endl;
       delete tempResult;
     }

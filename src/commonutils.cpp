@@ -152,7 +152,6 @@ namespace lc2kicad
 
     if(fuzzyCompare(x0, x) && fuzzyCompare(y0, y))
       return {{ x0, y0 }, { 0, 0 }, 0, 360 };
-
     // Compute the half distance between the current and the final point
     double dx2 = (x0 - x) / 2.0,
            dy2 = (y0 - y) / 2.0;
@@ -238,10 +237,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cout << "Error: " << s << std::endl;
+    std::cerr << "Error: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cout << "\033[1;31mError: " << s << "\033[39m\n";
+    std::cerr << "\033[1;31mError: " << s << "\033[39m\n";
 #endif
     errorCount++;
   }
@@ -252,10 +251,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cout << "Warning: " << s << std::endl;
+    std::cerr << "Warning: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cout << "\033[1;93mWarning: " << s << "\033[39m\n";
+    std::cerr << "\033[1;93mWarning: " << s << "\033[39m\n";
 #endif
     warningCount++;
   }
@@ -266,10 +265,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_BLUE | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cout << "Info: " << s << std::endl;
+    std::cerr << "Info: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cout << "\033[1;96mInfo: " << s << "\033[39m\n";
+    std::cerr << "\033[1;96mInfo: " << s << "\033[39m\n";
 #endif
   }
 

@@ -35,6 +35,34 @@
 
   namespace lc2kicad
   {
+  /*
+   * Implementation of RAII, for those objects that should be created dynamically.
+   *
+   * Operators note:
+   * operator++ for protecting the contents. RAIIC objects will not destroy internal data
+   *            if it's protected when RAIIC object expires. This operation is irreversible.
+   *
+   * operator-- for increasing the reference count. RAIIC can be copy constructed, but it WILL NOT
+   *            increase the reference count for you like a shared_ptr. You must do it manually
+   *            when needed.
+   *
+   * operator! and
+   * operator-> for obtaining the pointer to the dereferenced RAII-managed object.
+   *
+   * operator*  for obtaining a dereferenced RAII-managed object reference.
+   *
+   * In LC2KiCad, we usually use RAIIC objects like this:
+   * When you have to create an object protected by RAIIC, use
+   *
+   *   RAIIC<CLASS_NAME> obj;
+   *
+   * When you're absolutely sure that this object can be released, and in LC2KiCad it's usually at
+   * the end of a (de)serializer method, do
+   *
+   *   return !++obj;
+   *
+   * Thanks to C++ operator priority, you will protect it first, then return the pointer.
+   */
     template <typename T> class RAIIC
     {
       public:
@@ -117,7 +145,8 @@
       bool convertAsProject = false,
            useCompatibilitySwitches = false,
            exportNestedLibs = false,
-           verboseInfo = false;
+           verboseInfo = false,
+           usePipe = false;
       std::string configFile,
                   outputDirectory;
       str_dbl_map parserArguments;
@@ -151,7 +180,7 @@
     void Info(std::string s);
     void InfoVerbose(std::function<std::string()> sf);
 
-    #define VERBOSEMSG(X) InfoVerbose([&]() -> std::string { return X; })
+    #define VERBOSE_INFO(X) InfoVerbose([&]() -> std::string { return X; })
   }
 
 #endif
