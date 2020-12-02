@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright (c) 2020 RigoLigoRLC.
   Copyright 2019-2020 Wokwi (for arc serialization).
 
@@ -561,6 +561,8 @@ namespace lc2kicad
     ref->height = 4 * tenmils_to_mm_coefficient;
     ref->width = 0.4 * tenmils_to_mm_coefficient;
     ref->midLeftPos = { -5, -5 };
+    ref->orientation = 0.0;
+    ref->visibility = false;
 
     switch(pad->padType)
     {

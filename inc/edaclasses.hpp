@@ -160,7 +160,7 @@
       vector<EDAElement*> containedElements;
       coordinates moduleCoords;
       double orientation;
-      bool topLayer;
+      bool topLayer; // TODO: DEPRECATE THIS.
       time_t updateTime;
       KiCadLayerIndex layer;
       map<string, string> cparaContent;
