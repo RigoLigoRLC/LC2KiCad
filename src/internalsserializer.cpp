@@ -680,6 +680,13 @@ namespace lc2kicad
 
     // Resolve layer ID and net name
     static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[3], result->net);
+
+    // Old EasyEDA file omits the priority. Send a warning and set that to highest if this happened.
+    if(!paramList[13].size())
+    {
+      Warn(result->id + ": Empty flood fill priority. Will be set to highest.");
+      paramList[13] = "1";
+    }
     static_cast<PCBDocument*>(workingDocument)->fillPriorityManager.logPriority(result->EasyEDAPriority = stoi(paramList[13]));
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
     // Throw error with gge ID if layer is invalid
