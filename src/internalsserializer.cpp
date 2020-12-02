@@ -386,7 +386,7 @@ namespace lc2kicad
           break;
         }
         case 'V': // Via
-          containedElements.push_back(parsePCBViaString(i));
+          containedElements.push_back(parsePCBViaString(i)); // FIXME: in modules should be pads. Vias aren't allowed.
           break;
         case 'H': // Hole
           containedElements.push_back(parsePCBHoleString(i));
@@ -1113,9 +1113,9 @@ namespace lc2kicad
     const auto &drawPath = pinPath->getLastCommand();
     SmolSVG::SmolCoord lengthVec = drawPath->getConstEndPoint() - drawPath->getConstStartPoint();
     if(fuzzyCompare(lengthVec.X, 0.0)) // X direction difference is 0
-      pinLength = abs(lengthVec.Y);
+      pinLength = std::abs(lengthVec.Y);
     else
-      pinLength = abs(lengthVec.X);
+      pinLength = std::abs(lengthVec.X);
 
     result->pinLength = (pinLength + (result->inverted ? 6 : 0)) * sch_convert_coefficient;
 
