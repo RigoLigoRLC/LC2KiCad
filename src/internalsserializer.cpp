@@ -395,16 +395,28 @@ namespace lc2kicad
           break;
         case 'S': // Solidregion
         {
-          auto type = loadNthSeparated(i, '~', 4);
-          if(type == "solid")
-            if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
-              containedElements.push_back(parsePCBCopperSolidRegionString(i));
-            else
-              containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
-          else if(type == "npth")
-            containedElements.push_back(parsePCBNpthRegionString(i));
-          else if(type == "cutout")
-            containedElements.push_back(parsePCBKeepoutRegionString(i));
+          if(!module)
+          {
+            auto type = loadNthSeparated(i, '~', 4);
+            if(type == "solid")
+              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
+                containedElements.push_back(parsePCBCopperSolidRegionString(i));
+              else
+                containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
+            else if(type == "npth")
+              containedElements.push_back(parsePCBNpthRegionString(i));
+            else if(type == "cutout")
+              containedElements.push_back(parsePCBKeepoutRegionString(i));
+          }
+          else
+          {
+            Error(loadNthSeparated(i, '~', 5) +
+                  ": A fill region was found inside a footprint, which is not allowed in KiCad. "
+                  "This region is discarded!");
+            // Can we move the region into main board? Probably not, cause we can't.
+            // That's how LC2KiCad was constructed. You can't put an element into board,
+            // because we can only see the containedElements of the footprint in this function.
+          }
         }
           break;
         case 'L': // Footprint
