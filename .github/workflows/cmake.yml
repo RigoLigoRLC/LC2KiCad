@@ -43,7 +43,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cd $GITHUB_WORKSPACE
-        export VERSION=`git log --format="%H" -n 1 | head -c 7`
+        echo "VERSION="`git log --format="%H" -n 1 | head -c 7` >> $GITHUB_ENV
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
