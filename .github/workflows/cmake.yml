@@ -46,5 +46,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: lc2kicad-mingw-${{ env.VERSION }}.exe
-        path: ${{runner.workspace}}/build/lc2kicad.exe
+        name: lc2kicad-msvc-${{ env.VERSION }}.exe
+        path: ${{runner.workspace}}/build/Release/lc2kicad.exe
