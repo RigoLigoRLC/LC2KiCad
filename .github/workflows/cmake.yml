@@ -40,11 +40,11 @@ jobs:
     
     - name: Set Commit ID
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: $GITHUB_WORKSPACE
       run: export VERSION=`git log --format="%H" -n 1 | head -c 7`
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: lc2kicad-msvc-${{ env.VERSION }}.exe
+        name: lc2kicad-msvc2019-x64-${{ env.VERSION }}.exe
         path: ${{runner.workspace}}/build/Release/lc2kicad.exe
