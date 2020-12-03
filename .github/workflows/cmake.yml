@@ -40,8 +40,10 @@ jobs:
     
     - name: Set Commit ID
       shell: bash
-      working-directory: ${{GITHUB_WORKSPACE}}
-      run: export VERSION=`git log --format="%H" -n 1 | head -c 7`
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cd $GITHUB_WORKSPACE
+        export VERSION=`git log --format="%H" -n 1 | head -c 7`
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
