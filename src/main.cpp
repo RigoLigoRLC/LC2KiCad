@@ -63,11 +63,10 @@ int main(int argc, const char** argv)
 
 
   try { argParseResult = programArgumentParser(argc, argv);}
-  catch (std::exception &e) { Error(string("Argument parsing failed with exception: ") + e.what()); };
+  catch (std::exception &e) { Error(string("Argument parsing failed with exception: ") + e.what()); exit(1);};
 
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
-  VERBOSEMSG("Hello?");
-  return 0;
+
 #endif
 
 
