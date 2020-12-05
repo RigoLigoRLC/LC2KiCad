@@ -46,15 +46,10 @@ jobs:
         export VERSION=`git log --format="%H" -n 1 | head -c 7`
         echo "VERSION="$VERSION >> $GITHUB_ENV
 
-    - name: See What the fuck directory we are dealing with
-      shell: cmd
-      working-directory: ${{runner.workspace}}
-      run: tree
-
     - name: Change Build File Name
       shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: mv lc2kicad.exe lc2kicad-msvc2019-x64-`git log --format="%H" -n 1 | head -c 7`.exe
+      working-directory: ${{runner.workspace}}/build/Release
+      run: mv lc2kicad.exe lc2kicad-msvc2019-x64-$VERSION.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
