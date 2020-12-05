@@ -46,6 +46,11 @@ jobs:
         export VERSION=`git log --format="%H" -n 1 | head -c 7`
         echo "VERSION="$VERSION >> $GITHUB_ENV
 
+    - name: See What the fuck directory we are dealing with
+      shell: cmd
+      working-directory: ${{runner.workspace}}
+      run: tree
+
     - name: Change Build File Name
       shell: bash
       working-directory: ${{runner.workspace}}/build
