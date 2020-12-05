@@ -224,7 +224,8 @@ namespace lc2kicad
       *ret += indent
             + "(pad 0 thru_hole circle (at " + to_string(target.holeCoordinates.X)
             + ' ' + to_string(target.holeCoordinates.Y) + ") (size " + to_string(target.viaDiameter)
-            + ' '+ to_string(target.viaDiameter) + ") (drill " + to_string(target.holeDiameter) + ") (layers *.Cu))";
+            + ' '+ to_string(target.viaDiameter) + ") (drill " + to_string(target.holeDiameter) + ") (layers *.Cu)"
+            + (workingDocument->module ? ")" : " (net " + to_string(target.net.first) + " \"" + target.net.second + "\"))");
     }
     return !++ret;
   }
