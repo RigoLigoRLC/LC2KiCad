@@ -386,7 +386,7 @@ namespace lc2kicad
           break;
         }
         case 'V': // Via
-          containedElements.push_back(parsePCBViaString(i)); // FIXME: in modules should be pads. Vias aren't allowed.
+          containedElements.push_back(parsePCBViaString(i));
           break;
         case 'H': // Hole
           containedElements.push_back(parsePCBHoleString(i));

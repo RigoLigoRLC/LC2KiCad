@@ -206,16 +206,26 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
-    *ret += indent;
-    *ret += "(via (at " + to_string(target.holeCoordinates.X) + ' ' + to_string(target.holeCoordinates.Y) + ") (size "
-         + to_string(target.viaDiameter)
-         + ") (drill " + to_string(target.holeDiameter) + ") (layers ";
-    
-    // LCEDA currently doesn't support buried or blind vias. If this function is implemented later, we'll have to update
-    // the layer section.
-    *ret += "F.Cu B.Cu";
+    if(!isProcessingModules())
+    { // Ordinary Vias on PCBs
+      *ret += indent;
+      *ret += "(via (at " + to_string(target.holeCoordinates.X) + ' ' + to_string(target.holeCoordinates.Y) + ") (size "
+              + to_string(target.viaDiameter)
+              + ") (drill " + to_string(target.holeDiameter) + ") (layers ";
 
-    *ret += ") (net " + to_string(target.net.first) + "))";
+      // LCEDA currently doesn't support buried or blind vias. If this function is implemented later, we'll have to update
+      // the layer section.
+      *ret += "F.Cu B.Cu";
+
+      *ret += ") (net " + to_string(target.net.first) + "))";
+    }
+    else
+    { // Vias got converted to pads inside footprints
+      *ret += indent
+            + "(pad 0 thru_hole circle (at " + to_string(target.holeCoordinates.X)
+            + ' ' + to_string(target.holeCoordinates.Y) + ") (size " + to_string(target.viaDiameter)
+            + ' '+ to_string(target.viaDiameter) + ") (drill " + to_string(target.holeDiameter) + ") (layers *.Cu))";
+    }
     return !++ret;
   }
 
