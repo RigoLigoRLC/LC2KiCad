@@ -44,9 +44,12 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         echo "VERSION="`git log --format="%H" -n 1 | head -c 7` >> $GITHUB_ENV
+        pwd
+        cd $GITHUB_WORKSPACE/build/Release
+        mv lc2kicad.exe lc2kicad-msvc2019-x64-`git log --format="%H" -n 1 | head -c 7`.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: lc2kicad-msvc2019-x64-${{ env.VERSION }}.exe
-        path: ${{runner.workspace}}/build/Release/lc2kicad.exe
+        name: lc2kicad-msvc2019-x64-${{env.VERSION}}.exe
+        path: ${{runner.workspace}}/build/Release/lc2kicad-msvc2019-x64-${{env.VERSION}}.exe
