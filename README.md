@@ -12,6 +12,8 @@ LC2KiCad is a software that is designed to be able to convert documents of EasyE
 
 **LC2KiCad is currently in development, and many features weren't yet available.***
 
+LC2KiCad was initially started as a project that practices my C++ knowledge learned from *C++ Primer Plus*, so I managed to use as many features of the language as possible. Don't blame me for seeing tons of polymorphic classes that were not necessary!
+
 ---
 
 ## How to compile the program
