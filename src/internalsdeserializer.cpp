@@ -221,6 +221,7 @@ namespace lc2kicad
     }
     else
     { // Vias got converted to pads inside footprints
+      VERBOSE_INFO(target.id + ": this via is in a footprint and is output as a pad.");
       *ret += indent
             + "(pad 0 thru_hole circle (at " + to_string(target.holeCoordinates.X)
             + ' ' + to_string(target.holeCoordinates.Y) + ") (size " + to_string(target.viaDiameter)
