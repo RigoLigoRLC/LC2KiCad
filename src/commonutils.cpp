@@ -84,7 +84,7 @@ namespace lc2kicad
     return tmp.str();
   }
 
-  std::vector<std::string> splitByString (std::string& s, std::string &&delimiter)
+  std::vector<std::string> splitByString (const std::string& s, std::string &&delimiter)
   {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     std::string token;

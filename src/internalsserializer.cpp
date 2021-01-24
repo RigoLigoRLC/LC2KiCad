@@ -218,6 +218,8 @@ namespace lc2kicad
       shapesList.push_back(shape[i].GetString());
 
     parsePCBLibComponent(shapesList, workingDocument->containedElements, false);
+
+
   }
 
   void LCJSONSerializer::parsePCBLibDocument()
@@ -343,6 +345,11 @@ namespace lc2kicad
               break;
             case 'R': // Protractor
               break;
+            case 'L': // PlanarZone (negative)
+              containedElements.push_back(parsePCBPlanarZoneString(i));
+              break;
+            default:
+              Error("Invalid element string <<<" + i + ">>>.");
           }
           break;
         case 'T':
@@ -352,12 +359,16 @@ namespace lc2kicad
               containedElements.push_back(parsePCBTextString(i));
               break;
             case 'R': // Track
+            {
               stringlist tmp = splitString(i, '~');
               if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 2))]))
                 containedElements.push_back(parsePCBCopperTrackString(i));
               else
                 containedElements.push_back(parsePCBGraphicalTrackString(i));
               break;
+            }
+            default:
+              Error("Invalid element string <<<" + i + ">>>.");
           }
           break;
         case 'C':
@@ -372,6 +383,8 @@ namespace lc2kicad
               else
                 containedElements.push_back(parsePCBGraphicalCircleString(i));
               break;
+            default:
+              Error("Invalid element string <<<" + i + ">>>.");
           }
           break;
         case 'R': // Rect
@@ -393,32 +406,42 @@ namespace lc2kicad
           break;
         case 'D': // Dimension
           break;
-        case 'S': // Solidregion
+        case 'S':
         {
-          if(!module)
+          switch(i[1])
           {
-            auto type = loadNthSeparated(i, '~', 4);
-            if(type == "solid")
-              if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
-                containedElements.push_back(parsePCBCopperSolidRegionString(i));
+            case 'V': // SVGNODE
+              Error("An SVGNODE object has been discarded.");
+              break;
+            case 'O': // Solidregion
+              if(!module)
+              {
+                auto type = loadNthSeparated(i, '~', 4);
+                if(type == "solid")
+                  if(judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
+                    containedElements.push_back(parsePCBCopperSolidRegionString(i));
+                  else
+                    containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
+                else if(type == "npth")
+                  containedElements.push_back(parsePCBNpthRegionString(i));
+                else if(type == "cutout")
+                  containedElements.push_back(parsePCBKeepoutRegionString(i));
+              }
               else
-                containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
-            else if(type == "npth")
-              containedElements.push_back(parsePCBNpthRegionString(i));
-            else if(type == "cutout")
-              containedElements.push_back(parsePCBKeepoutRegionString(i));
+              {
+                Error(loadNthSeparated(i, '~', 5) +
+                      ": A fill region was found inside a footprint, which is not allowed in KiCad. "
+                      "This region is discarded!");
+                // Can we move the region into main board? Probably not, cause we can't.
+                // That's how LC2KiCad was constructed. You can't put an element into board,
+                // because we can only see the containedElements of the footprint in this function.
+              }
+              break;
+            default:
+              Error("Invalid element string <<<" + i + ">>>.");
           }
-          else
-          {
-            Error(loadNthSeparated(i, '~', 5) +
-                  ": A fill region was found inside a footprint, which is not allowed in KiCad. "
-                  "This region is discarded!");
-            // Can we move the region into main board? Probably not, cause we can't.
-            // That's how LC2KiCad was constructed. You can't put an element into board,
-            // because we can only see the containedElements of the footprint in this function.
-          }
-        }
           break;
+        }
         case 'L': // Footprint
           containedElements.push_back(parsePCBModuleString(i));
           break;
@@ -825,6 +848,41 @@ namespace lc2kicad
       result->fillAreaPolygonPoints.emplace_back(
                   (i->getConstStartPoint().nativeCoord() - workingDocument->origin) * tenmils_to_mm_coefficient);
     delete path;
+
+    return !++result;
+  }
+
+  PCB_FloodFill *LCJSONSerializer::parsePCBPlanarZoneString(const string &LCJSONString)
+  {
+    RAIIC<PCB_FloodFill> result;
+    stringlist parts = splitByString(LCJSONString, "#@$");
+
+    if(parts.size() != 2) // TODO: Shouldv'e created an ASSERT_RETURN_NULLPTR macro...
+      Error("Invalid PLANARZONE <<<" + LCJSONString + ">>>.");
+
+    stringlist paramList = splitString(parts[0], '~'),
+               pathList = splitString(parts[1], '~');
+
+    result->id = paramList[4]; // We use the GGE ID of zone instead of the path.
+
+    Info(result->id + ": Planar zone has been converted to a flood fill zone. "
+                        "You'll need to delete the tracks used to separate the zones.");
+
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
+    static_cast<PCBDocument*>(workingDocument)->netManager.setNet(paramList[2], result->net);
+
+    pathList[1].pop_back(); // Remove trailing Z
+    pathList[1][0] = '0'; // Remove leading M
+    stringlist pointsList = splitString(pathList[1], ' '); // Split point data
+
+    for(auto &i : pointsList)
+    {
+      stringlist pointCoord = splitString(i, ',');
+      result->fillAreaPolygonPoints.emplace_back(
+            (coordinates(stoi(pointCoord[0]), stoi(pointCoord[1])) - workingDocument->origin)
+            * tenmils_to_mm_coefficient
+          );
+    }
 
     return !++result;
   }

@@ -61,6 +61,7 @@
         PCB_GraphicalSolidRegion* parsePCBGraphicalSolidRegionString(const std::string&);
         PCB_GraphicalTrack* parsePCBNpthRegionString(const std::string&);
         PCB_FloodFill* parsePCBCopperSolidRegionString(const std::string&);
+        PCB_FloodFill* parsePCBPlanarZoneString(const std::string&);
         PCB_KeepoutRegion* parsePCBKeepoutRegionString(const std::string&);
         PCB_CopperCircle* parsePCBCopperCircleString(const std::string&);
         PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&);

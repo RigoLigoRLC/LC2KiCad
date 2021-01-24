@@ -173,7 +173,7 @@
     inline double toDegrees(double radian) { return (radian / PI) * 180.0; }
     bool fuzzyCompare(const double, const double);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
-    std::vector<std::string> splitByString(std::string&, std::string&&);
+    std::vector<std::string> splitByString(const std::string&, std::string&&);
 
     void Error(std::string s);
     void Warn(std::string s);

@@ -147,7 +147,11 @@ namespace lc2kicad
     // Check ENL in advance
     if(ret.exportNestedLibs)
       ret.parserArguments["ENL"] = 1;
+
     // Check if is using pipe
+    if(ret.filenames.size() == 1)
+      if(ret.filenames[0] == "-")
+        ret.usePipe = true;
 
     return ret;
   }
