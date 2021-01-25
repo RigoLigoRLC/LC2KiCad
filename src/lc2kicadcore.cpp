@@ -232,6 +232,7 @@ namespace lc2kicad
 
     // Deserializer output are pointers to dynamic memory. They must be freed manually.
 
+    // Headers
     tempResult = internalDeserializer->outputFileHeader();
     *outputStream << *tempResult << endl;
     delete tempResult;

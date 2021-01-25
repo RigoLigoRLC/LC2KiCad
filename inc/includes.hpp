@@ -179,8 +179,13 @@
     void Warn(std::string s);
     void Info(std::string s);
     void InfoVerbose(std::function<std::string()> sf);
-
-    #define VERBOSE_INFO(X) InfoVerbose([&]() -> std::string { return X; })
   }
+
+  // Utility macros
+
+#define VERBOSE_INFO(X) InfoVerbose([&]() -> std::string { return X; })
+
+#define ASSERT_RETURN_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return;}
+#define ASSERT_RETNULLPTR_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return nullptr;}
 
 #endif

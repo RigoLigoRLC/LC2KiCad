@@ -39,6 +39,8 @@
 
         virtual std::string* outputFileHeader();
         virtual std::string* outputFileEnding();
+
+        std::string* outputPCBNetclassRules(const vector<PCBNetClass>&);
   
         std::string* outputPCBModule(const PCB_Module&);
         std::string* outputPCBPad(const PCB_Pad&) const;

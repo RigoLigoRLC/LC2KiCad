@@ -346,7 +346,7 @@ namespace lc2kicad
             case 'R': // Protractor
               break;
             case 'L': // PlanarZone (negative)
-              containedElements.push_back(parsePCBPlanarZoneString(i));
+              containedElements.push_back(parsePCBPlaneZoneString(i));
               break;
             default:
               Error("Invalid element string <<<" + i + ">>>.");
@@ -468,6 +468,52 @@ namespace lc2kicad
     assertThrow(parseTarget.HasMember("shape"), "\"shape\" not found.");
     assertThrow(parseTarget["shape"].IsArray(), "Invalid \"shape\" type: not array.");
     shapesArray = parseTarget["shape"].GetArray();
+  }
+
+  void LCJSONSerializer::parsePCBDRCRules(rapidjson::Value &drcRules)
+  {
+    ASSERT_RETURN_MSG(drcRules.IsObject(), "Invalid DRC entry.");
+
+    auto drcRulesObject = drcRules.GetObject();
+    vector<PCBNetClass> netClassStorage;
+    for(auto &i : drcRulesObject)
+    {
+      if(i.value.GetType() != rapidjson::kObjectType) continue;
+      auto drcNetclass = i.value.GetObject();
+      PCBNetClass netClass;
+      for(auto &j : drcNetclass)
+      {
+        if(j.name == "nets")
+        {
+          ASSERT_RETURN_MSG(j.value.IsArray(), "Invalid DRC nets entry.");
+          auto drcNets = j.value.GetArray();
+          for(auto &k : drcNets)
+          {
+            ASSERT_RETURN_MSG(k.IsString(), "Invalid DRC netclass member found.");
+            netClass.netClassMembers.emplace_back(k.GetString());
+          }
+        }
+        else
+        {
+          ASSERT_RETURN_MSG(j.value.IsDouble(), string("Invalid DRC rule entry ") + j.name.GetString());
+          if(j.name == "trackWidth")
+            netClass.rules["trace_width"] = j.value.GetDouble() * tenmils_to_mm_coefficient;
+          else if(j.name == "clearance")
+            netClass.rules["clearance"] = j.value.GetDouble() * tenmils_to_mm_coefficient;
+          else if(j.name == "viaHoleDiameter")
+            netClass.rules["via_dia"] = j.value.GetDouble() * tenmils_to_mm_coefficient;
+          else if(j.name == "viaHoleD")
+            netClass.rules["via_drill"] = j.value.GetDouble() * tenmils_to_mm_coefficient;
+          else
+            Warn(string("Unrecognized DRC rule entry ") + j.name.GetString());
+        }
+        ASSERT_RETURN_MSG(i.name.IsString(), "Invalid DRC netclass name found.");
+        netClass.name = i.name.GetString();
+        netClassStorage.emplace_back(netClass);
+      }
+      // No asserts has been triggered. Transfer to PCB Document.
+      static_cast<PCBDocument*>(workingDocument)->netClasses = netClassStorage;
+    }
   }
 
   /**
@@ -852,20 +898,19 @@ namespace lc2kicad
     return !++result;
   }
 
-  PCB_FloodFill *LCJSONSerializer::parsePCBPlanarZoneString(const string &LCJSONString)
+  PCB_FloodFill *LCJSONSerializer::parsePCBPlaneZoneString(const string &LCJSONString)
   {
     RAIIC<PCB_FloodFill> result;
     stringlist parts = splitByString(LCJSONString, "#@$");
 
-    if(parts.size() != 2) // TODO: Shouldv'e created an ASSERT_RETURN_NULLPTR macro...
-      Error("Invalid PLANARZONE <<<" + LCJSONString + ">>>.");
+    ASSERT_RETNULLPTR_MSG(parts.size() == 2, "Invalid PLANEZONE <<<" + LCJSONString + ">>>.");
 
     stringlist paramList = splitString(parts[0], '~'),
                pathList = splitString(parts[1], '~');
 
     result->id = paramList[4]; // We use the GGE ID of zone instead of the path.
 
-    Info(result->id + ": Planar zone has been converted to a flood fill zone. "
+    Info(result->id + ": Plane zone has been converted to a flood fill zone. "
                         "You'll need to delete the tracks used to separate the zones.");
 
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];

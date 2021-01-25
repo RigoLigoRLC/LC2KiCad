@@ -56,6 +56,10 @@ namespace lc2kicad
     string timestamp = decToHex(time(nullptr));
     str_str_map &docInfo = workingDocument->docInfo;
     docInfo["timestamp"] = timestamp;
+
+    // File "header" is everything comes before the actual components.
+    // It is document type dependent.
+
     switch(workingDocument->docType)
     {
       case documentTypes::schematic_lib:
@@ -72,9 +76,16 @@ namespace lc2kicad
                 "DRAW\n";
         break;
       case documentTypes::pcb:
+      {
         *ret += "(kicad_pcb (version 20171130) (host pcbnew \"(5.1.4-0-10_14)\")\n";
         *ret += static_cast<PCBDocument*>(workingDocument)->netManager.outputPCBNetInfo();
+
+        auto netclassStr = outputPCBNetclassRules(static_cast<PCBDocument*>(workingDocument)->netClasses);
+        *ret += *netclassStr;
+        delete netclassStr;
+
         break;
+      }
       case documentTypes::pcb_lib:
         *ret += "(module \"" + docInfo["documentname"] + "\" (tedit " + timestamp + ")\n"
               + "  (fp_text reference REF*** (at 0 10) (layer F.SilkS)"
@@ -108,6 +119,26 @@ namespace lc2kicad
         break;
     }
     indent = "";
+    return !++ret;
+  }
+
+  std::string *KiCad_5_Deserializer::outputPCBNetclassRules(const vector<PCBNetClass>& target)
+  {
+    RAIIC<string> ret;
+
+    for(auto &i : target)
+    {
+      *ret += "(net_class \"" + i.name + "\" \"Default net class.\"\n";
+      for(auto &j : i.rules)
+        *ret += "  (" + j.first + " " + to_string(j.second) + ")\n";
+
+      if(i.netClassMembers.size() > 0)
+        for(auto &j : i.netClassMembers)
+          *ret += "  (add_net \"" + j + "\")\n";
+
+      *ret += ")\n\n";
+    }
+
     return !++ret;
   }
 

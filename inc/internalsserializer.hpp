@@ -46,6 +46,8 @@
         virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
         virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements, bool module);
 
+        virtual void parsePCBDRCRules(rapidjson::Value &drcRules);
+
         void parseCommonDoucmentStructure(rapidjson::Document &parseTarget,
                                           std::vector<std::string> &canvasPropertyList,
                                           rapidjson::Value &shapesArray,
@@ -61,7 +63,7 @@
         PCB_GraphicalSolidRegion* parsePCBGraphicalSolidRegionString(const std::string&);
         PCB_GraphicalTrack* parsePCBNpthRegionString(const std::string&);
         PCB_FloodFill* parsePCBCopperSolidRegionString(const std::string&);
-        PCB_FloodFill* parsePCBPlanarZoneString(const std::string&);
+        PCB_FloodFill* parsePCBPlaneZoneString(const std::string&);
         PCB_KeepoutRegion* parsePCBKeepoutRegionString(const std::string&);
         PCB_CopperCircle* parsePCBCopperCircleString(const std::string&);
         PCB_GraphicalCircle* parsePCBGraphicalCircleString(const std::string&);

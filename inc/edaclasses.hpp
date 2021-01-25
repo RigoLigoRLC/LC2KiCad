@@ -86,6 +86,15 @@
         unsigned int getKiCadPriority(unsigned int); //< Use this when obtaining KiCad priority on output
     };
 
+    struct PCBNetClass
+    {
+      string name;
+      stringlist netClassMembers;
+      str_dbl_map rules;
+      // We do not hard code what rules we'll have in the structure;
+      // we leave it for the parser implementation to determine.
+    };
+
     struct EDAElement;
     struct PCBElement;
     //Referencing each other, must declare one first.
@@ -96,6 +105,7 @@
       bool module; // When is true, means only convert the first element contained and output as a module.
       shared_ptr<rapidjson::Document> jsonParseResult; // For convenience. This is only one pointer and isn't gonna take much RAM
       str_str_map docInfo; // Due to compatibility concerns, use a map to store temporary info for use
+
       documentTypes docType;
       coordinates origin {0, 0};
       double gridSize;
@@ -119,6 +129,7 @@
       void addElement(EDAElement*) override;
       PCBNetManager netManager;
       PCBFloodFillPriorityManager fillPriorityManager;
+      vector<PCBNetClass> netClasses;
       ~PCBDocument();
     };
     
