@@ -161,6 +161,7 @@ namespace lc2kicad
     processingModule = true;
     for(auto &i : target.containedElements)
     {
+      if(!i) continue;
       elementOutput = i->deserializeSelf(*this);
       if(elementOutput)
       {

@@ -33,9 +33,10 @@
         LC2KiCadCore(str_dbl_map&);
         ~LC2KiCadCore();
 
-        vector<EDADocument*> autoParseLCFile(string& filePath);
-        void parseAsEasyEDA6File(EDADocument&, vector<EDADocument*>&);
-        void processPerDocumentType(EDADocument&);
+        list<EDADocument *> autoParseLCFile(string& filePath);
+        void parseAsEasyEDA6File(EDADocument&, list<EDADocument *> &ret);
+        void processEasyEDA6DocumentObject(rapidjson::Value &, EDADocument *aBasicDocument,
+                                           list<EDADocument *> &ret);
 
         void deserializeFile(EDADocument*, std::string*);
 

@@ -51,9 +51,9 @@ namespace lc2kicad
   void LCJSONSerializer::initWorkingDocument(EDADocument *_workingDocument) { workingDocument = _workingDocument; }
   void LCJSONSerializer::deinitWorkingDocument() { workingDocument = nullptr; }
 
-  void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &_compatibSw)
+  void LCJSONSerializer::setCompatibilitySwitches(const str_dbl_map &aSwitches)
   {
-    internalCompatibilitySwitches = _compatibSw;
+    internalCompatibilitySwitches = aSwitches;
 
     // Set schematics coefficient
     switch(static_cast<int>(internalCompatibilitySwitches["SDV"]))
@@ -65,6 +65,9 @@ namespace lc2kicad
       //  schematic_unit_coefficient = 25.4; break;
       // temporarily disabled, not implemented.
     }
+
+    if(internalCompatibilitySwitches.count("ENL"))
+     exportNestedLibs = true;
   }
 
   LCJSONSerializer::~LCJSONSerializer() { };
@@ -267,12 +270,19 @@ namespace lc2kicad
     parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements, true);
   }
 
-  vector<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
+  list<EDADocument*> LCJSONSerializer::parseSchNestedLibs()
+  {
+    assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as schematics with its module property set to \"true\".");
+
+
+  }
+
+  list<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
   {
     assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as PCB with its module property set to \"true\".");
     workingDocument->docType = pcb;
     map<string, RAIIC<EDADocument>> prepareList;
-    vector<EDADocument*> ret;
+    list<EDADocument*> ret;
     stringlist canvasPropertyList;
     Value shape, head;
 
@@ -318,7 +328,7 @@ namespace lc2kicad
       ret.push_back(!++(i.second));
       EDADocument *doc = ret.back();
       map<string, string> &cpara = static_cast<PCB_Module*>(doc->containedElements.back())->cparaContent;
-      doc->docInfo["documentname"] = cpara["package"];
+      doc->docInfo["documentname"] = static_cast<PCB_Module*>(doc->containedElements.back())->name;
       doc->docInfo["contributor"] = cpara["contributor"];
       doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
       doc->docType = pcb_lib;
@@ -1049,18 +1059,8 @@ namespace lc2kicad
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[13];
-    result->height = stod(paramList[9]) * tenmils_to_mm_coefficient;
-    result->orientation = stod(paramList[5]);
-    result->midLeftPos = (coordinates(stod(paramList[2]) - (result->height - 2) * cos(toRadians(result->orientation + 90)),
-                    stod(paramList[3]) - (result->height + 2) * sin(toRadians(result->orientation + 90)))
-              - workingDocument->origin) * tenmils_to_mm_coefficient;
 
-    // Crude fix for shift down issue
-    //result->midLeftPos.Y -= 0.5;
-
-    result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->mirrored = tolStoi(paramList[6]);
-    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[7])];
+    // Know what type this text is.
     result->text = paramList[10];
     if(paramList[1].length() == 1)
       switch(paramList[1][0])
@@ -1074,6 +1074,24 @@ namespace lc2kicad
       result->type = PCBTextTypes::PackageName;
     else
       result->type = PCBTextTypes::StandardText;
+
+    // If we're reading a package that isn't going to end up in PCB, ignore the
+    // references, values since they'll be added by deserializer.
+    if(exportNestedLibs && result->type != PCBTextTypes::StandardText)
+      return nullptr;
+
+    result->height = stod(paramList[9]) * tenmils_to_mm_coefficient;
+    result->orientation = stod(paramList[5]);
+    result->midLeftPos = (coordinates(stod(paramList[2]) - (result->height - 2) * cos(toRadians(result->orientation + 90)),
+                    stod(paramList[3]) - (result->height + 2) * sin(toRadians(result->orientation + 90)))
+              - workingDocument->origin) * tenmils_to_mm_coefficient;
+
+    // Crude fix for shift down issue
+    //result->midLeftPos.Y -= 0.5;
+
+    result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
+    result->mirrored = tolStoi(paramList[6]);
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[7])];
 
     if(paramList[14] != "")
     {
@@ -1131,7 +1149,7 @@ namespace lc2kicad
     result->layer = result->topLayer ? KiCadLayerIndex::F_Cu : KiCadLayerIndex::B_Cu;
     result->updateTime = (time_t)tolStoi(moduleHeader[9]);
 
-
+    processingModule = true;
 
     if((workingDocument->docType == documentTypes::pcb) || (parent != nullptr))
     {
@@ -1143,6 +1161,7 @@ namespace lc2kicad
     else
       parsePCBLibComponent(shapesList, result->containedElements, true);
 
+    processingModule = false;
 
     return !++result;
   }

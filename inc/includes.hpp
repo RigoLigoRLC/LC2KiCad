@@ -62,6 +62,11 @@
    *   return !++obj;
    *
    * Thanks to C++ operator priority, you will protect it first, then return the pointer.
+   *
+   * If you'd like to replace the resource managed by RAIIC, invoke RAIIC::replace.
+   * The previously protected resource pointer will be returned in case you need it.
+   * This really should only happen when you initialized RAIIC with a nullptr so you can determine
+   * the type of data to be put into it after on.
    */
     template <typename T> class RAIIC
     {
@@ -72,6 +77,8 @@
           { resource = ptr; }
         ~RAIIC()
           { if(!--refs)if(!isProtected) delete resource; }
+        T* replace(T* a)
+          { T* r = resource; resource = a; return r; }
         RAIIC& operator++()
           { isProtected = true; return *this; }
         T& operator*()
@@ -185,7 +192,9 @@
 
 #define VERBOSE_INFO(X) InfoVerbose([&]() -> std::string { return X; })
 
+#define ASSERT_RETURN(X) if(!(X))return;
 #define ASSERT_RETURN_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return;}
+#define ASSERT_RETNULLPTR(X) if(!(X))return;
 #define ASSERT_RETNULLPTR_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return nullptr;}
 
 #endif

@@ -84,7 +84,7 @@ int main(int argc, const char** argv)
   }
 
   LC2KiCadCore core = LC2KiCadCore(argParseResult.parserArguments); //Initialize Core Program
-  vector<EDADocument*> documentCacheList;
+  list<EDADocument*> documentCacheList;
 
   string path = "";
 

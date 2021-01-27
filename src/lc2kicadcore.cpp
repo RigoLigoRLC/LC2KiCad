@@ -75,28 +75,28 @@ namespace lc2kicad
     delete internalDeserializer;
   }
 
-  vector<EDADocument*> LC2KiCadCore::autoParseLCFile(string& filePath)
+  list<EDADocument*> LC2KiCadCore::autoParseLCFile(string& filePath)
   {
     // First, the program has to identify what the file type EasyEDA document is.
     // Determine if it's JSON file. So use RapidJSON read the file first.
 
     // Create an internal class object.
-    vector<EDADocument*> ret;
-    EDADocument targetInternalDoc(true);
-    targetInternalDoc.pathToFile = filePath; //Just for storage; not being used now.
-    targetInternalDoc.parent = this; // Set parent. Currently used for deserializer referencing.
+    list<EDADocument*> ret;
+    EDADocument tempTargetDoc(true); // This is used because we don't know what type we're dealing with at first.
+                                     // Will be constructing a new one in the switch case.
+    tempTargetDoc.pathToFile = filePath; // Just for storage so the document will know who he is.
+    tempTargetDoc.parent = this; // Set parent. Currently used for deserializer referencing.
 
-    cerr << "Auto Parse Processor: Read file " << filePath << ".\n";
     char readBuffer[BUFSIZ]; // Create the buffer for RapidJSON to read the file
     std::FILE *parseTarget = std::fopen(filePath.c_str(), "r");
     assertThrow(parseTarget != 0, "File \"" + filePath + "\" couldn't be opened. Parse of this file is aborted.");
     FileReadStream fileReader(parseTarget, readBuffer, BUFSIZ);
-    targetInternalDoc.jsonParseResult->ParseStream(fileReader); // Let RapidJSON parse JSON file
+    tempTargetDoc.jsonParseResult->ParseStream(fileReader); // Let RapidJSON parse JSON file
     std::fclose(parseTarget);
 
     // Create a reference to the JSON parse result for convenience
     // (Actually also cause I don't want to change the code structure)
-    Document& parseTargetDoc = *targetInternalDoc.jsonParseResult;
+    Document& parseTargetDoc = *tempTargetDoc.jsonParseResult;
     
     // EasyEDA files are now only in JSON. If fail to detect a valid JSON file, throw an exception.
     assertThrow(!parseTargetDoc.HasParseError(),
@@ -106,47 +106,83 @@ namespace lc2kicad
                 );
 
     // If this file is a valid JSON file, continue parsing.
-    int documentType = -1;
-    string filename = base_name(string(filePath)), editorVer = "";
+    parseAsEasyEDA6File(tempTargetDoc, ret);
 
-    // Judge the document type and do tasks accordingly.
-    if(parseTargetDoc.HasMember("head"))
-    {
-      Value& head = parseTargetDoc["head"];
-      assertThrow(head.IsObject(), "Invalid \"head\" type.");
-      assertThrow(head.HasMember("docType"), "\"docType\" not found.");
-      assertThrow(head["docType"].IsString(), "Invalid \"docType\" type: not string.");
-      documentType = stoi(head["docType"].GetString());
-      if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
-        editorVer = head["editorVersion"].GetString();
-    }
-    else
-    {
-      assertThrow(parseTargetDoc.HasMember("docType"), "\"docType\" not found.");
-      assertThrow(parseTargetDoc["docType"].IsString(), "Invalid \"docType\" type: not string.");
-      documentType = stoi(parseTargetDoc["docType"].GetString());
-      if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
-        editorVer = parseTargetDoc["editorVersion"].GetString();
-    }
-    assertThrow((documentType >= 1 && documentType <= 7),
-                string("Unsupported document type ID ") + to_string(documentType) + ".");
-    cerr << "Auto Parse Processor: Document " << filePath <<  " is a " << documentTypeName[documentType] << " file";
+
+    return ret;
+  }
+
+  /*
+   * Provide an internal document object and parse it as a EasyEDA 6 document file.
+   * Note that the jsonParseResult member should be a valid one. Or else, the program will read and parse JSON
+   * from the path provided by pathToFile member.
+   *
+   * This function will push the parsed document into the ret vector reference that the user provides.
+   * Therefore a valid reference to a corresponding vector must be provided.
+   */
+  void LC2KiCadCore::parseAsEasyEDA6File(EDADocument &aTargetDoc, list<EDADocument *> &ret)
+  {
+    /*
+    cerr << "Auto Parse Processor: Document " << aTargetDoc.pathToFile <<  " is a " << documentTypeName[documentType]
+         << " file";
     if(editorVer != "")
       cerr << ", exported by EasyEDA Editor " << editorVer << ".\n";
     else
       cerr << ". EasyEDA Editor version unknown.\n";
+      */
+    Info("[Auto Parser] Read input document \"" + aTargetDoc.pathToFile + "\" as EasyEDA 6 document...");
 
-    targetInternalDoc.docInfo["filename"] = filename;
-    targetInternalDoc.docInfo["documentname"] = filename;
-    targetInternalDoc.docInfo["editorversion"] = editorVer;
-    
+    string filename = base_name(string(aTargetDoc.pathToFile));
+
+    aTargetDoc.docInfo["filename"] = filename;
+    aTargetDoc.docInfo["documentname"] = filename;
+    //aTargetDoc.docInfo["editorversion"] = editorVer;
+
+    processEasyEDA6DocumentObject(*aTargetDoc.jsonParseResult, &aTargetDoc, ret);
+  }
+
+  // We process document objects here.
+  void LC2KiCadCore::processEasyEDA6DocumentObject(rapidjson::Value &aDocObject,
+                                                   EDADocument* aBasicDocument,
+                                                   list<EDADocument *> &ret)
+  {
+    ASSERT_RETURN_MSG(aDocObject.IsObject(), "Invalid document object");
+
+
+    int documentType = -1;
+    // Judge the document type and do tasks accordingly.
+    if(aDocObject.HasMember("head"))
+    {
+      Value& head = aDocObject["head"];
+      assertThrow(head.IsObject(), "Invalid \"head\" type.");
+      assertThrow(head.HasMember("docType"), "\"docType\" not found.");
+      assertThrow(head["docType"].IsString(), "Invalid \"docType\" type: not string.");
+      documentType = stoi(head["docType"].GetString());
+      //if(head.HasMember("editorVersion") && head["editorVersion"].IsString())
+      //  editorVer = head["editorVersion"].GetString();
+    }
+    else
+    {
+      assertThrow(aDocObject.HasMember("docType"), "\"docType\" not found.");
+      assertThrow(aDocObject["docType"].IsString(), "Invalid \"docType\" type: not string.");
+      documentType = stoi(aDocObject["docType"].GetString());
+      //if(parseTargetDoc.HasMember("editorVersion") && parseTargetDoc["editorVersion"].IsString())
+      //  editorVer = parseTargetDoc["editorVersion"].GetString();
+    }
+    assertThrow((documentType >= 1 && documentType <= 7),
+                string("Unsupported document type ID ") + to_string(documentType) + ".");
+
+
+
+
     // Now decide what are we going to parse, whether schematics or PCB, anything else.
     //PCBDocument* targetDoc = new PCBDocument(targetInternalDoc); // Deprecated
-    RAIIC<PCBDocument> targetDocument(new PCBDocument(targetInternalDoc));
+    RAIIC<EDADocument> targetDocument(nullptr);
     switch(documentType)
     {
       case 2:
       {
+        targetDocument.replace(new SchematicDocument(*aBasicDocument)); // FIXME: Do not copy JSON result around?
         targetDocument->module = true;
         targetDocument->containedElements.push_back(new Schematic_Module);
 
@@ -159,10 +195,11 @@ namespace lc2kicad
       }
       case 3:
       {
+        targetDocument.replace(new PCBDocument(*aBasicDocument));
         if(coreParserArguments.count("ENL"))
         {
           internalSerializer->initWorkingDocument(!targetDocument);
-          ret = internalSerializer->parsePCBNestedLibs();
+          ret.splice(ret.end(), internalSerializer->parsePCBNestedLibs());
           internalSerializer->deinitWorkingDocument();
           break;
         }
@@ -178,6 +215,7 @@ namespace lc2kicad
       }
       case 4:
       {
+        targetDocument.replace(new PCBDocument(*aBasicDocument));
         targetDocument->module = true;
         targetDocument->containedElements.push_back(new PCB_Module);
 
@@ -188,25 +226,29 @@ namespace lc2kicad
         ret.push_back(!++targetDocument); // Remember to manage dynamic memory and check if it's valid!
         break;
       }
+      case 5: // A collection of schematics, known as "project"
+      {
+        if(coreParserArguments.count("ENL")) // TODO: when we have proper schematics convert, this judgement is no longer needed
+        {
+          // Iterate through each page and feed them into the parser
+          assertThrow(aDocObject.HasMember("schematics"), "\"schematics\" not found.");
+          assertThrow(aDocObject["schematics"].IsArray(), "Invalid \"schematics\" type: not array.");
+          for(auto &i : aDocObject["schematics"].GetArray())
+          {
+            if(!i.IsObject()) continue;
+            processEasyEDA6DocumentObject(i, nullptr, ret);
+          }
+        }
+        else
+        {
+          Error("Schematics cannot be converted now. Only supports library extraction.");
+        }
+        break;
+      }
       default:
         Error(string("The document type \"") + documentTypeName[documentType] + "\" is not supported yet.");
-        ret.push_back(nullptr);
+        //ret.push_back(nullptr); // Not really needed to do this?
     }
-    cerr << "Auto Parse Processor: processing for " << filePath << " is done.\n";
-    return ret;
-  }
-
-  /*
-   * Provide an internal document object and parse it as a EasyEDA 6 document file.
-   * Note that the jsonParseResult member should be a valid one. Or else, the program will read and parse JSON
-   * from the path provided by pathToFile member.
-   *
-   * This function will push the parsed document into the ret vector reference that the user provides.
-   * Therefore a valid reference to a corresponding vector must be provided.
-   */
-  void LC2KiCadCore::parseAsEasyEDA6File(EDADocument &targetInternalDoc, vector<EDADocument *> &ret)
-  {
-
   }
 
   void LC2KiCadCore::deserializeFile(EDADocument* target, string* path)
@@ -218,12 +260,12 @@ namespace lc2kicad
 
     sanitizeFileName(outputFileName);
 
-    cerr  << "Deserializer: Create output file " << outputFileName << ".\n";
+    Info("[Deserializer] Write file \"" + outputFileName + "\"...");
 
     outputfile.open(outputFileName, std::ios::out);
 
     if(!outputfile)
-      Error("Cannot create file for this document. File content would be written into"
+      Error("[Deserializer] Cannot create file for this document. File content would be written into"
             "the standard output stream.");
     else
       outputStream = &outputfile;
@@ -243,7 +285,7 @@ namespace lc2kicad
       try { tempResult = i->deserializeSelf(*internalDeserializer); }
       catch(std::runtime_error &e)
       {
-        Error(string("Unexpected error converting a component: ") + e.what());
+        Error(string("[Deserializer] Unexpected error outputting a component: ") + e.what());
       }
 
       *outputStream << *tempResult << endl;

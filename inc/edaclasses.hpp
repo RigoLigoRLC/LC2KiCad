@@ -20,6 +20,7 @@
 #pragma once
 
   #include <vector>
+  #include <list>
   #include <fstream>
   #include <string>
   #include <memory>
@@ -29,6 +30,7 @@
   #include "consts.hpp"
   #include "rapidjson.hpp"
   
+  using std::list;
   using std::vector;
   using std::fstream;
   using std::string;

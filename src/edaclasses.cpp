@@ -57,7 +57,6 @@ namespace lc2kicad
     docType = documentTypes::invalid;
     gridSize = 2.54;
   }
-
   
   EDAElement::~EDAElement()
   {
@@ -106,9 +105,9 @@ namespace lc2kicad
 
   unsigned int PCBNetManager::obtainNetCode(std::string &netName)
   {
-    for(auto it = netNameCodeMap.begin(); it != netNameCodeMap.end(); it++)
-      if(it->second == netName)
-        return it->first;
+    for(auto &it : netNameCodeMap)
+      if(it.second == netName)
+        return it.first;
     netNameCodeMap[netNameCodeMap.size()] = netName;
     return netNameCodeMap.size() - 1;
   }
