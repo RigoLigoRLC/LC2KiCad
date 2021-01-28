@@ -196,5 +196,6 @@
 #define ASSERT_RETURN_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return;}
 #define ASSERT_RETNULLPTR(X) if(!(X))return;
 #define ASSERT_RETNULLPTR_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);return nullptr;}
+#define ASSERT_CONT_MSG(X,Y) if(!(X)){lc2kicad::Error(Y);continue;}
 
 #endif

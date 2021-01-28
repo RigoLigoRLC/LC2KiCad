@@ -139,6 +139,8 @@ namespace lc2kicad
               break;
             case 'T': // Path
               break;
+            case 'i': // ImageInTheGrid
+              break;
             default: // Pin
               containedElements.push_back(parseSchPin(i));
               break;
@@ -220,7 +222,7 @@ namespace lc2kicad
     for(unsigned int i = 0; i < shape.Size(); i++)
       shapesList.push_back(shape[i].GetString());
 
-    parsePCBLibComponent(shapesList, workingDocument->containedElements, false);
+    parsePCBLibComponent(shapesList, workingDocument->containedElements);
 
 
   }
@@ -266,16 +268,70 @@ namespace lc2kicad
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
                                    headlist["Contributor"].GetString() : "" : "";
 
+    processingModule = true;
 
-    parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements, true);
+    parsePCBLibComponent(shapesList, static_cast<PCB_Module*>(workingDocument->containedElements.back())->containedElements);
+
+    processingModule = false;
   }
 
   list<EDADocument*> LCJSONSerializer::parseSchNestedLibs()
   {
     assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as schematics with its module property set to \"true\".");
+    workingDocument->docType = schematic;
+    map<string, RAIIC<EDADocument>> prepareList; // UUID<->Component pair
     list<EDADocument*> ret;
+    stringlist canvasPropertyList;
+    Value shape, head;
 
-  
+    Document &parseTarget = *workingDocument->jsonParseResult; // Create a reference for convenience.
+
+    parseCommonDoucmentStructure(parseTarget, canvasPropertyList, shape, head);
+
+    // Write canvas properties like origin and gridsize
+    workingDocument->origin.X = stod(canvasPropertyList[13]);
+    workingDocument->origin.Y = stod(canvasPropertyList[14]);
+    workingDocument->gridSize = stod(canvasPropertyList[10]);
+    coordinates origin = workingDocument->origin;
+
+    VERBOSE_INFO(string("SchSheet origin X") + to_string(origin.X) + " Y" + to_string(origin.Y) + \
+          ", grid size " + to_string(workingDocument->gridSize));
+
+    stringlist shapesList;
+    string shapeStringTmp;
+    for(unsigned int i = 0; i < shape.Size(); i++)
+    {
+      shapeStringTmp = shape[i].GetString();
+      if(shapeStringTmp.find("LIB~", 0, 4) == 0) // Get all shapes begin with "LIB~"
+        shapesList.push_back(shapeStringTmp);
+    }
+
+    for(auto &i : shapesList)
+    {
+      RAIIC<EDADocument> t;
+      t->origin = origin;
+      t->module = true;
+      RAIIC<Schematic_Module> m = parseSchModuleString(i, !t, &prepareList); // Try parse module without knowing if identical ones were processed
+      if(!m) // If there is an identical one then m is nullptr and both RAIIC managed memory blocks will be cleared out.
+      {
+        VERBOSE_INFO("SchNestedLib ID=" + m->uuid);
+        t->containedElements.push_back(!++m); // Protect the module and push it back into Document
+        prepareList[static_cast<Schematic_Module*>((!t)->containedElements.back())->uuid] = --t; // operator-- on RAIIC means one destruction will be ignored.
+      }
+    }
+
+    for(auto &i : prepareList)
+    {
+      ret.push_back(!++(i.second));
+      EDADocument *doc = ret.back();
+      map<string, string> &cpara = static_cast<Schematic_Module*>(doc->containedElements.back())->cparaContent;
+      doc->docInfo["documentname"] = static_cast<Schematic_Module*>(doc->containedElements.back())->name;
+      doc->docInfo["contributor"] = cpara["contributor"];
+      doc->docInfo["prefix"] = "UNK?"; // TODO: Proper prefix
+      doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
+      doc->docType = schematic_lib;
+    }
+
     return ret;
   }
 
@@ -283,7 +339,7 @@ namespace lc2kicad
   {
     assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as PCB with its module property set to \"true\".");
     workingDocument->docType = pcb;
-    map<string, RAIIC<EDADocument>> prepareList;
+    map<string, RAIIC<EDADocument>> prepareList; // UUID<->Component pair
     list<EDADocument*> ret;
     stringlist canvasPropertyList;
     Value shape, head;
@@ -339,7 +395,7 @@ namespace lc2kicad
     return ret;
   }
 
-  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<EDAElement*> &containedElements, bool module)
+  void LCJSONSerializer::parsePCBLibComponent(vector<string> &shapesList, vector<EDAElement*> &containedElements)
   {
     for(auto &i : shapesList)
     {
@@ -350,7 +406,7 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'A': // Pad
-              if(module)
+              if(processingModule)
                 containedElements.push_back(parsePCBPadString(i));
               else
                 containedElements.push_back(parsePCBDiscretePadString(i));
@@ -426,7 +482,7 @@ namespace lc2kicad
               Error("An SVGNODE object has been discarded.");
               break;
             case 'O': // Solidregion
-              if(!module)
+              if(!processingModule)
               {
                 auto type = loadNthSeparated(i, '~', 4);
                 if(type == "solid")
@@ -1113,8 +1169,7 @@ namespace lc2kicad
                            map<string, RAIIC<EDADocument>> *exportedList)
   {
     RAIIC<PCB_Module> result;
-    string copyJSONString = string(LCJSONString);
-    stringlist shapesList = splitByString(copyJSONString, string("#@$")),
+    stringlist shapesList = splitByString(LCJSONString, string("#@$")),
         moduleHeader = splitString(shapesList[0], '~'),
         cparaTmp = splitString(moduleHeader[3], '`');
 
@@ -1157,11 +1212,11 @@ namespace lc2kicad
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
-      parsePCBLibComponent(shapesList, result->containedElements, true);
+      parsePCBLibComponent(shapesList, result->containedElements);
       workingDocument->origin = originalOrigin;
     }
     else
-      parsePCBLibComponent(shapesList, result->containedElements, true);
+      parsePCBLibComponent(shapesList, result->containedElements);
 
     processingModule = false;
 
@@ -1363,6 +1418,63 @@ namespace lc2kicad
       Warn(result->id + ": Arc is not perfectly elliptical. This could cause problem.");
 
     result->center.Y *= -1, result->startPoint.Y *= -1, result->endPoint.Y *= -1;
+
+    return !++result;
+  }
+
+  Schematic_Module *LCJSONSerializer::parseSchModuleString(const std::string &LCJSONString, EDADocument *parent,
+                                                           map<std::string, RAIIC<EDADocument> > *exportedList)
+  {
+    RAIIC<Schematic_Module> result;
+    stringlist shapesList = splitByString(LCJSONString, string("#@$")),
+        moduleHeader = splitString(shapesList[0], '~'),
+        cparaTmp = splitString(moduleHeader[3], '`');
+
+    shapesList.erase(shapesList.begin()); // Purge the header string
+
+    result->id = moduleHeader[6];
+    result->uuid = moduleHeader[8];
+
+    for(unsigned int i = 0; i < cparaTmp.size(); i += 2)
+      result->cparaContent[cparaTmp[i]] = cparaTmp[i + 1]; // Transfer c_para content
+
+    result->name = result->cparaContent["package"]; // Set package(aka footprint) name
+
+    // Only for nested library use. If you pass an std::map here, UUID will be checked and make sure
+    // extra efforts were not wasted on an already-parsed component.
+    if(exportedList) // Only do following when we *are* actually dealing with export nested libs
+      for(auto i = exportedList->begin(); i != exportedList->end(); i++) // Iterate through all the parsed footprints
+      {
+        if(i->first == result->uuid) // If found one with exact UUID then go out
+          return nullptr;
+        else
+        if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
+        { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
+          Info("More than one footprint on this board was found called <<<" + result->name + ">>>(" +
+             result->id + "), gID will be added to the name.");
+          result->name += ("__" + result->id); // Modify the name for clarification
+        }
+      }
+
+    result->moduleCoords =
+        (coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])} - workingDocument->origin) * tenmils_to_mm_coefficient;
+    result->orientation = stod(moduleHeader[4] == "" ? "0" : moduleHeader[4]);
+    result->updateTime = (time_t)tolStoi(moduleHeader[9]);
+
+
+    processingModule = true;
+
+    if((workingDocument->docType == documentTypes::pcb) || (parent != nullptr))
+    {
+      coordinates originalOrigin = coordinates(workingDocument->origin);
+      workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
+      parseSchLibComponent(shapesList, result->containedElements);
+      workingDocument->origin = originalOrigin;
+    }
+    else;
+      parseSchLibComponent(shapesList, result->containedElements);
+
+    processingModule = false;
 
     return !++result;
   }

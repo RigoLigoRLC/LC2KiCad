@@ -45,7 +45,7 @@
         virtual list<EDADocument *> parsePCBNestedLibs();
 
         virtual void parseSchLibComponent(std::vector<std::string>&, vector<Schematic_Element*> &containedElements);
-        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements, bool module);
+        virtual void parsePCBLibComponent(std::vector<std::string>&, vector<EDAElement*> &containedElements);
 
         virtual void parsePCBDRCRules(rapidjson::Value &drcRules);
 
@@ -83,6 +83,8 @@
         Schematic_Text* parseSchText(const std::string&) const;
         Schematic_Rect* parseSchRect(const std::string&) const;
         Schematic_Arc* parseSchArc(const std::string&) const;
+        Schematic_Module* parseSchModuleString(const std::string& LCJSONString, EDADocument* parent = nullptr,
+                                         map<string, RAIIC<EDADocument>>* exportedList = nullptr);
         /*
         void parseSchImage(const std::string&) const;
         */

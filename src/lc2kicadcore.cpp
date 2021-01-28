@@ -130,7 +130,7 @@ namespace lc2kicad
     else
       cerr << ". EasyEDA Editor version unknown.\n";
       */
-    cerr << "[Auto Parser] Read input document \"" << aTargetDoc.pathToFile << "\" as EasyEDA 6 document...";
+    cerr << "[Auto Parser] Read input document \"" << aTargetDoc.pathToFile << "\" as EasyEDA 6 document...\n";
 
     string filename = base_name(string(aTargetDoc.pathToFile));
 
@@ -180,6 +180,25 @@ namespace lc2kicad
     RAIIC<EDADocument> targetDocument(nullptr);
     switch(documentType)
     {
+      case 1:
+      {
+        targetDocument.replace(new SchematicDocument(*aBasicDocument));
+        Document *realDocument = new Document;
+        realDocument->SetObject() = aDocObject;
+        targetDocument->jsonParseResult = shared_ptr<Document>(realDocument);
+        if(coreParserArguments.count("ENL"))
+        {
+          internalSerializer->initWorkingDocument(!targetDocument);
+          ret.splice(ret.end(), internalSerializer->parseSchNestedLibs());
+          internalSerializer->deinitWorkingDocument();
+          break;
+        }
+        else
+        {
+          Error("Schematics cannot be converted now. Only supports library extraction.");
+        }
+        break;
+      }
       case 2:
       {
         targetDocument.replace(new SchematicDocument(*aBasicDocument)); // FIXME: Do not copy JSON result around?
@@ -236,7 +255,9 @@ namespace lc2kicad
           for(auto &i : aDocObject["schematics"].GetArray())
           {
             if(!i.IsObject()) continue;
-            processEasyEDA6DocumentObject(i, nullptr, ret);
+            ASSERT_CONT_MSG(i.HasMember("dataStr"), "\"dataStr\" not found.");
+            ASSERT_CONT_MSG(i["dataStr"].IsObject(), "Invalid \"dataStr\" type: not object.")
+            processEasyEDA6DocumentObject(i["dataStr"], aBasicDocument, ret);
           }
         }
         else
@@ -260,7 +281,7 @@ namespace lc2kicad
 
     sanitizeFileName(outputFileName);
 
-    cerr << "[Deserializer] Write file \"" << outputFileName << "\"...";
+    cerr << "[Deserializer] Write file \"" << outputFileName << "\"...\n";
 
     outputfile.open(outputFileName, std::ios::out);
 

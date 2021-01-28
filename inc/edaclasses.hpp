@@ -351,8 +351,11 @@
     struct Schematic_Module : public Schematic_Element
     {
       vector<Schematic_Element*> containedElements;
+      coordinates moduleCoords;
       double orientation;
-      string reference, value;
+      string reference, value, uuid, name;
+      map<string, string> cparaContent;
+      time_t updateTime;
       string* deserializeSelf(KiCad_5_Deserializer&) const;
     };
     
