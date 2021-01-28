@@ -130,7 +130,7 @@ namespace lc2kicad
     else
       cerr << ". EasyEDA Editor version unknown.\n";
       */
-    Info("[Auto Parser] Read input document \"" + aTargetDoc.pathToFile + "\" as EasyEDA 6 document...");
+    cerr << "[Auto Parser] Read input document \"" << aTargetDoc.pathToFile << "\" as EasyEDA 6 document...";
 
     string filename = base_name(string(aTargetDoc.pathToFile));
 
@@ -260,7 +260,7 @@ namespace lc2kicad
 
     sanitizeFileName(outputFileName);
 
-    Info("[Deserializer] Write file \"" + outputFileName + "\"...");
+    cerr << "[Deserializer] Write file \"" << outputFileName << "\"...";
 
     outputfile.open(outputFileName, std::ios::out);
 

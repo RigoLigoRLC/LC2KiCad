@@ -182,9 +182,9 @@
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(const std::string&, std::string&&);
 
-    void Error(std::string s);
-    void Warn(std::string s);
-    void Info(std::string s);
+    void Error(std::string &s);
+    void Warn(std::string &s);
+    void Info(std::string &s);
     void InfoVerbose(std::function<std::string()> sf);
   }
 

@@ -231,7 +231,7 @@ namespace lc2kicad
     return { { cx, cy }, { rx * 2.0, ry * 2.0 }, angleStart, angleExtent };
   }
   
-  void Error(std::string s)
+  void Error(std::string &s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
@@ -245,7 +245,7 @@ namespace lc2kicad
     errorCount++;
   }
 
-  void Warn(std::string s)
+  void Warn(std::string &s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
@@ -259,7 +259,7 @@ namespace lc2kicad
     warningCount++;
   }
 
-  void Info(std::string s)
+  void Info(std::string &s)
   {
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);

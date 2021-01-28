@@ -273,8 +273,10 @@ namespace lc2kicad
   list<EDADocument*> LCJSONSerializer::parseSchNestedLibs()
   {
     assertThrow(!workingDocument->module, "Internal document type mismatch: Parse an internal document as schematics with its module property set to \"true\".");
+    list<EDADocument*> ret;
 
 
+    return ret;
   }
 
   list<EDADocument*> LCJSONSerializer::parsePCBNestedLibs()
