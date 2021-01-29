@@ -1376,6 +1376,7 @@ namespace lc2kicad
     RAIIC<Schematic_Rect> result;
     stringlist paramList = splitString(LCJSONString, '~');
 
+    result->id = paramList[11];
     result->position = { (stoi(paramList[1]) - static_cast<int>(workingDocument->origin.X)) * schematic_unit_coefficient,
                (stoi(paramList[2]) - static_cast<int>(workingDocument->origin.Y)) * schematic_unit_coefficient * -1 };
     result->size = { stoi(paramList[5]) * schematic_unit_coefficient, stoi(paramList[6]) * schematic_unit_coefficient };
@@ -1391,6 +1392,7 @@ namespace lc2kicad
     RAIIC<Schematic_Arc> result;
     stringlist paramList = splitString(LCJSONString, '~'), arcCmdParams, movetoCmdParams;
 
+    result->id = paramList[7];
     result->isFilled = paramList[6] == "none" ? false : true;
     result->width = int (stoi(paramList[4]) * schematic_unit_coefficient);
 
