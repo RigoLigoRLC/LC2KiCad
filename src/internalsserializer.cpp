@@ -1443,13 +1443,13 @@ namespace lc2kicad
     // Only for nested library use. If you pass an std::map here, UUID will be checked and make sure
     // extra efforts were not wasted on an already-parsed component.
     if(exportedList) // Only do following when we *are* actually dealing with export nested libs
-      for(auto i = exportedList->begin(); i != exportedList->end(); i++) // Iterate through all the parsed footprints
+      for(auto i = exportedList->begin(); i != exportedList->end(); i++) // Iterate through all the parsed symbols
       {
         if(i->first == result->uuid) // If found one with exact UUID then go out
           return nullptr;
         else
-        if(static_cast<PCB_Module*>(i->second->containedElements.back())->name == result->name)
-        { // If found that there's a footprint with the same name but they aren't actually the same one (which is tested possible)
+        if(static_cast<Schematic_Module*>(i->second->containedElements.back())->name == result->name)
+        { // If found that there's a symbol with the same name but they aren't actually the same one (which is tested possible)
           Info("More than one footprint on this board was found called <<<" + result->name + ">>>(" +
              result->id + "), gID will be added to the name.");
           result->name += ("__" + result->id); // Modify the name for clarification
@@ -1464,14 +1464,14 @@ namespace lc2kicad
 
     processingModule = true;
 
-    if((workingDocument->docType == documentTypes::pcb) || (parent != nullptr))
+    if((workingDocument->docType == documentTypes::schematic) || (parent != nullptr))
     {
       coordinates originalOrigin = coordinates(workingDocument->origin);
       workingDocument->origin = coordinates{stod(moduleHeader[1]), stod(moduleHeader[2])};
       parseSchLibComponent(shapesList, result->containedElements);
       workingDocument->origin = originalOrigin;
     }
-    else;
+    else
       parseSchLibComponent(shapesList, result->containedElements);
 
     processingModule = false;
