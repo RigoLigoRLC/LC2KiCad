@@ -1,6 +1,6 @@
 # LC2KiCad
 
-![The LC2KiCad Logo. This Logo is licensed under CC-BY-SA 3.0 license.](./docs/LC2KiCad-Logo.svg)
+![The LC2KiCad Logo. This Logo is licensed under CC-BY-SA 3.0 license.](./docs/lc2kicad_header_picture.png)
 
 [中文版本README](./docs/README.zh_CN.md)
 
