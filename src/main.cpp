@@ -126,7 +126,7 @@ namespace lc2kicad
   void displayUsage()
   {
   cerr << "Usage: lc2kicad [OPTION] [--] FILENAME\n\n"
-          "FILENAME: The EasyEDA JSON Document path. THe file should have been exported\n"
+          "FILENAME: The EasyEDA JSON Document path. The file should have been exported\n"
           "          via EasyEDA menu \"Document - Export - EasyEDA\".\n\n"
           "  -h, --help:     Display this help message and quit.\n"
           "      --version:  Display about message.\n"
