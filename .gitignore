@@ -11,3 +11,5 @@ out/
 testfolder/
 CMakeLists.txt.user
 .idea/*
+.ccls-cache
+compile_commands.json
