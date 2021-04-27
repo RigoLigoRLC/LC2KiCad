@@ -25,6 +25,7 @@
 #include "consts.hpp"
 #include "includes.hpp"
 #include "rapidjson.hpp"
+#include "rapidjson/istreamwrapper.h"
 #include "edaclasses.hpp"
 #include "lc2kicadcore.hpp"
 #include "internalsserializer.hpp"
@@ -119,7 +120,8 @@ namespace lc2kicad
     list<EDADocument*> ret;
     EDADocument tempTargetDoc(true);
 
-    tempTargetDoc.jsonParseResult->ParseStream(std::cin); // Parse from stdin
+    rapidjson::IStreamWrapper cinwrapper(std::cin);
+    tempTargetDoc.jsonParseResult->ParseStream(cinwrapper); // Parse from stdin
 
     Document& parseTargetDoc = *tempTargetDoc.jsonParseResult;
     
