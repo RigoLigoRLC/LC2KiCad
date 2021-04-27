@@ -74,14 +74,14 @@ No macOS compilation has been done. But things should be similar to Linux enviro
 
 - `-a PARSER_ARGS` Specify parser arguments. This is used for compatibility fixes, feature switches and other configurations for serializer and deserializer. See current documentation: [Parser Arguments Descriptions](docs/parser_arguments.md)
 - `-v` Use verbose output. More information will be output.
+- `--pipe` or `-p` Read file from STDIN until an EOF flag, output will come out of STDOUT.
 
 ### Not implemented functions
 - `-o PATH` Specify output path.
 - `-f CONFIG_FILE` Specify a configuration file rather than using the standard ones. Configuration file contains default output path, default parser arguments and other things.
 
 ### Functions planned
-- `--pipe` Read file from STDIN until an EOF flag, output will come out of STDOUT.
-- `-p ... FILE1 FILE2 [FILE3] ...` Convert all specified files as a project, output a standard KiCad project. Multiple schematics are supported, but only the last PCB in the file list will be treated as the PCB associated with the project.
+- `-P ... FILE1 FILE2 [FILE3] ...` Convert all specified files as a project, output a standard KiCad project. Multiple schematics are supported, but only the last PCB in the file list will be treated as the PCB associated with the project.
 - `-S ... FILE1 FILE2 [FILE3] ...` Treat all the files as a separate part of a multi-part schematic symbol, output a multi-part symbol.
 
 

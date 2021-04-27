@@ -68,6 +68,12 @@ namespace lc2kicad
           case 'v':
             ret.verboseInfo = true;
             break;
+          case 'p':
+            ret.usePipe = true;
+            break;
+          case 'P':
+            ret.convertAsProject = true;
+            break;
           case 'a': // Parser argument (formerly Compatibility switches)
             status = parserArgument;
             remainingArgs = 1;
@@ -83,8 +89,6 @@ namespace lc2kicad
           case 'l': // Export nested libraries
             ret.exportNestedLibs = true;
             break;
-          case 'p':
-            ret.usePipe = true;
           default:
             assertThrow(false, string("Error: unrecognized switch \"-") + currentShortSwitch + "\"");
             break;
@@ -191,7 +195,7 @@ namespace lc2kicad
     if(result->usePipe)
     {
       // Piped operation cannot live with output directory
-      assertThrow(result->outputDirectory != "",
+      assertThrow(result->outputDirectory == "",
                   "Setting an output directory is not accepted when using piped operation!");
 
       // And is also likely to cause problems when extracting nested libraries
