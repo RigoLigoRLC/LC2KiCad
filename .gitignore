@@ -14,3 +14,4 @@ CMakeLists.txt.user
 .ccls-cache
 compile_commands.json
 src/lc2kicadcore.cpp
+LC2KiCad.kdev4
