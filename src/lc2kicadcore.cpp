@@ -46,6 +46,8 @@ using rapidjson::Value;
 
 namespace lc2kicad
 {
+  extern programArgumentParseResult argParseResult;
+
   LC2KiCadCore::LC2KiCadCore(str_dbl_map &setCompatibSw)
   {
     switch(static_cast<int>(setCompatibSw["SSV"])) // SelectSerializerVersion
@@ -106,10 +108,39 @@ namespace lc2kicad
                 );
 
     // If this file is a valid JSON file, continue parsing.
-    parseAsEasyEDA6File(tempTargetDoc, ret);
+    parseJsonAsEasyEDA6File(tempTargetDoc, ret);
 
 
     return ret;
+  }
+
+  EDADocument* LC2KiCadCore::parseLCFileFromStdin()
+  {
+    list<EDADocument*> ret;
+    EDADocument tempTargetDoc(true);
+
+    tempTargetDoc.jsonParseResult->ParseStream(std::cin); // Parse from stdin
+
+    Document& parseTargetDoc = *tempTargetDoc.jsonParseResult;
+    
+    assertThrow(!parseTargetDoc.HasParseError(),
+                string("RapidJSON reported error when parsing the file. Error code: ") +
+                rapidjsonErrorMsg[parseTargetDoc.GetParseError()] + ", offset " +
+                to_string(parseTargetDoc.GetErrorOffset()) + ".\n"
+                );
+
+    parseJsonAsEasyEDA6File(tempTargetDoc, ret);
+
+    // Piped conversion can only handle single input and print single output file,
+    // So we'll fail if we have multiple ones.
+    if(ret.size() != 1)
+    {
+      for(auto &i : ret)
+        delete i; // Dont forget to cleanup
+      assertThrow(false, "Piped processing only supports one file being output!");
+    }
+    
+    return ret.front();
   }
 
   /*
@@ -120,7 +151,7 @@ namespace lc2kicad
    * This function will push the parsed document into the ret vector reference that the user provides.
    * Therefore a valid reference to a corresponding vector must be provided.
    */
-  void LC2KiCadCore::parseAsEasyEDA6File(EDADocument &aTargetDoc, list<EDADocument *> &ret)
+  void LC2KiCadCore::parseJsonAsEasyEDA6File(EDADocument &aTargetDoc, list<EDADocument *> &ret)
   {
     /*
     cerr << "Auto Parse Processor: Document " << aTargetDoc.pathToFile <<  " is a " << documentTypeName[documentType]
@@ -276,20 +307,20 @@ namespace lc2kicad
   {
     std::ofstream outputfile;
     std::ostream *outputStream = &cout;
-    string* tempResult,
-        outputFileName = *path + target->docInfo["documentname"] + documentExtensionName[target->docType];
-
-    sanitizeFileName(outputFileName);
-
-    cerr << "[Deserializer] Write file \"" << outputFileName << "\"...\n";
-
-    outputfile.open(outputFileName, std::ios::out);
-
-    if(!outputfile)
-      Error("[Deserializer] Cannot create file for this document. File content would be written into"
-            "the standard output stream.");
-    else
-      outputStream = &outputfile;
+    string* tempResult, outputFileName;
+        
+    if(!argParseResult.usePipe)
+    {
+      outputFileName = *path + target->docInfo["documentname"] + documentExtensionName[target->docType];
+      sanitizeFileName(outputFileName);
+      cerr << "[Deserializer] Write file \"" << outputFileName << "\"...\n";
+      outputfile.open(outputFileName, std::ios::out);
+      if(!outputfile) // Dont error with pipe IO
+        Error("[Deserializer] Cannot create file for this document. File content would be written into"
+              "the standard output stream.");
+      else
+        outputStream = &outputfile;
+    }
     
     internalDeserializer->initWorkingDocument(target);
 

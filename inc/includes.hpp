@@ -161,7 +161,7 @@
     };
 
     programArgumentParseResult programArgumentParser(const int&, const char**&);
-    void errorAndQuit(std::runtime_error *e);
+    void checkArgConflict(const programArgumentParseResult *);
     void assertThrow(const bool statement, const char* message);  
     void assertThrow(const bool statement, const std::string &message);
 

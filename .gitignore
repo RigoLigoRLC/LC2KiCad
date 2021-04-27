@@ -13,3 +13,4 @@ CMakeLists.txt.user
 .idea/*
 .ccls-cache
 compile_commands.json
+src/lc2kicadcore.cpp

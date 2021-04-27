@@ -34,7 +34,8 @@
         ~LC2KiCadCore();
 
         list<EDADocument *> autoParseLCFile(string& filePath);
-        void parseAsEasyEDA6File(EDADocument&, list<EDADocument *> &ret);
+        EDADocument* parseLCFileFromStdin();
+        void parseJsonAsEasyEDA6File(EDADocument&, list<EDADocument *> &ret);
         void processEasyEDA6DocumentObject(rapidjson::Value &, EDADocument *aBasicDocument,
                                            list<EDADocument *> &ret);
 

@@ -63,7 +63,7 @@ int main(int argc, const char** argv)
 
 
   try { argParseResult = programArgumentParser(argc, argv);}
-  catch (std::exception &e) { Error(string("Argument parsing failed with exception: ") + e.what()); exit(1);};
+  catch (std::exception &e) { Error(string("Argument parsing failed with exception: \n") + e.what()); exit(1);};
 
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
 
@@ -94,22 +94,40 @@ int main(int argc, const char** argv)
     exit(1);
   }
   
-  for(auto &i : argParseResult.filenames)
+  if(!argParseResult.usePipe) // When using file IO; mostly this case
+  {
+    for(auto &i : argParseResult.filenames)
+      try
+      {
+        auto docList = core.autoParseLCFile(i);
+        for(auto &j : docList)
+          if(j)
+            documentCacheList.push_back(j);
+      }
+      catch(std::runtime_error &e)
+      {
+        Error(string("Parsing for \"") + i + "\" failed with exception: " + e.what());
+      }
+
+    for(auto &i : documentCacheList)
+      if(i)
+        core.deserializeFile(i, &path), delete i;
+  }
+  else // When using piped IO
+  {
     try
     {
-      auto docList = core.autoParseLCFile(i);
-      for(auto &j : docList)
-        if(j)
-          documentCacheList.push_back(j);
+      documentCacheList.push_back(core.parseLCFileFromStdin());
     }
     catch(std::runtime_error &e)
     {
-      Error(string("Parsing for \"") + i + "\" failed with exception: " + e.what());
+      Error(string("Parsing from standard input failed with exception: ") + e.what());
     }
 
-  for(auto &i : documentCacheList)
+    for(auto &i : documentCacheList)
     if(i)
       core.deserializeFile(i, &path), delete i;
+  }
 
   cerr << endl;
   if(errorCount | warningCount)

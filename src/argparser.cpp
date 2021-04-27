@@ -62,30 +62,32 @@ namespace lc2kicad
 
         switch (argv[i][1])
         {
-        case 'h':
-          ret.invokeHelp = true;
-          break;
-        case 'v':
-          ret.verboseInfo = true;
-          break;
-        case 'a': // Parser argument (formerly Compatibility switches)
-          status = parserArgument;
-          remainingArgs = 1;
-          break;
-        case 'f': // Specify configuration file
-          status = configFile;
-          remainingArgs = 1;
-          break;
-        case 'o': // Specify output directory
-          status = outputDirectory;
-          remainingArgs = 1;
-          break;
-        case 'l': // Export nested libraries
-          ret.exportNestedLibs = true;
-          break;
-        default:
-          assertThrow(false, string("Error: unrecognized switch \"-") + currentShortSwitch + "\"");
-          break;
+          case 'h':
+            ret.invokeHelp = true;
+            break;
+          case 'v':
+            ret.verboseInfo = true;
+            break;
+          case 'a': // Parser argument (formerly Compatibility switches)
+            status = parserArgument;
+            remainingArgs = 1;
+            break;
+          case 'f': // Specify configuration file
+            status = configFile;
+            remainingArgs = 1;
+            break;
+          case 'o': // Specify output directory
+            status = outputDirectory;
+            remainingArgs = 1;
+            break;
+          case 'l': // Export nested libraries
+            ret.exportNestedLibs = true;
+            break;
+          case 'p':
+            ret.usePipe = true;
+          default:
+            assertThrow(false, string("Error: unrecognized switch \"-") + currentShortSwitch + "\"");
+            break;
         }
       }
       else // Long arguments get detected.
@@ -94,6 +96,8 @@ namespace lc2kicad
           ret.invokeHelp = true;
         else if(!strcmp(argv[i], "--version"))
           ret.invokeVersionInfo = true;
+        else if(!strcmp(argv[i], "--pipe"))
+          ret.usePipe = true;
 
         else if(remainingArgs > 0) // Not long switches, then it could only be arguments for a switch.
         {
@@ -103,26 +107,26 @@ namespace lc2kicad
 
           switch (status)
           {
-          case configFile:
-            ret.configFile = argv[i];
-            break;
-          case outputDirectory:
-            ret.outputDirectory = argv[i];
-            break;
-          case parserArgument:
-            parserArgumentCache = argv[i];
-            discreteArgs = splitString(parserArgumentCache, ',');
-            for(auto i : discreteArgs)
-            {
-              splitArgKeyCache = splitString(i, ':');
+            case configFile:
+              ret.configFile = argv[i];
+              break;
+            case outputDirectory:
+              ret.outputDirectory = argv[i];
+              break;
+            case parserArgument:
+              parserArgumentCache = argv[i];
+              discreteArgs = splitString(parserArgumentCache, ',');
+              for(auto i : discreteArgs)
+              {
+                splitArgKeyCache = splitString(i, ':');
 
-              try { parserArguments[splitArgKeyCache[0]] = std::stod(splitArgKeyCache[1]); }
-              catch(...) { assertThrow(false, "Error: Failed to parse parser argument \"" + i + "\""); }
-            }
-            ret.parserArguments = parserArguments;
-            break;
-          default:
-            break;
+                try { parserArguments[splitArgKeyCache[0]] = std::stod(splitArgKeyCache[1]); }
+                catch(...) { assertThrow(false, "Error: Failed to parse parser argument \"" + i + "\""); }
+              }
+              ret.parserArguments = parserArguments;
+              break;
+            default:
+              break;
           }
           remainingArgs--;
           if(remainingArgs == 0) // After processing all required arguments, reset status.
@@ -148,10 +152,8 @@ namespace lc2kicad
     if(ret.exportNestedLibs)
       ret.parserArguments["ENL"] = 1;
 
-    // Check if is using pipe
-    if(ret.filenames.size() == 1)
-      if(ret.filenames[0] == "-")
-        ret.usePipe = true;
+    // Check if things are valid
+    checkArgConflict(&ret);
 
     return ret;
   }
@@ -180,6 +182,22 @@ namespace lc2kicad
         filenameList += i + "\n";
       filenameList.pop_back();
       VERBOSE_INFO(filenameList);
+    }
+  }
+
+  void checkArgConflict(const programArgumentParseResult *result)
+  {
+    // Piped operation has multiple restrictions
+    if(result->usePipe)
+    {
+      // Piped operation cannot live with output directory
+      assertThrow(result->outputDirectory != "",
+                  "Setting an output directory is not accepted when using piped operation!");
+
+      // And is also likely to cause problems when extracting nested libraries
+      if(result->parserArguments.count("ENL"))
+        if(result->parserArguments.at("ENL") == 1)
+          Info("Extract nested libraries when using piped operation may cause problems.");
     }
   }
 }

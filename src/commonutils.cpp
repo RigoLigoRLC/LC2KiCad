@@ -47,7 +47,6 @@ namespace lc2kicad
   extern WORD wBackgroundColor;
 #endif
   
-  //void assertThrow(bool statement, const char* message){if(!statement){std::runtime_error e(message); errorAndQuit(&e);}}
   void assertThrow(const bool statement, const char* message) {if(!statement){throw std::runtime_error(message);}}
   void assertThrow(const bool statement, const std::string &message) {if(!statement){throw std::runtime_error(message.c_str());}}
 
