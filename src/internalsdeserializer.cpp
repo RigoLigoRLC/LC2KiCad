@@ -313,8 +313,8 @@ namespace lc2kicad
       return nullptr;
     }
 
-    *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name " + target.net.second
-        + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
+    *ret += indent + string("(zone (net ") + to_string(target.net.first) + ") (net_name \"" + target.net.second
+        + "\") (layer " + KiCadLayerName[target.layerKiCad] + ") (tstamp 0) (hatch edge 0.508)\n"
 
         + indent + "  (priority " + to_string(static_cast<PCBDocument*>(workingDocument)->fillPriorityManager
                                               .getKiCadPriority(target.EasyEDAPriority)) + ")"
