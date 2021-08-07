@@ -379,7 +379,7 @@ namespace lc2kicad
     // Update: No more compatibility BS. We need to IMPLEMENT it rather than tossing it and call it the day
 
     *ret += indent + string(isProcessingModules() ? "(fp_circle " : "(gr_circle ")
-          + "(start " + to_string(target.center.X) + ' ' + to_string(target.center.Y) + ") "
+          + "(center " + to_string(target.center.X) + ' ' + to_string(target.center.Y) + ") "
             "(end " + to_string(target.center.X) + ' ' + to_string(target.center.Y + target.radius) + ") "
             "(layer " + KiCadLayerName[target.layerKiCad]
           + ") (width " + to_string(target.width) + "))\n";
