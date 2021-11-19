@@ -8,7 +8,8 @@
 
 LC2KiCad 是一个可以把EasyEDA的文档（或又称LCEDA，即立创EDA，因为该软件事实上为LCSC，即立创商城所有）转换为KiCad 5.0版本（或更高）文档的软件。该软件完全免费，它的主要部分在GNU LGPL v3协议授权下分发。
 
-**LC2KiCad 已不再处于活跃处于开发中，它的功能不完美。***
+**LC2KiCad 已不再处于活跃处于开发中，它的功能不完美。*** 仅支持原理图库、PCB封闭和PCB。
+
 您可能对一个新近创建的浏览器插件感兴趣，它能提取立创的封装、符号和3D模型（包括专业版）。链接：[lckiconverter](https://github.com/xtoolbox/lckiconverter)
 
 LC2KiCad最初是作为练习我从*C++ Primer Plus*中学习到的知识而编写的。如果你觉得我多态类用的太多了，不要来追究这个责任。

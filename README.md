@@ -10,7 +10,8 @@
 
 LC2KiCad is a software that is designed to be able to convert documents of EasyEDA (or aka. LCEDA, since it's owned by LCSC) to documents of KiCad 5.0 or higher. It is completely free, main part of code is licensed under GNU LGPL v3 license.
 
-**LC2KiCad is no longer in active development, and its feature is incomplete.*** 
+**LC2KiCad is no longer in active development, and its feature is incomplete.*** Only schematic symbols, PCB footprints and PCBs are supported.
+
 A newly created browser plugin can be used to extract footprints, symbols and 3D models may be interesting to you. Link: [lckiconverter](https://github.com/xtoolbox/lckiconverter)
 
 LC2KiCad was initially started as a project that practices my C++ knowledge learned from *C++ Primer Plus*, so I managed to use as many features of the language as possible. Don't blame me for seeing tons of polymorphic classes that were not necessary!
