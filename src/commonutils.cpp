@@ -41,6 +41,7 @@ namespace lc2kicad
 {
   extern programArgumentParseResult argParseResult;
   extern long errorCount, warningCount;
+  extern std::ostream *logstream;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
   extern HANDLE hStdOut;
   extern CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -236,10 +237,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cerr << "Error: " << s << std::endl;
+    *logstream << "Error: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cerr << "\033[1;31mError: " << s << "\033[39m\n";
+    *logstream << "\033[1;31mError: " << s << "\033[39m\n";
 #endif
     errorCount++;
   }
@@ -250,10 +251,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cerr << "Warning: " << s << std::endl;
+    *logstream << "Warning: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cerr << "\033[1;93mWarning: " << s << "\033[39m\n";
+    *logstream << "\033[1;93mWarning: " << s << "\033[39m\n";
 #endif
     warningCount++;
   }
@@ -264,10 +265,10 @@ namespace lc2kicad
     GetConsoleScreenBufferInfo(hStdOut, &consoleInfo);
     wBackgroundColor = consoleInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
     SetConsoleTextAttribute(hStdOut, FOREGROUND_BLUE | FOREGROUND_INTENSITY | wBackgroundColor);
-    std::cerr << "Info: " << s << std::endl;
+    *logstream << "Info: " << s << std::endl;
     SetConsoleTextAttribute(hStdOut, consoleInfo.wAttributes);
 #else
-    std::cerr << "\033[1;96mInfo: " << s << "\033[39m\n";
+    *logstream << "\033[1;96mInfo: " << s << "\033[39m\n";
 #endif
   }
 

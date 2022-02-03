@@ -48,6 +48,7 @@ namespace lc2kicad
   void displayUsage();
   programArgumentParseResult argParseResult;
   long errorCount = 0, warningCount = 0;
+  std::ostream* logstream = nullptr;
 #ifdef USE_WINAPI_FOR_TEXT_COLOR
   HANDLE hStdOut;
   CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -63,12 +64,13 @@ int main(int argc, const char** argv)
 
 
   try { argParseResult = programArgumentParser(argc, argv);}
-  catch (std::exception &e) { Error(string("Argument parsing failed with exception: \n") + e.what()); exit(1);};
+  catch (std::exception &e) { std:cerr << (string("Argument parsing failed with exception: \n") + e.what()); exit(1);};
 
 #ifdef MAKE_CUSTOM_TEST_OF_FUNCS
 
 #endif
 
+  logstream = argParseResult.usePipe ? &std::cerr : &std::cout;
 
   if(argParseResult.verboseInfo)
     argParseResult.verboseOutputArgParseResult(&argParseResult);
@@ -129,11 +131,11 @@ int main(int argc, const char** argv)
       core.deserializeFile(i, &path), delete i;
   }
 
-  cerr << endl;
+  *logstream << endl;
   if(errorCount | warningCount)
     Warn(string("Error(s): ") + to_string(errorCount) + ", warning(s): " + to_string(warningCount) + ".");
   else
-    cerr << "Error(s): " << errorCount << ", warning(s): " << warningCount << ".\n";
+    *logstream << "Error(s): " << errorCount << ", warning(s): " << warningCount << ".\n";
 
   return 0;
 }
