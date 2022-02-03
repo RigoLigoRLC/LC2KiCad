@@ -110,7 +110,7 @@ namespace lc2kicad
     if(prefix.size()) docInfo["prefix"] = prefix;
     else
     {
-      Info("This symbol library has an empty prefix. It's replaced with UNK now.");
+      Warn("This symbol library has an empty prefix. It's replaced with UNK now.");
       docInfo["prefix"] = "UNK"; // Prefix could be empty after popping trailing '?', therefore we add UNK for those.
     }
     docInfo["contributor"] = headlist.HasMember("Contributor") ? headlist["Contributor"].IsString() ?
@@ -479,7 +479,9 @@ namespace lc2kicad
           switch(i[1])
           {
             case 'V': // SVGNODE
-              Error("An SVGNODE object has been discarded.");
+              // Discarding SVGNODE objects usually doesn't result in broken boards,
+              // therefore I decided to move it into verbose info.
+              VERBOSE_INFO("An SVGNODE object has been discarded.");
               break;
             case 'O': // Solidregion
               if(!processingModule)
@@ -972,7 +974,7 @@ namespace lc2kicad
     result->EasyEDAPriority = 0;
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
     // Throw error with gge ID if layer is invalid
-    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION " + paramList[5]);
+    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION");
 
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[3]);

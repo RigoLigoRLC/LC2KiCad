@@ -269,7 +269,7 @@ namespace lc2kicad
     bool isInFootprint = isProcessingModules(); // If not in a footprint, use gr_line. Else, use fp_line
 
     if(isInFootprint)
-      Warn(target.id + ": Copper track on footprint. This is not recommended.");
+      Warn(target.id + ": Copper track on footprint. This can cause DRC violations.");
 
     for(unsigned int i = 0; i < target.trackPoints.size() - 1; i++)
     {
@@ -344,10 +344,10 @@ namespace lc2kicad
   {
     RAIIC<string> ret;
 
-    // TODO: allow if output KiCad 6, and also treat footprints specially
+    // TODO: disallow only if you specify KiCad 5
     if(isProcessingModules())
     {
-      Warn(target.id + ": Keepout areas are not allowed within footprint. This area was discarded.");
+      Warn(target.id + ": Keepout areas are not allowed within footprint in KiCad 5. This area was discarded.");
       return nullptr;
     }
 
@@ -373,10 +373,10 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBCopperCircle(const PCB_CopperCircle& target) const
   {
     RAIIC<string> ret;
-    
-    // Notice: PCB circle involves compatibility issues. We need to implement compatibility settings first
-    //         before we can start working on PCB circle outputPCB.
-    // Update: No more compatibility BS. We need to IMPLEMENT it rather than tossing it and call it the day
+
+    // Warn the user about this
+    if(isProcessingModules())
+      Warn(target.id + ": Copper track on footprint. This can cause DRC violations.");
 
     *ret += indent + string(isProcessingModules() ? "(fp_circle " : "(gr_circle ")
           + "(center " + to_string(target.center.X) + ' ' + to_string(target.center.Y) + ") "
@@ -390,7 +390,7 @@ namespace lc2kicad
   string* KiCad_5_Deserializer::outputPCBGraphicalCircle(const PCB_GraphicalCircle& target) const
   {
     RAIIC<string> ret;
-      
+
     *ret += indent + string(isProcessingModules() ? "(fp_circle (center " : "(gr_circle (center ") + to_string(target.center.X)
           + ' ' + to_string(target.center.Y) + ") (end " + to_string(target.center.X) + ' ' + to_string(target.center.Y + target.radius)
           + ") (layer " + KiCadLayerName[target.layerKiCad] + ") (width " + to_string(target.width) + "))";
