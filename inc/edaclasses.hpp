@@ -74,7 +74,7 @@
      * of different nets, overlapping with each other, the one on the higher position of EasyEDA
      * fill manager gets filled last (with highest priority), like how paper overlaps.
      * This works completely different from KiCad; KiCad has a priority number for fill areas; an
-     * area with higher priority gets filled last.
+     * area with higher priority gets filled last, and cull out its shape on already filled areas.
      *
      * This class will keep track of EasyEDA fill "order" number, and MUST NOT be used before the
      * entire document gets resolved by Core, since the maximumPriority can change at any time.
@@ -82,7 +82,7 @@
     class PCBFloodFillPriorityManager
     {
       private:
-        unsigned int maximumPriority; //< The greatest EasyEDA fill order number
+        unsigned int maximumPriority = 0; //< The greatest EasyEDA fill order number
       public:
         void logPriority(unsigned int); //< Use this when you need to add a fill to the beloging document
         unsigned int getKiCadPriority(unsigned int); //< Use this when obtaining KiCad priority on output

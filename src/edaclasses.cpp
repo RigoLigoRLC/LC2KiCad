@@ -142,6 +142,8 @@ namespace lc2kicad
   void PCBFloodFillPriorityManager::logPriority(unsigned int easyedaFillPriority)
   {
     if(easyedaFillPriority > maximumPriority) maximumPriority = easyedaFillPriority;
+    VERBOSE_INFO(std::string("Logged area priority ") + std::to_string(easyedaFillPriority) +
+                 ", current maximum priority " + std::to_string(maximumPriority));
   }
 
   unsigned int PCBFloodFillPriorityManager::getKiCadPriority(unsigned int easyedaFillPriority)
