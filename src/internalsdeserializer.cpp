@@ -159,6 +159,7 @@ namespace lc2kicad
     }
 
     processingModule = true;
+    currentPackageOnTopLayer = target.topLayer;
     for(auto &i : target.containedElements)
     {
       if(!i) continue;
@@ -498,10 +499,23 @@ namespace lc2kicad
   string *KiCad_5_Deserializer::outputPCBGraphicalSolidRegion(const PCB_GraphicalSolidRegion& target) const
   {
     RAIIC<string> ret;
+    KiCadLayerIndex realLayer;
+    // NOTE: Although the hacks of courtyard doesn't cover all cases, but till now, all instances of
+    //       EasyEDA courtyards are solid fills. so this should work
+    if(target.layerKiCad == F_CrtYd && !currentPackageOnTopLayer)
+      realLayer = B_CrtYd;
+    else
+      realLayer = target.layerKiCad;
     *ret += (isProcessingModules() ? "(fp_poly (pts " : "(gr_poly (pts ");
     for(auto &i : target.fillAreaPolygonPoints)
       *ret += "(xy " + to_string(i.X) + ' ' + to_string(i.Y) + ") ";
-    *ret += ") (width 0))";
+    *ret += ") (layer " + KiCadLayerName[realLayer] + ") (fill ";
+
+    if(realLayer == F_CrtYd || realLayer == B_CrtYd)
+      *ret += "none) (width 0.508))";
+    else
+      *ret += "solid) (width 0))";
+
     return !++ret;
   }
 
