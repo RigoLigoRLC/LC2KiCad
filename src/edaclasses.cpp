@@ -114,8 +114,9 @@ namespace lc2kicad
 
   void PCBNetManager::setNet(std::string &netName, PCBNet &net)
   {
-    net.first = obtainNetCode(netName);
-    net.second = netName;
+    auto cleanNetName = escapeQuotedString(netName);
+    net.first = obtainNetCode(cleanNetName);
+    net.second = cleanNetName;
   }
 
   bool PCBNetManager::findNet(std::string &netName)

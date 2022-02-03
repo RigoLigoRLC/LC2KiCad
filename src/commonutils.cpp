@@ -120,6 +120,19 @@ namespace lc2kicad
     }
   }
 
+  std::string escapeQuotedString(const std::string s)
+  {
+    std::string ret;
+    ret.reserve(s.size() + 5); // Reserve memory for the possible escape characters
+    for(auto it = s.cbegin(); it < s.cend(); it++)
+    {
+      if(*it == '"')
+        ret += '\\';
+      ret += *it;
+    }
+    return ret;
+  }
+
   int tolStoi(const std::string &c1, const int fail)
   {
     if(c1.size())

@@ -256,7 +256,7 @@ namespace lc2kicad
     Value &headlist = head["c_para"];
     footprintName = headlist.HasMember("package") ?
                       headlist["package"].IsString() ?
-                        headlist["package"].GetString() :
+                        escapeQuotedString(headlist["package"].GetString()) :
                       "" :
                     "";
 
@@ -1119,7 +1119,7 @@ namespace lc2kicad
     result->id = paramList[13];
 
     // Know what type this text is.
-    result->text = paramList[10];
+    result->text = escapeQuotedString(paramList[10]);
     if(paramList[1].length() == 1)
       switch(paramList[1][0])
       {

@@ -181,6 +181,7 @@
     bool fuzzyCompare(const double, const double);
     centerArc svgEllipticalArcComputation(double, double, double, double, double, bool, bool, double, double);
     std::vector<std::string> splitByString(const std::string&, std::string&&);
+    std::string escapeQuotedString(const std::string);
 
     void Error(std::string s);
     void Warn(std::string s);
