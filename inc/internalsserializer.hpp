@@ -141,6 +141,9 @@
           {48, In28_Cu},
           {49, In29_Cu},
           {50, In30_Cu},
+          {99, F_CrtYd}, // Package Shape, equivalent to KiCad Courtyard but needs to take care of flipping
+          {100, Invalid}, // Pin Shape
+          {101, Invalid}, // Component marking
         };
       private:
         str_dbl_map internalCompatibilitySwitches;

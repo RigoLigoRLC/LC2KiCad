@@ -497,9 +497,19 @@ namespace lc2kicad
               }
               else
               {
-                Error(loadNthSeparated(i, '~', 5) +
-                      ": A fill region was found inside a footprint, which is not allowed in KiCad. "
-                      "This region is discarded!");
+
+                auto type = loadNthSeparated(i, '~', 4);
+                if(type == "solid")
+                  if(!judgeIsOnCopperLayer(EasyEdaToKiCadLayerMap[stoi(loadNthSeparated(i, '~', 1))]))
+                    containedElements.push_back(parsePCBGraphicalSolidRegionString(i));
+                  else
+                    Warn(loadNthSeparated(i, '~', 5) +
+                         ": A copper region was found inside a footprint, which is not allowed in KiCad. "
+                         "This region is discarded!");
+                else if(type == "npth")
+                  containedElements.push_back(parsePCBNpthRegionString(i));
+                else if(type == "cutout")
+                  containedElements.push_back(parsePCBKeepoutRegionString(i));
                 // Can we move the region into main board? Probably not, cause we can't.
                 // That's how LC2KiCad was constructed. You can't put an element into board,
                 // because we can only see the containedElements of the footprint in this function.
@@ -807,7 +817,11 @@ namespace lc2kicad
 
     // Resolve track layer
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
-    assertThrow(result->layerKiCad != KiCadLayerIndex::Invalid, result->id + (": Invalid layer for TRACK " + result->id));
+    if(result->layerKiCad == KiCadLayerIndex::Invalid)
+    {
+      VERBOSE_INFO(result->id + ": Invalid layer " + paramList[2] + " for graphical TRACK");
+      return nullptr;
+    }
 
     // Resolve track points
     stringlist pointsStrList = splitString(paramList[4], ' ');
@@ -926,8 +940,13 @@ namespace lc2kicad
     result->id = paramList[5];
 
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[1])];
-    // Throw error with gge ID if layer is invalid
-    assertThrow(result->layerKiCad != -1, result->id + ": Invalid layer for copper SOLIDREGION " + paramList[5]);
+
+    // Fail gracefully if you got an area on an invalid layer
+    if(result->layerKiCad == Invalid)
+    {
+      VERBOSE_INFO(result->id + ": Invalid layer " + paramList[1] + " for graphical SOLIDREGION");
+      return nullptr;
+    }
 
     // Resolve track points
     auto path = SmolSVG::readPathString(paramList[3]);
@@ -1023,12 +1042,17 @@ namespace lc2kicad
     stringlist paramList = splitString(LCJSONString, '~');
 
     result->id = paramList[6]; // GGE ID.
+    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
+    if(result->layerKiCad == Invalid)
+    {
+      VERBOSE_INFO(result->id + ": Invalid layer " + paramList[5] + " for graphical ARC");
+      return nullptr;
+    }
 
     result->center.X = (stod(paramList[1]) - workingDocument->origin.X) * tenmils_to_mm_coefficient;
     result->center.Y = (stod(paramList[2]) - workingDocument->origin.Y) * tenmils_to_mm_coefficient;
     result->radius = stod(paramList[3]) * tenmils_to_mm_coefficient;
     result->width = stod(paramList[4]) * tenmils_to_mm_coefficient;
-    result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[5])];
 
     return !++result;
   }
@@ -1075,6 +1099,12 @@ namespace lc2kicad
     result->id = paramList[6]; // GGE ID
 
     result->layerKiCad = EasyEdaToKiCadLayerMap[stoi(paramList[2])];
+    if(result->layerKiCad == Invalid)
+    {
+      VERBOSE_INFO(result->id + ": Invalid layer " + paramList[2] + " for ARC");
+      return nullptr;
+    }
+
     result->width = stod(paramList[1]) * tenmils_to_mm_coefficient;
 
     // Resolve track points
