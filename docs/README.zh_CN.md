@@ -12,7 +12,7 @@ LC2KiCad 是一个可以把EasyEDA的文档（或又称LCEDA，即立创EDA，�
 
 您可能对一个新近创建的浏览器插件感兴趣，它能提取立创的封装、符号和3D模型（包括专业版）。链接：[lckiconverter](https://github.com/xtoolbox/lckiconverter)
 
-LC2KiCad最初是作为练习我从*C++ Primer Plus*中学习到的知识而编写的。如果你觉得我多态类用的太多了，不要来追究这个责任。
+LC2KiCad最初是作为练习我从*C++ Primer Plus*中学习到的知识而编写的。如果你觉得我架构设计非常乱，请不要来追究我这个责任。
 
 ---
 
