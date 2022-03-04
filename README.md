@@ -14,7 +14,7 @@ LC2KiCad is a software that is designed to be able to convert documents of EasyE
 
 A newly created browser plugin can be used to extract footprints, symbols and 3D models may be interesting to you. Link: [lckiconverter](https://github.com/xtoolbox/lckiconverter)
 
-LC2KiCad was initially started as a project that practices my C++ knowledge learned from *C++ Primer Plus*, so I managed to use as many features of the language as possible. Don't blame me for seeing tons of polymorphic classes that were not necessary!
+LC2KiCad was initially started as a project that practices my C++ knowledge learned from *C++ Primer Plus*, so I managed to use as many features of the language as possible. Don't blame me for the messy overall architecture!
 
 ---
 
