@@ -1472,7 +1472,7 @@ namespace lc2kicad
     for(unsigned int i = 0; i < cparaTmp.size(); i += 2)
       result->cparaContent[cparaTmp[i]] = cparaTmp[i + 1]; // Transfer c_para content
 
-    result->name = result->cparaContent["package"]; // Set package(aka footprint) name
+    result->name = result->cparaContent["Manufacturer Part"]; // Set symbol name
 
     // Only for nested library use. If you pass an std::map here, UUID will be checked and make sure
     // extra efforts were not wasted on an already-parsed component.
