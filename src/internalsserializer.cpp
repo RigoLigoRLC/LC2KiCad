@@ -327,7 +327,7 @@ namespace lc2kicad
       map<string, string> &cpara = static_cast<Schematic_Module*>(doc->containedElements.back())->cparaContent;
       doc->docInfo["documentname"] = static_cast<Schematic_Module*>(doc->containedElements.back())->name;
       doc->docInfo["contributor"] = cpara["contributor"];
-      doc->docInfo["prefix"] = "UNK?"; // TODO: Proper prefix
+      doc->docInfo["prefix"] = cpara["spicePre"]; // TODO: Proper prefix? But we would assume spicePre is identical with normal prefix
       doc->pathToFile = workingDocument->pathToFile + "__" + doc->docInfo["documentname"];
       doc->docType = schematic_lib;
     }
