@@ -4,6 +4,10 @@
 
 [中文版本README](./docs/README.zh_CN.md)
 
+## Deprecation Notice
+
+### KiCad Version 8 has integrated EasyEDA (and Pro version) project import feature. This project has finished playing its role in project conversion and will be decommissioned from now on. Feb 8 2024
+
 ---
 
 ## Overview
